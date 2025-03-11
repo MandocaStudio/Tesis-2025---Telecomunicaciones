@@ -7,7 +7,7 @@ public class Movement : MonoBehaviour
     [SerializeField] Rigidbody rbPlayer;
 
     void Start()
-    {
+{
         rbPlayer = GetComponent<Rigidbody>();
         Cursor.lockState = CursorLockMode.Locked; // Bloquea el cursor al centro de la pantalla
     }
