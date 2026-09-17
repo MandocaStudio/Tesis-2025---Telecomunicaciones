@@ -1,0 +1,66 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:ui="UnityEngine.UIElements"
+         xmlns:uie="UnityEditor.UIElements"
+         editor-extension-mode="False">
+
+    <ui:Style src="project://database/Assets/UI/Styles/Variables.uss?fileID=7433441132597879392&amp;guid=67449ffd870bf064ab75437fdd68ebb3&amp;type=3#Variables" />
+    <ui:Style src="project://database/Assets/UI/Styles/Common.uss?fileID=7433441132597879392&amp;guid=417764cf809bc9d41a6fd7df4cfc816b&amp;type=3#Common" />
+
+    <!-- ROOT -->
+    <ui:VisualElement name="Root" class="screen-root" style="flex-grow:1; flex-direction:column; padding:28px;">
+
+        <ui:VisualElement name="BgGridOverlay" class="bg-grid-overlay" />
+
+        <!-- ═══ HEADER ════════════════════════════════════════════ -->
+        <ui:VisualElement name="Header"
+            style="flex-direction:row; align-items:center; justify-content:space-between; margin-bottom:6px;">
+            <ui:Label name="PageTitle" text="Marco Teórico" class="title-section" />
+            <ui:VisualElement style="flex-direction:row; align-items:center;">
+                <ui:Button name="BtnIndice" text="☰  Índice" class="btn-nav-arrow"
+                    style="width:auto; padding-left:18px; padding-right:18px; margin-right:12px;" />
+                <ui:Label name="PageNum" text="1 / 14" class="label-muted" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <ui:VisualElement name="HeaderSep" class="separator-blue" style="margin-bottom:16px;" />
+
+        <!-- ═══ READER CARD ═══════════════════════════════════════ -->
+        <ui:VisualElement name="ReaderCard" class="reader-card">
+            <ui:ScrollView name="ContentScroll" style="flex-grow:1;">
+                <ui:VisualElement name="PageContent" style="flex-direction:column;" />
+            </ui:ScrollView>
+
+            <ui:VisualElement name="NavBar"
+                style="flex-direction:row; justify-content:center; align-items:center; margin-top:12px; height:56px;">
+                <ui:Button name="BtnPrev" text="←" class="btn-nav-arrow" style="margin-right:48px;" />
+                <ui:Label name="NavLabel" text="Página 1 de 14" class="label-muted" />
+                <ui:Button name="BtnNext" text="→" class="btn-nav-arrow" style="margin-left:48px;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <ui:Button name="BtnBack" text="Atrás" class="btn-back" />
+
+        <!-- ═══ MODAL DEL ÍNDICE (oculto) ═════════════════════════ -->
+        <ui:VisualElement name="TocModal" class="modal-overlay">
+            <ui:VisualElement name="TocWindow" class="modal-window" style="width:54%;">
+                <ui:VisualElement class="modal-titlebar">
+                    <ui:Label text="Índice — Marco Teórico" class="modal-title" />
+                    <ui:Button name="BtnTocClose" text="✕" class="modal-close" />
+                </ui:VisualElement>
+                <ui:ScrollView name="TocList" style="max-height:560px;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- ═══ MODAL DE FIGURA (oculto) ══════════════════════════ -->
+        <ui:VisualElement name="FigModal" class="modal-overlay">
+            <ui:VisualElement name="FigWindow" class="modal-window" style="width:86%; max-width:1600px;">
+                <ui:VisualElement class="modal-titlebar">
+                    <ui:Label name="FigModalTitle" text="Figura" class="modal-title" />
+                    <ui:Button name="BtnFigClose" text="✕" class="modal-close" />
+                </ui:VisualElement>
+                <ui:ScrollView name="FigModalContent" mode="VerticalAndHorizontal" style="max-height:860px;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

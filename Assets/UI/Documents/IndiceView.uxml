@@ -1,0 +1,51 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:ui="UnityEngine.UIElements"
+         xmlns:uie="UnityEditor.UIElements"
+         editor-extension-mode="False">
+
+    <ui:Style src="project://database/Assets/UI/Styles/Variables.uss?fileID=7433441132597879392&amp;guid=67449ffd870bf064ab75437fdd68ebb3&amp;type=3#Variables" />
+    <ui:Style src="project://database/Assets/UI/Styles/Common.uss?fileID=7433441132597879392&amp;guid=417764cf809bc9d41a6fd7df4cfc816b&amp;type=3#Common" />
+
+    <!-- ROOT -->
+    <ui:VisualElement name="Root" class="screen-root" style="flex-grow:1; flex-direction:column; padding:36px;">
+
+        <ui:VisualElement name="BgGridOverlay" class="bg-grid-overlay" />
+
+        <!-- ═══ HEADER ════════════════════════════════════════════ -->
+        <ui:VisualElement name="Header" style="flex-direction:column; margin-bottom:6px;">
+            <ui:Label text="Capítulo I" class="title-kicker" />
+            <ui:Label text="Marco Teórico — Índice" class="title-hero" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="HeaderSep" class="separator-blue" style="margin-bottom:16px;" />
+
+        <!-- ═══ TARJETA CON EL ÍNDICE ═════════════════════════════ -->
+        <ui:VisualElement name="IndiceCard" class="reader-card" style="padding:16px;">
+            <ui:ScrollView name="TocScroll" style="flex-grow:1;">
+
+                <ui:Button name="Toc_1_1"   text="1.1      Satélite" class="toc-item" />
+                <ui:Button name="Toc_1_1_1" text="1.1.1      Tipos de Satélites Según la Órbita" class="toc-item toc-item--sub" />
+                <ui:Button name="Toc_1_2"   text="1.2      Enlace Satelital" class="toc-item" />
+                <ui:Button name="Toc_1_3"   text="1.3      Bandas de Frecuencia en Enlaces Satelitales" class="toc-item" />
+                <ui:Button name="Toc_1_4"   text="1.4      Sistemas Satelitales Operativos en Venezuela" class="toc-item" />
+                <ui:Button name="Toc_1_5"   text="1.5      Modelo del Enlace Satelital" class="toc-item" />
+                <ui:Button name="Toc_1_5_1" text="1.5.1      Estación Terrena" class="toc-item toc-item--sub" />
+                <ui:Button name="Toc_1_5_2" text="1.5.2      Modelo de Enlace de Subida" class="toc-item toc-item--sub" />
+                <ui:Button name="Toc_1_5_3" text="1.5.3      Transpondedor" class="toc-item toc-item--sub" />
+                <ui:Button name="Toc_1_5_4" text="1.5.4      Modelo de Enlace de Bajada" class="toc-item toc-item--sub" />
+                <ui:Button name="Toc_1_5_5" text="1.5.5      Enlaces Cruzados" class="toc-item toc-item--sub" />
+                <ui:Button name="Toc_1_6"   text="1.6      Transmisión de Datos" class="toc-item" />
+                <ui:Button name="Toc_1_6_1" text="1.6.1      Etapas de la Transmisión de Datos" class="toc-item toc-item--sub" />
+                <ui:Button name="Toc_1_7"   text="1.7      Polarización de las Emisiones Satelitales" class="toc-item" />
+                <ui:Button name="Toc_1_8"   text="1.8      Figuras de Mérito y Desempeño de un Enlace Satelital" class="toc-item" />
+                <ui:Button name="Toc_1_9"   text="1.9      Elementos Perjudiciales en un Enlace Satelital" class="toc-item" />
+                <ui:Button name="Toc_1_10"  text="1.10      Métricas de Rendimiento y Calidad de Servicio (QoS)" class="toc-item" />
+
+            </ui:ScrollView>
+        </ui:VisualElement>
+
+        <!-- Botón Atrás (esquina) -->
+        <ui:Button name="BtnBack" text="Atrás" class="btn-back" />
+
+    </ui:VisualElement>
+</ui:UXML>

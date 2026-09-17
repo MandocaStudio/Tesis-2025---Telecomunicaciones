@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e555149817182f4aaf875c3be16b3dd, type: 3}
+  m_Name: VenesatParameters
+  m_EditorClassIdentifier: Assembly-CSharp::SatelliteParameters
+  satelliteName: "VENESAT-1 (Sim\xF3n Bol\xEDvar)"
+  orbitalLongitudeDeg: -78
+  distanceKm: 38000
+  rxGainDbi: 40
+  sysNoiseTempK: 150
+  bandwidthMHz: 36
+  defaultSymbolRateMBaud: 30
+  codeRate: 0.8
+  latencyMs: 250
+  freqC_GHz: 4
+  freqKu_GHz: 12
+  freqKa_GHz: 20
+  rangePtdBW: {x: -10, y: 30}
+  defaultPtdBW: 15
+  rangeGtdBi: {x: 20, y: 60}
+  defaultGtdBi: 42
+  rangeLadB: {x: 0, y: 20}
+  defaultLadB: 3.1
+  xpiAltoDb: 30
+  xpiMedioDb: 20
+  xpiBajoDb: 12
+  rainModeradaDb: 3
+  rainIntensaDb: 10
+  kaRainFactor: 2
+  noteIntro: "Ajusta los par\xE1metros y observa c\xF3mo cambian C/N, BER y throughput
+    en tiempo real."
+  noteXpi: "Con reutilizaci\xF3n de polarizaci\xF3n, un aislamiento bajo deja que
+    la otra polarizaci\xF3n se filtre como interferencia, degradando el BER."
+  noteRainKa: "En banda Ka la lluvia aten\xFAa mucho m\xE1s la se\xF1al; si C/N cae
+    bajo el umbral, el receptor pierde el enganche de fase."
+  noteModulation: "Modulaciones de mayor orden (16/64-QAM) llevan m\xE1s bits por
+    s\xEDmbolo (m\xE1s throughput) pero exigen mejor C/N para el mismo BER."

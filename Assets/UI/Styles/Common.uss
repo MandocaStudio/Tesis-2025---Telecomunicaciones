@@ -1,0 +1,919 @@
+/* ============================================================
+   Common.uss  —  Shared component styles (LIGHT THEME)
+   All colors must use var() from Variables.uss — no raw hex.
+   ============================================================ */
+
+/* ── ROOT / SCREEN ─────────────────────────────────────────── */
+
+.screen-root {
+    flex-grow: 1;
+    background-color: var(--color-bg-screen);
+    overflow: hidden;
+}
+
+/* Decorative hexagon tech pattern overlay */
+.bg-grid-overlay {
+    position: absolute;
+    left: 0; top: 0; right: 0; bottom: 0;
+    background-image: url("project://database/Assets/UI/Textures/HexPatternBlue.png?fileID=2800000&guid=0bb22bf5b48a41f44ba186b2ea334351&type=3#HexPatternBlue");
+    -unity-background-scale-mode: scale-and-crop;
+    opacity: 0.85;
+}
+
+/* ── TYPOGRAPHY ─────────────────────────────────────────────── */
+
+.title-kicker {                 /* "Plataforma Virtual Interactiva" */
+    color: var(--color-text-secondary);
+    font-size: var(--font-section);
+}
+
+.title-hero {                   /* línea grande del título */
+    color: var(--color-text-primary);
+    font-size: var(--font-hero);
+    -unity-font-style: bold;
+}
+
+.title-hero-accent {
+    color: var(--color-purple);
+    font-size: var(--font-hero);
+    -unity-font-style: bold;
+}
+
+.title-subbrand {               /* "PVI — Telecomunicaciones" */
+    color: var(--color-text-accent);
+    font-size: var(--font-card);
+    -unity-font-style: italic;
+    margin-top: 4px;
+}
+
+.title-section {
+    color: var(--color-text-primary);
+    font-size: var(--font-section);
+    -unity-font-style: bold;
+}
+
+.title-card {
+    color: var(--color-text-primary);
+    font-size: var(--font-card);
+    -unity-font-style: bold;
+}
+
+.label-key {
+    color: var(--color-text-accent);
+    font-size: var(--font-body);
+    -unity-font-style: bold;
+    margin-bottom: 4px;
+}
+
+.label-value {
+    color: var(--color-text-primary);
+    font-size: var(--font-body);
+    white-space: normal;
+    margin-bottom: var(--space-md);
+}
+
+.label-muted {
+    color: var(--color-text-muted);
+    font-size: var(--font-small);
+}
+
+/* ── SEPARATORS ─────────────────────────────────────────────── */
+
+.separator-blue {
+    height: 3px;
+    background-color: var(--color-blue);
+    border-radius: 2px;
+    margin-top: 6px;
+    margin-bottom: var(--space-sm);
+}
+
+.separator-card {
+    height: 1px;
+    background-color: var(--color-border-soft);
+    margin-top: var(--space-xs);
+    margin-bottom: var(--space-md);
+}
+
+/* ── CARDS / PANELS ─────────────────────────────────────────── */
+
+.card {
+    background-color: var(--color-bg-card);
+    border-radius: var(--radius-lg);
+    border-width: 1px;
+    border-color: var(--color-border-soft);
+    padding: var(--space-md);
+}
+
+/* ── LOGO PLACEHOLDER (top-right) ───────────────────────────── */
+
+.logo-box {
+    width: 120px;
+    height: 120px;
+    background-color: var(--color-bg-card);
+    border-radius: var(--radius-md);
+    border-width: 1px;
+    border-color: var(--color-border-soft);
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── ANCLA OSCURA — panel dramático indigo ──────────────────── */
+
+.anchor-panel {
+    background-color: var(--color-anchor);
+    border-radius: var(--radius-lg);
+    border-width: 1px;
+    border-color: var(--color-anchor-border);
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* acento que "brilla" sobre el ancla (barra morada→azul) */
+.anchor-accent {
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    height: 5px;
+    background-color: var(--color-purple);
+    background-image: url("project://database/Assets/UI/Textures/CtaGradientBlue.png?fileID=2800000&guid=559321555579b1741a0a9e191aa4f6df&type=3#CtaGradientBlue");
+    -unity-background-scale-mode: stretch-to-fill;
+}
+
+.label-on-dark {
+    color: var(--color-text-on-dark);
+    font-size: var(--font-card);
+    -unity-font-style: bold;
+}
+
+.label-on-dark-muted {
+    color: var(--color-text-on-dark-muted);
+    font-size: var(--font-small);
+}
+
+/* ── CATEGORY BUTTONS — 2x2 grid ────────────────────────────── */
+
+.btn-category {
+    background-color: var(--color-bg-card);
+    border-width: 1px;
+    border-color: var(--color-border-soft);
+    border-radius: var(--radius-md);
+    color: var(--color-text-primary);
+    font-size: var(--font-card);
+    -unity-font-style: bold;
+    height: 88px;
+    width: 48%;
+    margin: 1%;
+    -unity-text-align: middle-center;
+    transition-property: scale, color;
+    transition-duration: 0.14s;
+}
+
+.btn-category:hover {
+    background-image: url("project://database/Assets/UI/Textures/CtaGradientBlue.png?fileID=2800000&guid=559321555579b1741a0a9e191aa4f6df&type=3#CtaGradientBlue");
+    -unity-background-scale-mode: stretch-to-fill;
+    color: var(--color-text-on-color);
+    scale: 1.03 1.03;
+}
+
+.btn-category:active {
+    background-color: var(--color-purple-deep);
+    color: var(--color-text-on-color);
+    scale: 0.99 0.99;
+}
+
+/* ── CATEGORY BUTTONS — vertical white stack (opción jurado) ── */
+
+.btn-stack {
+    background-color: var(--color-bg-card);
+    border-width: 1px;
+    border-color: var(--color-border-soft);
+    border-radius: var(--radius-lg);
+    color: var(--color-text-primary);
+    font-size: var(--font-card);
+    -unity-font-style: bold;
+    height: 70px;
+    margin-bottom: var(--space-sm);
+    -unity-text-align: middle-center;
+    transition-property: scale, color;
+    transition-duration: 0.14s;
+}
+
+.btn-stack:hover {
+    background-image: url("project://database/Assets/UI/Textures/CtaGradientBlue.png?fileID=2800000&guid=559321555579b1741a0a9e191aa4f6df&type=3#CtaGradientBlue");
+    -unity-background-scale-mode: stretch-to-fill;
+    color: var(--color-text-on-color);
+    scale: 1.03 1.03;
+}
+
+.btn-stack:active {
+    background-color: var(--color-purple-deep);
+    color: var(--color-text-on-color);
+    scale: 0.99 0.99;
+}
+
+/* ── BUTTON — CTA / SALIR (generic) ─────────────────────────── */
+
+.btn-cta {
+    background-color: var(--color-purple);
+    background-image: url("project://database/Assets/UI/Textures/CtaGradientBlue.png?fileID=2800000&guid=559321555579b1741a0a9e191aa4f6df&type=3#CtaGradientBlue");
+    -unity-background-scale-mode: stretch-to-fill;
+    border-width: 0;
+    border-radius: var(--radius-lg);
+    color: var(--color-text-on-color);
+    font-size: var(--font-card);
+    -unity-font-style: bold;
+    height: 70px;
+    margin-top: var(--space-sm);
+    -unity-text-align: middle-center;
+    transition-property: scale;
+    transition-duration: 0.14s;
+}
+
+.btn-cta:hover  { scale: 1.02 1.02; }
+.btn-cta:active { scale: 0.99 0.99; }
+
+/* ── BUTTON — NAV ARROWS ────────────────────────────────────── */
+
+.btn-nav-arrow {
+    background-color: var(--color-bg-card);
+    border-width: 1px;
+    border-color: var(--color-border-soft);
+    border-radius: var(--radius-md);
+    color: var(--color-blue);
+    font-size: 28px;
+    -unity-font-style: bold;
+    width: 72px;
+    height: 56px;
+    -unity-text-align: middle-center;
+    transition-property: background-color;
+    transition-duration: 0.14s;
+}
+
+.btn-nav-arrow:hover {
+    background-color: var(--color-bg-subtle);
+}
+
+/* ── BUTTON — ATRÁS (bottom-right corner) ───────────────────── */
+
+.btn-back {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    background-color: var(--color-bg-card);
+    border-width: 1px;
+    border-color: var(--color-border-soft);
+    border-top-left-radius: var(--radius-lg);
+    border-bottom-right-radius: var(--radius-lg);
+    color: var(--color-text-primary);
+    font-size: var(--font-card);
+    -unity-font-style: bold;
+    padding-left: var(--space-lg);
+    padding-right: var(--space-md);
+    padding-top: var(--space-sm);
+    padding-bottom: var(--space-sm);
+    transition-property: background-color, color;
+    transition-duration: 0.14s;
+}
+
+.btn-back:hover {
+    background-color: var(--color-purple);
+    color: var(--color-text-on-color);
+}
+
+/* ── BUTTON — PLUS / ICON (small) ───────────────────────────── */
+
+.btn-icon {
+    background-color: transparent;
+    border-width: 0;
+    color: var(--color-text-primary);
+    font-size: var(--font-section);
+    width: 48px;
+    height: 48px;
+    -unity-text-align: middle-center;
+    transition-property: color;
+    transition-duration: 0.14s;
+}
+
+.btn-icon:hover {
+    color: var(--color-blue);
+}
+
+/* ── IMAGE PLACEHOLDER ──────────────────────────────────────── */
+
+.img-placeholder {
+    background-color: var(--color-bg-subtle);
+    border-width: 2px;
+    border-color: var(--color-border-soft);
+    border-radius: var(--radius-lg);
+    align-items: center;
+    justify-content: center;
+}
+
+/* ============================================================
+   THEORY READER — tarjeta grande + columnas estilo libro
+   ============================================================ */
+
+.reader-card {
+    flex-grow: 1;
+    background-color: var(--color-bg-card);
+    border-radius: var(--radius-lg);
+    border-width: 1px;
+    border-color: var(--color-border-soft);
+    padding: var(--space-lg);
+    flex-direction: column;
+}
+
+/* título de sección dentro de una página */
+.sec-title {
+    color: var(--color-text-primary);
+    font-size: var(--font-section);
+    -unity-font-style: bold;
+    margin-top: var(--space-sm);
+    margin-bottom: 6px;
+}
+
+/* divisor entre secciones combinadas en una misma página */
+.sec-divider {
+    height: 1px;
+    background-color: var(--color-border-soft);
+    margin-top: var(--space-lg);
+    margin-bottom: var(--space-md);
+}
+
+.book-columns {
+    flex-grow: 1;
+    flex-direction: row;
+}
+
+.book-col {
+    flex-grow: 1;
+    flex-basis: 0;
+    flex-direction: column;
+}
+
+/* divisor central (lomo del libro) */
+.book-gutter {
+    width: 1px;
+    background-color: var(--color-border-soft);
+    margin-left: var(--space-lg);
+    margin-right: var(--space-lg);
+}
+
+.theory-h {
+    color: var(--color-text-primary);
+    font-size: var(--font-card);
+    -unity-font-style: bold;
+    margin-bottom: var(--space-xs);
+}
+
+.theory-sub {
+    color: var(--color-text-accent);
+    font-size: var(--font-body);
+    -unity-font-style: bold;
+    margin-top: var(--space-sm);
+    margin-bottom: 4px;
+}
+
+.theory-p {
+    color: var(--color-text-primary);
+    font-size: 18px;
+    -unity-font-style: bold;
+    white-space: normal;
+    margin-bottom: var(--space-sm);
+}
+
+/* Texto JUSTIFICADO por flexbox (UI Toolkit no tiene -unity-text-align: justify).
+   Cada palabra es un Label; space-between reparte el sobrante de cada línea. */
+.theory-just {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    color: var(--color-text-primary);
+    font-size: 17px;
+    margin-bottom: var(--space-sm);
+}
+
+.theory-just-word {
+    color: var(--color-text-primary);
+    font-size: 18px;
+    -unity-font-style: bold;
+    white-space: nowrap;
+    margin-right: 5px;
+    margin-bottom: 4px;
+}
+
+/* Absorbe el hueco de la última línea para que NO se estire (queda a la izquierda). */
+.theory-just-spacer {
+    flex-grow: 1;
+    height: 0;
+}
+
+.theory-bullet-row {
+    flex-direction: row;
+    align-items: flex-start;
+    margin-bottom: var(--space-sm);
+}
+
+.theory-bullet-mark {
+    color: var(--color-text-primary);
+    font-size: 18px;
+    -unity-font-style: bold;
+    white-space: nowrap;
+    margin-right: 8px;
+}
+
+/* Botón que abre una figura en ventana flotante */
+.fig-button {
+    background-color: var(--color-bg-subtle);
+    border-width: 1px;
+    border-color: var(--color-border-accent);
+    border-radius: var(--radius-md);
+    color: var(--color-text-accent);
+    font-size: var(--font-small);
+    -unity-font-style: bold;
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-top: var(--space-xs);
+    margin-bottom: var(--space-md);
+    -unity-text-align: middle-left;
+    transition-property: background-color, scale;
+    transition-duration: 0.12s;
+}
+
+.fig-button:hover {
+    background-color: rgb(225, 235, 250);
+    scale: 1.01 1.01;
+}
+
+/* ============================================================
+   FLOATING IMAGE MODAL — ventana flotante para figuras
+   ============================================================ */
+
+.modal-overlay {
+    position: absolute;
+    left: 0; top: 0; right: 0; bottom: 0;
+    background-color: rgba(10, 16, 30, 0.55);
+    align-items: center;
+    justify-content: center;
+    display: none;
+}
+
+.modal-overlay.is-open {
+    display: flex;
+}
+
+.modal-window {
+    width: 62%;
+    max-width: 1100px;
+    background-color: var(--color-bg-card);
+    border-radius: var(--radius-lg);
+    border-width: 1px;
+    border-color: var(--color-border-strong);
+    padding: var(--space-md);
+    flex-direction: column;
+}
+
+.modal-titlebar {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-sm);
+}
+
+.modal-title {
+    color: var(--color-text-primary);
+    font-size: var(--font-card);
+    -unity-font-style: bold;
+    flex-shrink: 1;
+    white-space: normal;
+}
+
+.modal-img {
+    height: 480px;
+    background-color: var(--color-bg-subtle);
+    border-radius: var(--radius-md);
+    border-width: 1px;
+    border-color: var(--color-border-soft);
+    align-items: center;
+    justify-content: center;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.modal-close {
+    background-color: var(--color-blue);
+    border-width: 0;
+    border-radius: var(--radius-md);
+    color: var(--color-text-on-color);
+    font-size: var(--font-card);
+    -unity-font-style: bold;
+    width: 44px;
+    height: 44px;
+    margin-left: var(--space-md);
+    -unity-text-align: middle-center;
+    transition-property: background-color;
+    transition-duration: 0.12s;
+}
+
+.modal-close:hover {
+    background-color: var(--color-blue-deep);
+}
+
+/* ============================================================
+   ÍNDICE (TOC) — navegación del Marco Teórico
+   ============================================================ */
+
+.toc-item {
+    background-color: var(--color-bg-card);
+    border-width: 0;
+    border-bottom-width: 1px;
+    border-color: var(--color-border-soft);
+    border-radius: 0;
+    color: var(--color-text-primary);
+    font-size: var(--font-body);
+    -unity-font-style: normal;
+    height: 58px;
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+    margin: 0;
+    -unity-text-align: middle-left;
+    transition-property: background-color, color, scale;
+    transition-duration: 0.12s;
+}
+
+.toc-item:hover {
+    background-color: var(--color-bg-subtle);
+    color: var(--color-text-accent);
+}
+
+.toc-item--sub {
+    padding-left: var(--space-2xl);
+    font-size: var(--font-small);
+    color: var(--color-text-secondary);
+}
+
+/* ============================================================
+   FIGURA INLINE (a lo ancho, dentro del flujo de la sección)
+   ============================================================ */
+
+.fig-inline {
+    flex-direction: column;
+    align-items: center;
+    margin-top: var(--space-md);
+    margin-bottom: var(--space-lg);
+    padding-top: var(--space-md);
+    border-top-width: 1px;
+    border-top-color: var(--color-border-soft);
+}
+
+.fig-caption {
+    color: var(--color-text-accent);
+    font-size: var(--font-small);
+    -unity-font-style: bold;
+    margin-bottom: var(--space-sm);
+    -unity-text-align: middle-center;
+    white-space: normal;
+}
+
+/* La figura se muestra a su TAMAÑO NATIVO: el C# fija width/height desde la textura.
+   Sin borde ni padding a propósito — el background-image se pinta dentro del borde, así que
+   cualquier recuadro aquí re-escalaría la imagen y dejaría de ser 1:1. */
+.fig-image {
+    flex-shrink: 0;
+    align-self: center;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ============================================================
+   DIAGRAMAS DE BLOQUES (recreados como UI nativa)
+   ============================================================ */
+
+.diag-wrap {
+    flex-direction: column;
+    align-items: center;
+}
+
+.diag-rowlabel {
+    color: var(--color-text-accent);
+    font-size: var(--font-small);
+    -unity-font-style: bold;
+    margin-top: var(--space-sm);
+    margin-bottom: 4px;
+}
+
+.diag-row {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.diag-row--left {
+    justify-content: flex-start;
+}
+
+.diag-row--between {
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.diag-box {
+    background-color: var(--color-bg-subtle);
+    border-width: 2px;
+    border-color: var(--color-border-accent);
+    border-radius: var(--radius-md);
+    color: var(--color-text-primary);
+    font-size: 14px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    white-space: normal;
+    padding: 8px;
+    min-width: 104px;
+    max-width: 150px;
+    min-height: 58px;
+    margin: 4px;
+}
+
+.diag-box--accent {
+    background-color: var(--color-anchor);
+    color: var(--color-text-on-dark);
+    border-color: var(--color-anchor-border);
+}
+
+.diag-arrow {
+    color: var(--color-text-accent);
+    font-size: 24px;
+    -unity-font-style: bold;
+}
+
+/* caja compuesta (título + sub-bloques) — p.ej. Convertidor Elevador */
+.diag-compound {
+    flex-direction: column;
+    border-width: 2px;
+    border-color: var(--color-border-accent);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg-card);
+    margin: 4px;
+    min-width: 140px;
+    max-width: 180px;
+    overflow: hidden;
+}
+
+.diag-comp-title {
+    background-color: var(--color-anchor);
+    color: var(--color-text-on-dark);
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    padding: 6px;
+    white-space: normal;
+}
+
+.diag-subbox {
+    color: var(--color-text-primary);
+    font-size: 13px;
+    -unity-text-align: middle-center;
+    padding: 6px;
+    margin: 4px;
+    white-space: normal;
+    background-color: var(--color-bg-subtle);
+    border-width: 1px;
+    border-color: var(--color-border-soft);
+    border-radius: 6px;
+}
+
+.diag-comp-arrow {
+    color: var(--color-text-accent);
+    font-size: 14px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+/* conector vertical/bidireccional con etiqueta (↑ ↓ ⟷) */
+.diag-bi {
+    flex-direction: column;
+    align-items: center;
+    margin-left: 6px;
+    margin-right: 6px;
+}
+
+.diag-bi-label {
+    color: var(--color-text-secondary);
+    font-size: 12px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    white-space: normal;
+    max-width: 140px;
+}
+
+.diag-gap {
+    width: 150px;
+}
+
+/* ============================================================
+   TABLA
+   ============================================================ */
+
+.tbl {
+    flex-direction: column;
+    width: 96%;
+    border-width: 1px;
+    border-color: var(--color-border-strong);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.tbl-row {
+    flex-direction: row;
+}
+
+.tbl-row--head {
+    background-color: var(--color-anchor);
+}
+
+.tbl-cell {
+    flex-grow: 1;
+    flex-basis: 0;
+    padding: 10px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+    border-color: var(--color-border-soft);
+    color: var(--color-text-primary);
+    font-size: 15px;
+    white-space: normal;
+}
+
+.tbl-cell--head {
+    color: var(--color-text-on-dark);
+    -unity-font-style: bold;
+}
+
+/* ============================================================
+   FÓRMULA
+   ============================================================ */
+
+.theory-formula {
+    background-color: var(--color-bg-subtle);
+    border-left-width: 4px;
+    border-left-color: var(--color-blue);
+    border-top-right-radius: var(--radius-sm);
+    border-bottom-right-radius: var(--radius-sm);
+    color: var(--color-text-primary);
+    font-size: 18px;
+    -unity-font-style: bold-and-italic;
+    padding: 12px;
+    margin-top: 8px;
+    margin-bottom: 16px;
+    -unity-text-align: middle-center;
+    white-space: normal;
+}
+
+/* ============================================================
+   MÓDULO 2D — SIMULADOR (rack de control, paleta azul clara)
+   ============================================================ */
+
+/* Mitad superior — escena ESPACIO EXTERIOR (visor oscuro; el rack sigue claro) */
+.sim-scene {
+    flex-grow: 2;
+    min-height: 300px;
+    background-color: rgb(10, 18, 40);
+    border-width: 1px;
+    border-color: rgb(44, 80, 140);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.sim-scene-canvas { flex-grow: 1; }
+
+.sim-scene-info {
+    background-color: rgba(10, 18, 40, 0.6);
+    border-width: 1px;
+    border-color: rgba(127, 200, 255, 0.35);
+    border-radius: var(--radius-sm);
+    padding-top: 5px; padding-bottom: 5px;
+    padding-left: 10px; padding-right: 10px;
+    align-items: flex-start;
+}
+
+.sim-scene-metric { color: rgb(224, 236, 250); font-size: 13px; -unity-font-style: bold; }
+.sim-scene-caption { color: rgb(163, 194, 228); font-size: 12px; }
+
+/* La escena se lleva ~2/3 del alto; el rack el resto, con un mínimo que impide
+   que los controles se aplasten. Todo lo de dentro del rack crece para no dejar huecos. */
+.sim-rack {
+    flex-direction: row;
+    flex-grow: 1;
+    min-height: 368px;
+    margin-top: 10px;
+}
+
+.sim-col {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-left: 6px;
+    margin-right: 6px;
+    padding: 14px;
+    background-color: var(--color-bg-card);
+    border-width: 1px;
+    border-color: var(--color-border-soft);
+    border-radius: var(--radius-md);
+}
+
+/* La columna de instrumentación necesita más ancho que las otras dos */
+.sim-col--wide { flex-grow: 1.4; }
+
+.sim-col-title {
+    color: var(--color-text-accent);
+    flex-shrink: 0;
+    font-size: 15px;
+    -unity-font-style: bold;
+    margin-bottom: 12px;
+}
+
+/* Campos con slider — altos ajustados: esta columna es la que marca el alto del rack,
+   y cada px que sobra aquí se lo come la escena de arriba. */
+.sim-field { margin-bottom: 6px; }
+.sim-field-head { flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+.sim-field-label { color: var(--color-text-primary); font-size: 13px; }
+.sim-field-val { color: var(--color-text-accent); font-size: 13px; -unity-font-style: bold; }
+.sim-slider { height: 18px; margin-top: 0; margin-bottom: 0; }
+
+/* Dropdowns */
+.sim-drop { height: 26px; margin-bottom: 5px; }
+.sim-drop .unity-base-field__label {
+    color: var(--color-text-primary);
+    font-size: 13px;
+    min-width: 96px;
+}
+
+/* Panel Link Budget */
+.sim-formula {
+    background-color: var(--color-bg-subtle);
+    border-left-width: 4px;
+    border-left-color: var(--color-blue);
+    border-radius: var(--radius-sm);
+    padding: 10px;
+    color: var(--color-text-primary);
+    flex-shrink: 0;
+    font-size: 14px;
+    white-space: normal;
+    margin-bottom: 10px;
+}
+
+.sim-note {
+    background-color: var(--color-bg-subtle);
+    border-radius: var(--radius-sm);
+    padding: 10px;
+    color: var(--color-text-secondary);
+    flex-shrink: 0;
+    font-size: 13px;
+    white-space: normal;
+    margin-top: 8px;
+}
+
+/* Instrumentos — crecen para ocupar el alto libre del rack (sin huecos vacíos) */
+.sim-screen-row { flex-direction: row; flex-grow: 1; margin-bottom: 6px; }
+.sim-screen-cell { flex-grow: 1; flex-basis: 0; margin-left: 4px; margin-right: 4px; }
+.sim-screen-cap { color: var(--color-text-secondary); flex-shrink: 0; font-size: 12px; margin-bottom: 3px; }
+/* El hueco donde el controlador inyecta el instrumento: debe crecer para que crezca el instrumento */
+.sim-screen-host { flex-grow: 1; }
+
+.sim-screen {
+    flex-grow: 1;
+    min-height: 110px;
+    background-color: var(--color-bg-card);
+    border-width: 1px;
+    border-color: var(--color-border-soft);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+/* Gauges */
+.sim-gauge-row { flex-direction: row; flex-shrink: 0; justify-content: space-between; margin-top: 4px; margin-bottom: 4px; }
+.sim-gauge-host { flex-grow: 1; align-items: center; justify-content: center; }
+.sim-gauge { width: 100%; height: 112px; }
+.sim-gauge-value { color: var(--color-text-primary); font-size: 21px; -unity-font-style: bold; }
+.sim-gauge-cap { color: var(--color-text-secondary); font-size: 12px; }
+
+/* Indicador del presupuesto de enlace: ocupa todo el hueco libre de su columna */
+.sim-gauge--big { width: 100%; height: 100%; min-height: 150px; }
+.sim-gauge--big .sim-gauge-value { font-size: 40px; }
+.sim-gauge--big .sim-gauge-cap { font-size: 14px; }
+
+/* Barra de estado */
+.sim-status {
+    flex-shrink: 0;
+    margin-top: 6px;
+    padding-top: 7px; padding-bottom: 7px;
+    padding-left: 10px; padding-right: 10px;
+    background-color: var(--color-anchor);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-on-dark);
+    font-size: 12px;
+    white-space: normal;
+    -unity-text-align: middle-center;
+}

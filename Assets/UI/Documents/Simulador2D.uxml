@@ -1,0 +1,95 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:ui="UnityEngine.UIElements"
+         xmlns:uie="UnityEditor.UIElements"
+         editor-extension-mode="False">
+
+    <ui:Style src="project://database/Assets/UI/Styles/Variables.uss?fileID=7433441132597879392&amp;guid=67449ffd870bf064ab75437fdd68ebb3&amp;type=3#Variables" />
+    <ui:Style src="project://database/Assets/UI/Styles/Common.uss?fileID=7433441132597879392&amp;guid=417764cf809bc9d41a6fd7df4cfc816b&amp;type=3#Common" />
+
+    <ui:VisualElement name="Root" class="screen-root" style="flex-grow:1; flex-direction:column; padding:20px;">
+
+        <ui:VisualElement name="BgGridOverlay" class="bg-grid-overlay" />
+
+        <!-- ═══ HEADER ══════════════════════════════════════════════ -->
+        <ui:VisualElement name="Header"
+            style="flex-direction:row; align-items:center; justify-content:space-between; margin-bottom:10px;">
+            <ui:Label text="Módulo 2D · Simulación de Enlace Satelital — VENESAT-1" class="title-section" />
+            <ui:Button name="BtnBack" text="Atrás" class="btn-back" style="margin:0;" />
+        </ui:VisualElement>
+
+        <!-- ═══ MITAD SUPERIOR — ESCENA ANIMADA ═════════════════════ -->
+        <ui:VisualElement name="SceneHost" class="sim-scene" />
+
+        <!-- ═══ MITAD INFERIOR — RACK DE CONTROL ════════════════════ -->
+        <ui:VisualElement name="Rack" class="sim-rack">
+
+            <!-- ── Columna 1: Configuración ── -->
+            <ui:VisualElement class="sim-col">
+                <ui:Label text="CONFIGURACIÓN DEL ENLACE" class="sim-col-title" />
+
+                <ui:VisualElement class="sim-field">
+                    <ui:VisualElement class="sim-field-head">
+                        <ui:Label text="Potencia Tx (Pt)" class="sim-field-label" />
+                        <ui:Label name="ValPt" text="15.0 dBW" class="sim-field-val" />
+                    </ui:VisualElement>
+                    <ui:Slider name="SliderPt" low-value="-10" high-value="30" value="15" class="sim-slider" />
+                </ui:VisualElement>
+
+                <ui:VisualElement class="sim-field">
+                    <ui:VisualElement class="sim-field-head">
+                        <ui:Label text="Ganancia Tx (Gt)" class="sim-field-label" />
+                        <ui:Label name="ValGt" text="42.0 dBi" class="sim-field-val" />
+                    </ui:VisualElement>
+                    <ui:Slider name="SliderGt" low-value="20" high-value="60" value="42" class="sim-slider" />
+                </ui:VisualElement>
+
+                <ui:VisualElement class="sim-field">
+                    <ui:VisualElement class="sim-field-head">
+                        <ui:Label text="Atenuación Atmosférica (La)" class="sim-field-label" />
+                        <ui:Label name="ValLa" text="3.1 dB" class="sim-field-val" />
+                    </ui:VisualElement>
+                    <ui:Slider name="SliderLa" low-value="0" high-value="20" value="3.1" class="sim-slider" />
+                </ui:VisualElement>
+
+                <ui:DropdownField name="DropBanda" label="Banda"        class="sim-drop" />
+                <ui:DropdownField name="DropClima" label="Clima"        class="sim-drop" />
+                <ui:DropdownField name="DropPol"   label="Polarización" class="sim-drop" />
+                <ui:DropdownField name="DropXpi"   label="Aislam. XPI"  class="sim-drop" />
+                <ui:DropdownField name="DropMod"   label="Modulación"   class="sim-drop" />
+            </ui:VisualElement>
+
+            <!-- ── Columna 2: Link Budget ── -->
+            <ui:VisualElement class="sim-col">
+                <ui:Label text="PRESUPUESTO DE ENLACE (LINK BUDGET)" class="sim-col-title" />
+                <ui:Label name="LblFormula" text="Pr = Pt + Gt + Gr − Lp − La" class="sim-formula" />
+                <ui:VisualElement name="GaugeHost_Pr" class="sim-gauge-host" />
+                <ui:Label name="LblNote" text="" class="sim-note" />
+            </ui:VisualElement>
+
+            <!-- ── Columna 3: Instrumentación ── -->
+            <ui:VisualElement class="sim-col sim-col--wide">
+                <ui:Label text="INSTRUMENTACIÓN VIRTUAL" class="sim-col-title" />
+
+                <ui:VisualElement class="sim-screen-row">
+                    <ui:VisualElement class="sim-screen-cell">
+                        <ui:Label text="Analizador de Espectro" class="sim-screen-cap" />
+                        <ui:VisualElement name="SpectrumHost" class="sim-screen-host" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="sim-screen-cell">
+                        <ui:Label text="Constelación" class="sim-screen-cap" />
+                        <ui:VisualElement name="ConstellationHost" class="sim-screen-host" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:VisualElement class="sim-gauge-row">
+                    <ui:VisualElement name="GaugeHost_CN" class="sim-gauge-host" />
+                    <ui:VisualElement name="GaugeHost_BER" class="sim-gauge-host" />
+                    <ui:VisualElement name="GaugeHost_TP" class="sim-gauge-host" />
+                </ui:VisualElement>
+
+                <ui:Label name="LblStatus" text="" class="sim-status" />
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

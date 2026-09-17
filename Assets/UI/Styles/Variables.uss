@@ -1,0 +1,61 @@
+:root {
+    /* ============================================================
+       PALETA UNIVERSAL — Azul (todo el UI usa estos tokens)
+       Antes había una variante BlueTheme.uss aislada; ahora el azul
+       es la base: cualquier UXML que cargue Variables+Common es azul.
+       ============================================================ */
+
+    /* === BACKGROUNDS (azul claro) === */
+    --color-bg-screen:      rgb(220, 232, 247);  /* #DCE8F7 */
+    --color-bg-screen-edge: rgb(201, 219, 242);  /* #C9DBF2 */
+    --color-bg-card:        rgb(255, 255, 255);
+    --color-bg-card-hover:  rgb(244, 248, 253);  /* #F4F8FD */
+    --color-bg-subtle:      rgb(210, 224, 244);  /* #D2E0F4 */
+
+    /* === ANCLA (navy azul profundo) === */
+    --color-anchor:         rgb(18, 41, 74);     /* #12294A */
+    --color-anchor-2:       rgb(27, 58, 99);     /* #1B3A63 */
+    --color-anchor-border:  rgb(44, 80, 140);    /* #2C508C */
+
+    /* === ACENTOS (familia azul) === */
+    --color-purple:         rgb(21, 96, 216);    /* #1560D8 azul profundo (acentos/títulos) */
+    --color-purple-deep:    rgb(18, 80, 192);    /* #1250C0 */
+    --color-blue:           rgb(31, 120, 247);   /* #1F78F7 */
+    --color-blue-deep:      rgb(23, 106, 226);   /* #176AE2 */
+
+    /* === TEXT === */
+    --color-text-primary:        rgb(12, 21, 40);        /* #0C1528 navy oscuro (texto más marcado) */
+    --color-text-secondary:      rgb(90, 107, 133);      /* #5A6B85 */
+    --color-text-accent:         rgb(31, 120, 247);      /* azul */
+    --color-text-on-color:       rgb(255, 255, 255);
+    --color-text-on-dark:        rgb(225, 235, 250);     /* sobre el ancla */
+    --color-text-on-dark-muted:  rgba(225, 235, 250, 0.55);
+    --color-text-muted:          rgba(21, 35, 61, 0.42);
+
+    /* === BORDERS (tintados de azul) === */
+    --color-border-soft:    rgb(213, 225, 242);  /* #D5E1F2 */
+    --color-border-strong:  rgb(188, 207, 232);  /* #BCCFE8 */
+    --color-border-accent:  rgb(31, 120, 247);
+
+    /* === RADIUS === */
+    --radius-sm:  8px;
+    --radius-md:  12px;
+    --radius-lg:  16px;
+    --radius-xl:  22px;
+
+    /* === FONT SIZES (px — 1920x1080 reference) === */
+    --font-hero:    50px;
+    --font-title:   34px;
+    --font-section: 28px;
+    --font-card:    21px;
+    --font-body:    20px;
+    --font-small:   16px;
+
+    /* === SPACING === */
+    --space-xs:  8px;
+    --space-sm:  16px;
+    --space-md:  24px;
+    --space-lg:  40px;
+    --space-xl:  64px;
+    --space-2xl: 96px;
+}

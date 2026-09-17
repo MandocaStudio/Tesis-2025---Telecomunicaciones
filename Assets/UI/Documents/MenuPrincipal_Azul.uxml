@@ -1,0 +1,57 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:ui="UnityEngine.UIElements"
+         xmlns:uie="UnityEditor.UIElements"
+         editor-extension-mode="False">
+
+    <ui:Style src="project://database/Assets/UI/Styles/Variables.uss?fileID=7433441132597879392&amp;guid=67449ffd870bf064ab75437fdd68ebb3&amp;type=3#Variables" />
+    <ui:Style src="project://database/Assets/UI/Styles/Common.uss?fileID=7433441132597879392&amp;guid=417764cf809bc9d41a6fd7df4cfc816b&amp;type=3#Common" />
+
+    <!-- ROOT -->
+    <ui:VisualElement name="Root" class="screen-root" style="flex-grow:1; flex-direction:row;">
+
+        <!-- Decorative hexagon pattern overlay (azul) -->
+        <ui:VisualElement name="BgGridOverlay" class="bg-grid-overlay" />
+
+        <!-- ═══ LEFT — Anchor illustration ════════════════════════ -->
+        <ui:VisualElement name="LeftPanel"
+            style="width:42%; align-items:center; justify-content:center; padding:64px;">
+
+            <ui:VisualElement name="IllustrationBox" class="anchor-panel"
+                style="width:340px; height:380px;">
+                <ui:VisualElement name="AnchorAccent" class="anchor-accent" />
+                <ui:Label text="[ Ilustración ]" class="label-on-dark-muted"
+                    style="-unity-text-align:middle-center;" />
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+        <!-- ═══ RIGHT — Navigation ════════════════════════════════ -->
+        <ui:VisualElement name="RightPanel"
+            style="flex-grow:1; flex-direction:column; justify-content:center;
+                   padding-top:64px; padding-bottom:64px;
+                   padding-right:96px; padding-left:24px;">
+
+            <!-- Title block -->
+            <ui:VisualElement name="TitleBlock" style="margin-bottom:40px;">
+                <ui:Label name="TitleLine1" text="Lorem Ipsum Dolor Sit Amet"
+                    class="title-hero" />
+                <ui:Label name="TitleLine2" text="Consectetur Adipiscing"
+                    class="title-hero-accent" />
+            </ui:VisualElement>
+
+            <!-- 2×2 Category buttons -->
+            <ui:VisualElement name="ButtonGrid"
+                style="flex-direction:row; flex-wrap:wrap; margin-bottom:16px;">
+                <ui:Button name="BtnMarcoTeorico"    text="Teoría" class="btn-category" />
+                <ui:Button name="BtnModulo2D"        text="Módulo 2D"    class="btn-category" />
+                <ui:Button name="BtnEnergia"         text="Amet Elit"    class="btn-category" />
+                <ui:Button name="BtnTransporte"      text="Consectetur"  class="btn-category" />
+            </ui:VisualElement>
+
+            <!-- CTA — Salir -->
+            <ui:Button name="BtnSalir" text="Salir" class="btn-cta" />
+
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

@@ -3,7 +3,7 @@ using UnityEngine.SceneManagement;
 
 public class MenuManager : MonoBehaviour
 {
-    // Aqui cargas escenas por índice papu
+    // Aqui cargas escenas por índice 
     public void LoadSceneByIndex(int sceneIndex)
     {
         SceneManager.LoadScene(sceneIndex);
@@ -13,9 +13,9 @@ public class MenuManager : MonoBehaviour
     public void QuitGame()
     {
         #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false; // Para salir en el editor, esto lo vi en yutu XD te permite cerrar el bicho en unity
+            UnityEditor.EditorApplication.isPlaying = false; // Para salir en el editor
         #else
-            Application.Quit(); // Para salir en la build final, dios guiame
+            Application.Quit(); // Para salir en la build final, 
         #endif
     }
 }
