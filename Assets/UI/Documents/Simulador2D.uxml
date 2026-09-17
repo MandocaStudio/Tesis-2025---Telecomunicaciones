@@ -24,7 +24,7 @@
         <ui:VisualElement name="Rack" class="sim-rack">
 
             <!-- ── Columna 1: Configuración ── -->
-            <ui:VisualElement class="sim-col">
+            <ui:VisualElement class="sim-col sim-col--config">
                 <ui:Label text="CONFIGURACIÓN DEL ENLACE" class="sim-col-title" />
 
                 <ui:VisualElement class="sim-field">

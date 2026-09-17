@@ -23,5 +23,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Simulador2D.unity
     guid: cebd417be104dfd49bcc9406e16e4f9b
+  - enabled: 1
+    path: Assets/Scenes/Modulo3D.unity
+    guid: d0e06920977c3ba4fbc84f71672ad0e5
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

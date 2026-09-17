@@ -14,7 +14,7 @@ Cubre estado actual, arquitectura, decisiones y pendientes para continuar sin co
 | 1 | Base conceptual UI Toolkit: menús + colorimetría | ✅ Hecho |
 | 2 | Área Teórica (Marco Teórico) en UI Toolkit | ✅ Lector completo + **revisión del tutor aplicada** (§10) |
 | 3 | Área de Simulación — Módulo 2D (enlace satelital VENESAT-1) | ✅ Primera versión + **revisión del tutor aplicada** (§9, §10) |
-| 4 | Instalaciones (modelado 3D + interacción) | ⏳ Pendiente (la más costosa, va de última) |
+| 4 | Instalaciones (modelado 3D + interacción) | 🔨 Escena `Modulo3D` creada y enlazada; falta el contenido 3D |
 
 ---
 
@@ -55,6 +55,8 @@ Assets/
 │   ├── Documents/
 │   │   ├── MenuPrincipal_Azul.uxml   (menú DEFINITIVO)
 │   │   ├── TeoriaView.uxml           (shell del lector; lo llena TheoryReader.cs)
+│   │   ├── Simulador2D.uxml          (shell del Módulo 2D; lo llena SimulatorController.cs)
+│   │   ├── Modulo3DView.uxml         (vista provisional del Módulo 3D)
 │   │   └── IndiceView.uxml           (índice/landing estático, OPCIONAL — la navegación real vive en el lector)
 │   ├── PanelSettings/GamePanelSettings.asset   (1920×1080, ScaleWithScreenSize, match 0.5)
 │   └── Textures/  (HexPatternBlue, CtaGradientBlue, DotGrid, photo_…jpg)
@@ -63,7 +65,9 @@ Assets/
 │   └── TheoryReader.cs       (lector del Marco Teórico, 100% data-driven)
 └── Scenes/
     ├── Menu Inicial.unity    (menú; en Build Settings idx 0)
-    ├── MarcoTeorico.unity    (lector UI Toolkit; en Build Settings)
+    ├── MarcoTeorico.unity    (lector UI Toolkit; idx 4)
+    ├── Simulador2D.unity     (Módulo 2D; idx 5)
+    ├── Modulo3D.unity        (Módulo 3D, provisional; idx 6)
     ├── Teoria.unity          (área teórica VIEJA en uGUI/Canvas — SIN USO, se puede borrar)
     ├── Practica Test.unity, Creditos.unity
 ```
@@ -84,13 +88,18 @@ acento. Escena `Menu Inicial.unity` → GameObject **"UI — Menu Principal"**:
 - `MenuNavigation` (componente) — cablea los botones del menú:
   - **"Teoría"** (`name=BtnMarcoTeorico`, el name NO cambió) → escena `MarcoTeorico`
   - **"Módulo 2D"** (`name=BtnModulo2D`) → escena `Simulador2D`
+  - **"Módulo 3D"** (`name=BtnModulo3D`) → escena `Modulo3D`
   - **"Salir"** (`name=BtnSalir`) → **cierra el aplicativo** (`QuitApp`)
+  - Queda un botón con texto lorem sin cablear: `BtnTransporte`.
 - `EventSystem` con `InputSystemUIInputModule`
 
 `MenuNavigation.cs` es genérico: campos `marcoTeoricoButton`/`marcoTeoricoScene`,
-`moduloButton`/`moduloScene`, `backButton`/`backScene` y `quitButton`.
-Para conectar los botones restantes (Energía, Transporte) a sus escenas, extender este patrón
-o generalizar a una lista de (botón → escena).
+`moduloButton`/`moduloScene`, `modulo3DButton`/`modulo3DScene`, `backButton`/`backScene` y
+`quitButton`. Cada par se salta si su string está vacío, así que **el mismo componente sirve de
+botón "Atrás"** en las vistas internas: basta con vaciar los demás campos y dejar
+`backButton=BtnBack` + `backScene=Menu Inicial` (así está en `Modulo3D`).
+Los defaults en C# aplican a instancias ya serializadas, así que al añadir un par nuevo no hay
+que re-cablear la escena del menú. Para conectar `BtnTransporte`, extender este mismo patrón.
 
 **Salir:** `QuitApp()` usa `Application.Quit()` en build, pero dentro de `#if UNITY_EDITOR` pone
 `EditorApplication.isPlaying = false` — porque **`Application.Quit()` NO hace nada en el Editor** y
@@ -161,7 +170,9 @@ Las figuras/tablas viven en sus secciones como botón `[ Ver ]`.
 
 ## 6. Pendientes / próximos pasos
 
-- [ ] Conectar el resto de botones del menú a sus escenas (patrón `MenuNavigation`).
+- [ ] Conectar `BtnTransporte` (último botón con texto lorem) a su escena, o quitarlo del menú.
+- [ ] **Montar el contenido de la escena `Modulo3D`**: hoy solo tiene cámara, EventSystem y una
+      vista provisional (`Modulo3DView.uxml`) con el botón Atrás.
 - [ ] (Opcional) Lista de **referencias bibliográficas** [1]–[18] al final del Marco Teórico.
 - [ ] Importar fuentes **Phonk** e **Inter** a `Assets/Fonts/` y asignarlas en los tokens/estilos.
 - [ ] Borrar la escena vieja `Teoria.unity` (uGUI) y la imagen sin uso

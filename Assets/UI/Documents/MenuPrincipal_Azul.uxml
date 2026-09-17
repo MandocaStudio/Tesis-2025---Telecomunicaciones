@@ -42,9 +42,9 @@
             <!-- 2×2 Category buttons -->
             <ui:VisualElement name="ButtonGrid"
                 style="flex-direction:row; flex-wrap:wrap; margin-bottom:16px;">
-                <ui:Button name="BtnMarcoTeorico"    text="Teoría" class="btn-category" />
+                <ui:Button name="BtnMarcoTeorico"    text="Teoría"       class="btn-category" />
                 <ui:Button name="BtnModulo2D"        text="Módulo 2D"    class="btn-category" />
-                <ui:Button name="BtnEnergia"         text="Amet Elit"    class="btn-category" />
+                <ui:Button name="BtnModulo3D"        text="Módulo 3D"    class="btn-category" />
                 <ui:Button name="BtnTransporte"      text="Consectetur"  class="btn-category" />
             </ui:VisualElement>
 

@@ -23,6 +23,12 @@ public class MenuNavigation : MonoBehaviour
     [Tooltip("Nombre de la escena del Simulador 2D (en Build Settings).")]
     [SerializeField] private string moduloScene = "Simulador2D";
 
+    [Header("Módulo 3D (Instalaciones)")]
+    [Tooltip("name del botón en el UXML que abre el Módulo 3D.")]
+    [SerializeField] private string modulo3DButton = "BtnModulo3D";
+    [Tooltip("Nombre de la escena del Módulo 3D (en Build Settings).")]
+    [SerializeField] private string modulo3DScene = "Modulo3D";
+
     [Header("Volver (opcional)")]
     [Tooltip("name del botón para regresar. Déjalo vacío si esta vista no tiene.")]
     [SerializeField] private string backButton = "BtnBack";
@@ -35,6 +41,7 @@ public class MenuNavigation : MonoBehaviour
 
     private Button mtButton;
     private Button modButton;
+    private Button mod3Button;
     private Button bkButton;
     private Button qtButton;
 
@@ -62,6 +69,13 @@ public class MenuNavigation : MonoBehaviour
             else Debug.LogWarning($"[MenuNavigation] No se encontró el botón '{moduloButton}'.");
         }
 
+        if (!string.IsNullOrEmpty(modulo3DButton))
+        {
+            mod3Button = root.Q<Button>(modulo3DButton);
+            if (mod3Button != null) mod3Button.clicked += OpenModulo3D;
+            else Debug.LogWarning($"[MenuNavigation] No se encontró el botón '{modulo3DButton}'.");
+        }
+
         if (!string.IsNullOrEmpty(backButton) && !string.IsNullOrEmpty(backScene))
         {
             bkButton = root.Q<Button>(backButton);
@@ -80,6 +94,7 @@ public class MenuNavigation : MonoBehaviour
     {
         if (mtButton != null) mtButton.clicked -= OpenMarcoTeorico;
         if (modButton != null) modButton.clicked -= OpenModulo;
+        if (mod3Button != null) mod3Button.clicked -= OpenModulo3D;
         if (bkButton != null) bkButton.clicked -= GoBack;
         if (qtButton != null) qtButton.clicked -= QuitApp;
     }
@@ -94,6 +109,12 @@ public class MenuNavigation : MonoBehaviour
     {
         if (!string.IsNullOrEmpty(moduloScene))
             SceneManager.LoadScene(moduloScene);
+    }
+
+    private void OpenModulo3D()
+    {
+        if (!string.IsNullOrEmpty(modulo3DScene))
+            SceneManager.LoadScene(modulo3DScene);
     }
 
     private void GoBack()

@@ -826,6 +826,10 @@
 /* La columna de instrumentación necesita más ancho que las otras dos */
 .sim-col--wide { flex-grow: 1.4; }
 
+/* La de configuración son controles de alto fijo: reparte el sobrante entre ellos
+   en vez de amontonarlos arriba y dejar un hueco al final. */
+.sim-col--config { justify-content: space-between; }
+
 .sim-col-title {
     color: var(--color-text-accent);
     flex-shrink: 0;
@@ -842,12 +846,18 @@
 .sim-field-val { color: var(--color-text-accent); font-size: 13px; -unity-font-style: bold; }
 .sim-slider { height: 18px; margin-top: 0; margin-bottom: 0; }
 
-/* Dropdowns */
-.sim-drop { height: 26px; margin-bottom: 5px; }
+/* Dropdowns — min-height, NUNCA height fijo: con `height` el input recorta el texto
+   (su contenido desborda y queda cortado a media altura). */
+.sim-drop { min-height: 28px; margin-bottom: 5px; }
 .sim-drop .unity-base-field__label {
     color: var(--color-text-primary);
     font-size: 13px;
     min-width: 96px;
+}
+.sim-drop .unity-base-field__input { min-height: 26px; }
+.sim-drop .unity-base-popup-field__text {
+    color: var(--color-text-primary);
+    font-size: 13px;
 }
 
 /* Panel Link Budget */
@@ -914,6 +924,45 @@
     border-radius: var(--radius-sm);
     color: var(--color-text-on-dark);
     font-size: 12px;
+    white-space: normal;
+    -unity-text-align: middle-center;
+}
+
+/* ============================================================
+   MÓDULO 3D (Fase 4) — vista provisional
+   ============================================================ */
+
+.m3d-root {
+    flex-direction: column;
+    padding: 28px;
+}
+
+.m3d-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.m3d-stage {
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+}
+
+.m3d-panel {
+    width: 52%;
+    max-width: 760px;
+    height: 320px;
+    padding: 36px;
+}
+
+.m3d-title {
+    font-size: var(--font-section);
+    margin-bottom: var(--space-sm);
+}
+
+.m3d-note {
     white-space: normal;
     -unity-text-align: middle-center;
 }

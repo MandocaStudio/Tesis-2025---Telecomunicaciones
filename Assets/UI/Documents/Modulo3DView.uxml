@@ -1,0 +1,32 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:ui="UnityEngine.UIElements"
+         xmlns:uie="UnityEditor.UIElements"
+         editor-extension-mode="False">
+
+    <ui:Style src="project://database/Assets/UI/Styles/Variables.uss?fileID=7433441132597879392&amp;guid=67449ffd870bf064ab75437fdd68ebb3&amp;type=3#Variables" />
+    <ui:Style src="project://database/Assets/UI/Styles/Common.uss?fileID=7433441132597879392&amp;guid=417764cf809bc9d41a6fd7df4cfc816b&amp;type=3#Common" />
+
+    <ui:VisualElement name="Root" class="screen-root m3d-root">
+
+        <ui:VisualElement name="BgGridOverlay" class="bg-grid-overlay" />
+
+        <ui:VisualElement name="Header" class="m3d-header">
+            <ui:Label text="Módulo 3D · Instalaciones" class="title-section" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="HeaderSep" class="separator-blue" />
+
+        <ui:VisualElement name="Stage" class="m3d-stage">
+            <ui:VisualElement name="PlaceholderPanel" class="anchor-panel m3d-panel">
+                <ui:VisualElement name="AnchorAccent" class="anchor-accent" />
+                <ui:Label text="Escena en construcción" class="label-on-dark m3d-title" />
+                <ui:Label name="LblNota"
+                          text="Aquí irá el recorrido 3D de las instalaciones (Fase 4). La escena ya está creada y enlazada desde el menú, lista para montar el modelado y la interacción encima."
+                          class="label-on-dark-muted m3d-note" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <ui:Button name="BtnBack" text="Atrás" class="btn-back" />
+
+    </ui:VisualElement>
+</ui:UXML>
