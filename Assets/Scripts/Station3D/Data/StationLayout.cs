@@ -30,17 +30,25 @@ public class StationLayout : ScriptableObject
     public FenceSpec fence = new FenceSpec();
     public BuildingSpec building = new BuildingSpec();
 
-    [Tooltip("Antenas en el orden del plano. Las que no tienen pedestal (VSAT) quedan como ancla vacía.")]
+    [Tooltip("Proporciones comunes a todas las antenas, como fracción del diámetro: una sola antena " +
+             "parametrizada por su diámetro, no un modelo por antena.")]
+    public AntennaDesign antennaDesign = new AntennaDesign();
+
+    [Tooltip("Antenas en el orden del plano.")]
     public List<AntennaSpec> antennas = new List<AntennaSpec>
     {
-        new AntennaSpec("Camatagua 1 (1970)", new Vector2(50f, 85f),  32f,  30f, new Vector2(9f, 9f),       8f),
-        new AntennaSpec("Camatagua 2 (1980)", new Vector2(120f, 85f), 30f,  28f, new Vector2(8.5f, 8.5f),   7.5f),
-        new AntennaSpec("Antena 3",           new Vector2(168f, 100f), 11f,  0f, new Vector2(3f, 3f),       1.5f),
-        new AntennaSpec("Antena 4",           new Vector2(170f, 62f),  7f,   0f, new Vector2(1.75f, 1.75f), 1f),
-        new AntennaSpec("VSAT 1",             new Vector2(178f, 44f),  3.6f, 0f, Vector2.zero,              0f),
-        new AntennaSpec("VSAT 2",             new Vector2(186f, 44f),  3.6f, 0f, Vector2.zero,              0f),
-        new AntennaSpec("VSAT 3",             new Vector2(194f, 44f),  3.6f, 0f, Vector2.zero,              0f),
+        //               nombre                posición (X, Z)          Ø     alto  pedestal                    h ped.  montura
+        new AntennaSpec("Camatagua 1 (1970)", new Vector2(50f, 85f),   32f,  30f, new Vector2(9f, 9f),       9.05f,  6.4f),
+        new AntennaSpec("Camatagua 2 (1980)", new Vector2(120f, 85f),  30f,  28f, new Vector2(8.5f, 8.5f),   8.36f,  6f),
+        new AntennaSpec("Antena 3",           new Vector2(168f, 100f), 11f,  0f,  new Vector2(3f, 3f),       1.5f,   2.2f),
+        new AntennaSpec("Antena 4",           new Vector2(170f, 62f),  7f,   0f,  new Vector2(1.75f, 1.75f), 1f,     1.4f),
+        new AntennaSpec("VSAT 1",             new Vector2(178f, 44f),  3.6f, 0f,  new Vector2(1.2f, 1.2f),   0.3f,   1.5f),
+        new AntennaSpec("VSAT 2",             new Vector2(186f, 44f),  3.6f, 0f,  new Vector2(1.2f, 1.2f),   0.3f,   1.5f),
+        new AntennaSpec("VSAT 3",             new Vector2(194f, 44f),  3.6f, 0f,  new Vector2(1.2f, 1.2f),   0.3f,   1.5f),
     };
+
+    /// <summary>Margen admitido entre la altura calculada de una antena y la "≈" del plano.</summary>
+    public const float HeightTolerance = 0.5f;
 
     /// <summary>
     /// Comprueba que el layout es coherente consigo mismo y con la parcela: que los locales de cada
@@ -94,6 +102,19 @@ public class StationLayout : ScriptableObject
                 && Mathf.Abs(a.position.x - b.center.x) < (a.pedestalSize.x + b.size.x) / 2f
                 && Mathf.Abs(a.position.y - b.center.y) < (a.pedestalSize.y + b.size.y) / 2f)
                 issues.Add($"El pedestal de '{a.name}' se mete en el edificio.");
+
+            if (a.elevation <= 0f || a.elevation > 90f)
+                issues.Add($"La elevación de '{a.name}' ({a.elevation:0.#}°) tiene que estar entre 0 y 90°.");
+            else if (AntennaGeometry.AxisHeight(a) + AntennaGeometry.LowestAboveAxis(a, antennaDesign) < 0f)
+                issues.Add($"Con {a.elevation:0.#}° de elevación el plato de '{a.name}' se mete en el suelo: sube la montura o el pedestal.");
+
+            if (a.overallHeight > 0f)
+            {
+                float h = AntennaGeometry.OverallHeight(a, antennaDesign);
+                if (Mathf.Abs(h - a.overallHeight) > HeightTolerance)
+                    issues.Add($"'{a.name}' mide {h:0.##} m de alto y el plano dice ≈ {a.overallHeight:0.#} m. " +
+                               "Usa 'Ajustar pedestales' en el Constructor.");
+            }
         }
 
         float sideLength = fence.gateSide == PlotSide.Sur || fence.gateSide == PlotSide.Norte ? plotSize.x : plotSize.y;
@@ -262,17 +283,27 @@ public class AntennaSpec
     public float dishDiameter;
     [Tooltip("Plano: altura total aproximada (0 = no rotulada). La usa la sesión de antenas, no el blockout.")]
     public float overallHeight;
-    [Tooltip("Plano en las antenas 1 y 2; medido en la 3 y la 4. Huella del pedestal de concreto. (0, 0) = sin pedestal.")]
+    [Tooltip("Plano en las antenas 1 y 2; medido en la 3 y la 4; supuesto en las VSAT (una losa). " +
+             "Huella del pedestal de concreto. (0, 0) = sin pedestal.")]
     public Vector2 pedestalSize;
-    [Tooltip("SUPUESTO: el plano no rotula la altura del pedestal. A ajustar al modelar la antena para que el conjunto dé la altura total.")]
+    [Tooltip("El plano no la rotula. En las antenas 1 y 2 está AJUSTADA para que la antena completa dé la " +
+             "altura del plano (botón 'Ajustar pedestales'); en las demás es un supuesto.")]
     public float pedestalHeight;
+    [Tooltip("Supuesto. Altura del eje de elevación sobre la cara superior del pedestal: plataforma + soporte en Y.")]
+    public float mountHeight;
+
+    [Header("Apuntamiento")]
+    [Tooltip("Plano: todas apuntan al SUR (arco geoestacionario). Grados desde el norte, en sentido horario.")]
+    public float azimuth = 180f;
+    [Tooltip("Plano: ≈ 60–70°. Grados sobre el horizonte.")]
+    public float elevation = 65f;
 
     public bool HasPedestal => pedestalSize.x > 0f && pedestalSize.y > 0f && pedestalHeight > 0f;
 
     public AntennaSpec() { }
 
     public AntennaSpec(string name, Vector2 position, float dishDiameter, float overallHeight,
-                       Vector2 pedestalSize, float pedestalHeight)
+                       Vector2 pedestalSize, float pedestalHeight, float mountHeight)
     {
         this.name = name;
         this.position = position;
@@ -280,5 +311,56 @@ public class AntennaSpec
         this.overallHeight = overallHeight;
         this.pedestalSize = pedestalSize;
         this.pedestalHeight = pedestalHeight;
+        this.mountHeight = mountHeight;
     }
+}
+
+/// <summary>
+/// Proporciones de la antena tipo: montura azimut-elevación con soporte en Y, reflector
+/// paraboloide y subreflector en el foco (Cassegrain). Todo en fracciones del diámetro del plato,
+/// así que la misma antena sirve para los 32 m de Camatagua 1 y para los 3,6 m de una VSAT.
+/// Todos son SUPUESTOS: el plano solo da el diámetro y la anatomía.
+/// </summary>
+[Serializable]
+public class AntennaDesign
+{
+    [Header("Reflector")]
+    [Tooltip("f/D del reflector principal. Las Cassegrain usan 0,3–0,4. Fija la profundidad: R² / (4f).")]
+    public float focalRatio = 0.35f;
+    [Tooltip("Distancia del eje de elevación al vértice del plato (el cubo que los une).")]
+    public float vertexOffset = 0.09f;
+    [Tooltip("Lado del cubo trasero, entre el eje y el plato.")]
+    public float hubSize = 0.12f;
+    [Tooltip("Costillas de la estructura de respaldo, del cubo a la trasera del plato (número, no fracción).")]
+    public int backupRibs = 8;
+    [Tooltip("Dónde se apoyan esas costillas en el plato, como fracción del RADIO.")]
+    public float backupAttach = 0.7f;
+    [Tooltip("Grosor de las costillas.")]
+    public float backupRibThickness = 0.012f;
+
+    [Header("Alimentación (Cassegrain)")]
+    [Tooltip("Diámetro del subreflector. Va en el foco del plato, convexo hacia él.")]
+    public float subreflectorDiameter = 0.1f;
+    [Tooltip("f/D con el que se dibuja el casquete del subreflector (solo le da la curvatura).")]
+    public float subreflectorFocalRatio = 0.6f;
+    [Tooltip("Largo de la bocina que sale del vértice hacia el subreflector.")]
+    public float feedLength = 0.08f;
+    [Tooltip("Diámetro de la boca de la bocina.")]
+    public float feedDiameter = 0.035f;
+    [Tooltip("Dónde se apoyan las cuatro patas que sostienen el subreflector, como fracción del RADIO.")]
+    public float strutAttach = 0.8f;
+    [Tooltip("Grosor de esas patas.")]
+    public float strutThickness = 0.008f;
+
+    [Header("Montura (soporte en Y)")]
+    [Tooltip("Separación entre los dos cojinetes del eje de elevación.")]
+    public float yokeWidth = 0.3f;
+    [Tooltip("Grosor de los brazos del soporte y del eje.")]
+    public float yokeThickness = 0.035f;
+    [Tooltip("Ancho del tronco del soporte, antes de abrirse en Y.")]
+    public float stemWidth = 0.12f;
+    [Tooltip("Qué parte de la altura de la montura es tronco (el resto son los brazos). Fracción de la montura, no de D.")]
+    public float stemFraction = 0.45f;
+    [Tooltip("Espesor de la plataforma giratoria de azimut.")]
+    public float turntableHeight = 0.025f;
 }

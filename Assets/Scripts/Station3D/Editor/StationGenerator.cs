@@ -24,7 +24,7 @@ public static class StationGenerator
     /// <summary>Qué partes construir. Se recuerdan entre sesiones del Editor.</summary>
     public struct Options
     {
-        public bool terrain, fence, building, roof, pedestals;
+        public bool terrain, fence, building, roof, antennas;
 
         const string Prefix = "PVI.Station3D.";
 
@@ -34,7 +34,7 @@ public static class StationGenerator
             fence     = EditorPrefs.GetBool(Prefix + "fence", true),
             building  = EditorPrefs.GetBool(Prefix + "building", true),
             roof      = EditorPrefs.GetBool(Prefix + "roof", true),
-            pedestals = EditorPrefs.GetBool(Prefix + "pedestals", true),
+            antennas  = EditorPrefs.GetBool(Prefix + "antennas", true),
         };
 
         public void Save()
@@ -43,7 +43,7 @@ public static class StationGenerator
             EditorPrefs.SetBool(Prefix + "fence", fence);
             EditorPrefs.SetBool(Prefix + "building", building);
             EditorPrefs.SetBool(Prefix + "roof", roof);
-            EditorPrefs.SetBool(Prefix + "pedestals", pedestals);
+            EditorPrefs.SetBool(Prefix + "antennas", antennas);
         }
     }
 
@@ -94,7 +94,7 @@ public static class StationGenerator
         if (opts.terrain)   BuildTerrain(root.transform, layout, kit);
         if (opts.fence)     BuildFence(root.transform, layout, kit);
         if (opts.building)  BuildBuilding(root.transform, layout.building, kit, opts.roof);
-        if (opts.pedestals) BuildPedestals(root.transform, layout, kit);
+        if (opts.antennas)  BuildAntennas(root.transform, layout, kit);
 
         // Se registra al final para que el Undo se lleve la jerarquía entera de una vez.
         Undo.RegisterCreatedObjectUndo(root, "Regenerar estación");
@@ -267,17 +267,101 @@ public static class StationGenerator
                   new Vector3(W, b.roofThickness, D), k.Roof);
     }
 
-    static void BuildPedestals(Transform root, StationLayout L, Kit k)
+    static void BuildAntennas(Transform root, StationLayout L, Kit k)
     {
         var antennas = Group(root, "Antenas");
         foreach (var a in L.antennas)
         {
-            // Ancla a ras de suelo en el eje de la antena; ahí colgará el modelo de la antena.
+            // Ancla a ras de suelo en el eje de la antena.
             var anchor = Group(antennas, a.name, new Vector3(a.position.x, 0f, a.position.y));
             if (a.HasPedestal)
                 k.Box(anchor, "Pedestal", Vector3.zero,
                       new Vector3(a.pedestalSize.x, a.pedestalHeight, a.pedestalSize.y), k.Concrete);
+            if (a.dishDiameter > 0f)
+                BuildAntenna(anchor, a, L.antennaDesign, k);
         }
+    }
+
+    /// <summary>
+    /// La antena tipo, parametrizada por su diámetro: montura azimut-elevación con soporte en Y,
+    /// reflector paraboloide y subreflector en el foco (Cassegrain). Los dos pivotes son reales:
+    /// girar "Montura (azimut)" en Y o "Elevación" en X apunta la antena como la montura de verdad.
+    /// Las medidas salen de AntennaGeometry, la misma que usa la validación.
+    /// </summary>
+    static void BuildAntenna(Transform anchor, AntennaSpec a, AntennaDesign d, Kit k)
+    {
+        float D = a.dishDiameter;
+        float armT = d.yokeThickness * D;
+        float halfYoke = d.yokeWidth * D / 2f;
+        float stemW = d.stemWidth * D;
+        float turnH = d.turntableHeight * D;
+        float turnD = a.HasPedestal ? Mathf.Min(d.yokeWidth * D, a.pedestalSize.x, a.pedestalSize.y) : d.yokeWidth * D;
+
+        // Montura: gira en azimut sobre la cara superior del pedestal. +Z local = hacia donde apunta.
+        var mount = Group(anchor, "Montura (azimut)", new Vector3(0f, a.HasPedestal ? a.pedestalHeight : 0f, 0f));
+        mount.localRotation = Quaternion.Euler(0f, a.azimuth, 0f);
+        k.Piece(mount, "Plataforma", Vector3.zero, Quaternion.identity, new Vector3(turnD, turnH, turnD), k.Cylinder, k.Steel);
+
+        // Soporte en Y: un tronco que se abre en dos brazos hasta los cojinetes del eje de elevación.
+        float stemTop = turnH + (a.mountHeight - turnH) * d.stemFraction;
+        var yoke = Group(mount, "Soporte en Y");
+        k.Box(yoke, "Tronco", new Vector3(0f, turnH, 0f), new Vector3(stemW, stemTop - turnH, stemW), k.Steel);
+        k.Strut(yoke, "Brazo izquierdo", new Vector3(-(stemW - armT) / 2f, stemTop, 0f),
+                new Vector3(-halfYoke, a.mountHeight, 0f), armT, k.Block, k.Steel, collider: true);
+        k.Strut(yoke, "Brazo derecho", new Vector3((stemW - armT) / 2f, stemTop, 0f),
+                new Vector3(halfYoke, a.mountHeight, 0f), armT, k.Block, k.Steel, collider: true);
+
+        // Elevación: gira sobre el eje X. Con −elevación, +Z local sube hacia el cielo.
+        var el = Group(mount, "Elevación", new Vector3(0f, a.mountHeight, 0f));
+        el.localRotation = Quaternion.Euler(-a.elevation, 0f, 0f);
+        k.Strut(el, "Eje", new Vector3(-halfYoke - armT / 2f, 0f, 0f), new Vector3(halfYoke + armT / 2f, 0f, 0f),
+                armT, k.Cylinder, k.Steel);
+
+        float h = AntennaGeometry.VertexOffset(a, d);
+        float f = AntennaGeometry.FocalLength(a, d);
+        float hub = d.hubSize * D;
+        k.Box(el, "Cubo", new Vector3(0f, -hub / 2f, h / 2f), new Vector3(hub, hub, h), k.Steel, collider: false);
+
+        // Reflector: vértice delante del eje, abierto hacia +Z. Escala uniforme = mismo f/D.
+        k.Piece(el, "Plato", new Vector3(0f, 0f, h), Quaternion.identity, Vector3.one * D,
+                BlockoutAssets.Paraboloid(d.focalRatio), k.Antenna);
+
+        // Estructura de respaldo: costillas del cubo a la trasera del plato. Como el paraboloide es
+        // convexo y la costilla le llega por detrás con más pendiente que él, nunca lo atraviesa;
+        // se quedan un grosor por detrás de la superficie para que la punta no asome por delante.
+        var backup = Group(el, "Estructura de respaldo");
+        float ribT = d.backupRibThickness * D, ribR = d.backupAttach * D / 2f;
+        for (int i = 0; i < d.backupRibs; i++)
+        {
+            float ang = 360f / d.backupRibs * i * Mathf.Deg2Rad;
+            var dir = new Vector3(Mathf.Cos(ang), Mathf.Sin(ang), 0f);
+            k.Strut(backup, $"Costilla {i + 1}", dir * (hub / 2f),
+                    dir * ribR + Vector3.forward * (h + ribR * ribR / (4f * f) - ribT), ribT, k.Cylinder, k.Steel);
+        }
+
+        // Cassegrain: la bocina sale del vértice y el subreflector, convexo hacia el plato, va en el foco.
+        // En acero y no en blanco: de frente, blanco sobre el plato blanco, el subreflector no se ve.
+        k.Strut(el, "Bocina", new Vector3(0f, 0f, h), new Vector3(0f, 0f, h + d.feedLength * D),
+                d.feedDiameter * D, k.Horn, k.Steel);
+        float subD = d.subreflectorDiameter * D;
+        k.Piece(el, "Subreflector", new Vector3(0f, 0f, h + f), Quaternion.identity, Vector3.one * subD,
+                BlockoutAssets.Paraboloid(d.subreflectorFocalRatio), k.Steel);
+
+        // Cuatro patas del plato al subreflector, a 45° de los ejes para no tapar la bocina.
+        var legs = Group(el, "Patas del subreflector");
+        float footR = d.strutAttach * D / 2f, headR = subD / 2f * d.strutAttach;
+        for (int i = 0; i < 4; i++)
+        {
+            float ang = (45f + 90f * i) * Mathf.Deg2Rad;
+            var dir = new Vector3(Mathf.Cos(ang), Mathf.Sin(ang), 0f);
+            var foot = dir * footR + Vector3.forward * (h + footR * footR / (4f * f));
+            var head = dir * headR + Vector3.forward * (h + f);
+            k.Strut(legs, $"Pata {i + 1}", foot, head, d.strutThickness * D, k.Cylinder, k.Steel);
+        }
+
+        // La montura se mueve: fuera del batching estático, que la congelaría en Play.
+        foreach (var t in mount.GetComponentsInChildren<Transform>(true))
+            GameObjectUtility.SetStaticEditorFlags(t.gameObject, 0);
     }
 
     // ------------------------------------------------------------------ muros
@@ -354,8 +438,12 @@ public static class StationGenerator
         public readonly Material Partition    = BlockoutAssets.Material("Blockout_Tabique",      new Color(0.80f, 0.83f, 0.88f));
         public readonly Material Roof         = BlockoutAssets.Material("Blockout_Techo",        new Color(0.70f, 0.72f, 0.76f));
         public readonly Material Concrete     = BlockoutAssets.Material("Blockout_Concreto",     new Color(0.66f, 0.65f, 0.62f));
+        public readonly Material Antenna      = BlockoutAssets.Material("Blockout_Antena",       new Color(0.90f, 0.91f, 0.93f));
+        public readonly Material Steel        = BlockoutAssets.Material("Blockout_Acero",        new Color(0.52f, 0.55f, 0.60f));
 
-        readonly Mesh block = BlockoutAssets.UnitBlock();
+        public readonly Mesh Block    = BlockoutAssets.UnitBlock();
+        public readonly Mesh Cylinder = BlockoutAssets.Frustum("CilindroUnidad", 0.5f, 0.5f);
+        public readonly Mesh Horn     = BlockoutAssets.Frustum("BocinaUnidad", 0.25f, 0.5f);
         public int Count;
 
         /// <summary>
@@ -363,15 +451,36 @@ public static class StationGenerator
         /// <paramref name="size"/> en metros. Las piezas nulas o negativas no se crean.
         /// </summary>
         public GameObject Box(Transform parent, string name, Vector3 basePosition, Vector3 size,
-                              Material mat, bool collider = true)
+                              Material mat, bool collider = true) =>
+            Piece(parent, name, basePosition, Quaternion.identity, size, Block, mat, collider);
+
+        /// <summary>
+        /// Barra de sección <paramref name="thickness"/> de <paramref name="from"/> a <paramref name="to"/>.
+        /// Las mallas unidad crecen en +Y desde su base, así que basta con girar +Y hacia el destino.
+        /// </summary>
+        public GameObject Strut(Transform parent, string name, Vector3 from, Vector3 to, float thickness,
+                                Mesh mesh, Material mat, bool collider = false)
+        {
+            var span = to - from;
+            return Piece(parent, name, from, Quaternion.FromToRotation(Vector3.up, span),
+                         new Vector3(thickness, span.magnitude, thickness), mesh, mat, collider);
+        }
+
+        /// <summary>
+        /// Pieza genérica: una malla unidad con su base en <paramref name="basePosition"/>, girada y
+        /// escalada a su medida real. El collider (opcional) es la caja que envuelve la malla unidad.
+        /// </summary>
+        public GameObject Piece(Transform parent, string name, Vector3 basePosition, Quaternion rotation,
+                                Vector3 size, Mesh mesh, Material mat, bool collider = false)
         {
             if (size.x <= 0f || size.y <= 0f || size.z <= 0f) return null;
 
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
             go.transform.localPosition = basePosition;
+            go.transform.localRotation = rotation;
             go.transform.localScale = size;
-            go.AddComponent<MeshFilter>().sharedMesh = block;
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
             go.AddComponent<MeshRenderer>().sharedMaterial = mat;
             if (collider)
             {

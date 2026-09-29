@@ -2,7 +2,8 @@
 
 > Documento de arranque de la **Fase 4**. Escrito para que una sesión nueva pueda empezar en frío:
 > trae el plano digitalizado, la decisión de enfoque con su porqué, el diseño de la herramienta y
-> los prompts listos para pegar. Estado a 2026-09-29, tras la **Sesión A** (blockout generado).
+> los prompts listos para pegar. Estado a 2026-09-29, tras las **Sesiones A** (blockout generado)
+> **y B** (antenas).
 >
 > Contexto general del proyecto: [Handoff.md](Handoff.md) · Reglas del repo: [CLAUDE.md](CLAUDE.md)
 
@@ -15,7 +16,9 @@
 | Escena `Modulo3D.unity` | ✅ En Build Settings (idx 6). Cámara + EventSystem + vista provisional (`UI — Módulo 3D`, botón Atrás) + el blockout generado. |
 | Botón "Módulo 3D" en el menú | ✅ `BtnModulo3D` → escena `Modulo3D` vía `MenuNavigation`. |
 | Generador del blockout (Sesión A) | ✅ `StationLayout` + `StationGenerator` + ventana **PVI > Estación 3D > Constructor**. Terreno, cerca con portón, edificio con tabiquería y puertas, pedestales. Ver §4. |
-| Antenas, servicios, vía, caseta | ❌ Sesiones B y siguientes. Las posiciones ya están medidas en §2. |
+| Antenas (Sesión B) | ✅ Las 7, generadas desde la misma antena tipo parametrizada por diámetro: pedestal, montura azimut-elevación con soporte en Y, plato paraboloide, subreflector en el foco. Ver §4.1. |
+| Servicios, vía, estacionamiento, caseta | ❌ Pendiente. Las posiciones ya están medidas en §2. |
+| Recorrido (C) y acabado visual (D) | ❌ Pendiente. Prompts en §5. |
 | `Assets/script/movement.cs` | ⚠️ Movimiento en primera persona del compañero (Rigidbody + `Input.GetAxis`). Ver §6. |
 | ProBuilder 6.1.2 | ✅ Añadido al manifest (2026-09-29). Unity lo resuelve al recuperar el foco. |
 | AI Navigation 2.0.14 · Cinemachine 6.6.0 | ✅ Ya estaban en el proyecto. |
@@ -93,8 +96,10 @@ Todas apuntan al **sur** (arco geoestacionario), elevación ≈ 60–70°.
 | Antena 4 | 7 m | 1,75 × 1,75 m (medido, no rotulado) | — | 170, 62 |
 | VSAT / respaldo ×3 | 3,6 m | — | — | 178 / 186 / 194, Z = 44 |
 
-La **altura de los pedestales no está en el plano**. El blockout usa 8 / 7,5 / 1,5 / 1 m como
-supuesto, a revisar en la Sesión B para que pedestal + soporte + plato den la altura total.
+La **altura de los pedestales no está en el plano**. En las antenas 1 y 2 se **deduce** de la altura
+total: con la geometría de la antena (§4.1), pedestales de **9,05 m** y **8,36 m** hacen que midan
+exactamente 30 y 28 m. En la 3 y la 4 (1,5 y 1 m) es un supuesto, y las VSAT llevan una losa
+supuesta de 1,2 × 1,2 × 0,3 m.
 
 **Anatomía para el modelado** (del propio plano): pedestal de concreto (caja) + soporte en Y +
 plato paraboloide inclinado + subreflector en el foco (configuración **Cassegrain**).
@@ -151,28 +156,33 @@ para el edificio y quedarse con él solo para atrezo.
 
 ---
 
-## 4. La herramienta (construida en la Sesión A)
+## 4. La herramienta (Sesiones A y B)
 
 ```
 Assets/Scripts/Station3D/
 ├── Data/
-│   └── StationLayout.cs          ScriptableObject: parcela, cerca y portón, edificio (filas de
-│                                 locales con sus puertas), antenas (Ø, pedestal, altura, pos).
-│                                 Validate() devuelve un mensaje por cada cosa que no cuadra.
+│   ├── StationLayout.cs          ScriptableObject: parcela, cerca y portón, edificio (filas de
+│   │                             locales con sus puertas), antena tipo (AntennaDesign) y antenas
+│   │                             (Ø, pedestal, montura, apuntamiento, pos). Validate() devuelve un
+│   │                             mensaje por cada cosa que no cuadra.
+│   └── AntennaGeometry.cs        C# puro: foco, profundidad, alturas de la antena. Lo usan el
+│                                 generador para construir y Validate() para medir.
 ├── StationGeneratedRoot.cs       Marca del root generado (y qué layout lo generó)
 ├── Editor/
 │   ├── StationGenerator.cs       Construye la jerarquía a partir del StationLayout
-│   ├── StationBuilderWindow.cs   PVI > Estación 3D > Constructor: partes, sumas del plano, Generar
-│   └── BlockoutAssets.cs         Malla BloqueUnidad y materiales Blockout_* (se crean una vez)
+│   ├── StationBuilderWindow.cs   PVI > Estación 3D > Constructor: partes, sumas del plano,
+│   │                             alturas de las antenas, Ajustar pedestales, Generar
+│   └── BlockoutAssets.cs         Mallas unidad y materiales Blockout_* (se crean una vez)
 Assets/Data/AndresBelloLayout.asset        Instancia con los datos de §2 — la fuente de verdad
-Assets/Data/Station3D/Blockout/            BloqueUnidad.asset + 9 materiales Blockout_*.mat
+Assets/Data/Station3D/Blockout/            Mallas (BloqueUnidad, CilindroUnidad, BocinaUnidad,
+                                           Paraboloide_fD*) + 11 materiales Blockout_*.mat
 ```
 
 **Uso.** `PVI > Estación 3D > Constructor` abre la ventana: layout, qué partes levantar (terreno,
-cerca, edificio, losa de techo, pedestales), las sumas del plano con ✓/✗ ("26 + 20 + 20 = 66 m ✓")
-y el botón Generar/Regenerar. `PVI > Estación 3D > Regenerar blockout` hace lo mismo sin ventana.
-Para ver el interior en la Scene View, desmarca "Losa de techo" y regenera. Regenerar entra en el
-Undo como un solo paso.
+cerca, edificio, losa de techo, antenas), las sumas del plano con ✓/✗ ("26 + 20 + 20 = 66 m ✓"),
+la altura calculada de cada antena frente a la del plano, y el botón Generar/Regenerar.
+`PVI > Estación 3D > Regenerar blockout` hace lo mismo sin ventana. Para ver el interior en la
+Scene View, desmarca "Losa de techo" y regenera. Regenerar entra en el Undo como un solo paso.
 
 **Cómo está hecho.** Todas las piezas son la misma malla `BloqueUnidad` (cubo de 1 m con el pivote
 en el centro de la cara inferior), así que en el Inspector **la escala de cada pieza es su medida
@@ -182,9 +192,61 @@ muros exteriores van por dentro de la huella de 66 × 22; los tabiques, centrado
 locales y de cara interior a cara interior. Todo lleva `BoxCollider` (menos los postes de la
 cerca, que son finos y los tapa la malla), listo para el recorrido de la Sesión C.
 
-**Resultado en `Modulo3D`:** 277 piezas — terreno, 5 paños de malla + portón + 226 postes,
-8 pisos de local, 4 fachadas, 7 tabiques, losa de techo y 4 pedestales. Las 3 VSAT quedan como
-anclas vacías en `Antenas/`, en su posición, esperando a la Sesión B.
+**Resultado en `Modulo3D`:** 427 piezas — terreno, 5 paños de malla + portón + 226 postes,
+8 pisos de local, 4 fachadas, 7 tabiques, losa de techo, y 7 antenas de 22 piezas cada una.
+
+### 4.1 La antena tipo (Sesión B)
+
+**Una sola antena parametrizada por su diámetro**, no siete modelos: todas sus proporciones están
+en `AntennaDesign` como fracción de D, así que la misma pieza da los 32 m de Camatagua 1 y los
+3,6 m de una VSAT. Por antena solo cambian posición, diámetro, pedestal, altura de montura y
+apuntamiento. Anatomía, del suelo hacia arriba (tal cual la jerarquía):
+
+```
+Camatagua 1 (1970)                 ancla a ras de suelo en (50, 0, 85)
+├── Pedestal                       concreto, 9 × 9 m
+└── Montura (azimut)               PIVOTE: gira en Y (azimut) sobre el pedestal
+    ├── Plataforma                 cojinete de azimut
+    ├── Soporte en Y               tronco + dos brazos que se abren hasta el eje
+    └── Elevación                  PIVOTE: gira en X (elevación); +Z = hacia donde apunta
+        ├── Eje                    de cojinete a cojinete
+        ├── Cubo                   del eje al vértice del plato
+        ├── Plato                  paraboloide z = r²/4f, malla generada por código
+        ├── Estructura de respaldo 8 costillas del cubo a la trasera del plato
+        ├── Bocina                 sale del vértice hacia el subreflector
+        ├── Subreflector           en el FOCO, convexo hacia el plato (Cassegrain)
+        └── Patas del subreflector 4, a 45° para no tapar la bocina
+```
+
+- **Los pivotes son de verdad.** Girar `Montura (azimut)` en Y o `Elevación` en X apunta la antena
+  como la montura real. Por eso esas piezas no llevan batching estático: se pueden animar en Play
+  (seguimiento de satélite, demostración de apuntamiento…).
+- **El foco no es a ojo:** f = (f/D)·D y el subreflector va a f del vértice — la misma relación
+  f = R²/(4·profundidad) del módulo 2D. Con f/D = 0,35 la Antena 1 tiene f = 11,20 m y 5,71 m de
+  profundidad. Se midió sobre la malla construida: el subreflector está a 11,20 m del vértice.
+- **La altura total manda.** `AntennaGeometry.OverallHeight` calcula el punto más alto (el borde
+  superior del plato a 65°) y `Validate()` avisa si se aparta más de 0,5 m de la altura del plano.
+  El botón **Ajustar pedestales** del Constructor recalcula el pedestal para que coincida: es lo
+  que hay que pulsar si el tutor cambia la elevación o las proporciones. Comprobado también sobre
+  los vértices reales de la malla: 30,00 y 28,00 m.
+- `Validate()` avisa también si una elevación baja mete el plato en el suelo (p. ej. la Antena 4
+  a 15°), con el punto más bajo del paraboloide calculado exacto (cae dentro del plato, no en el
+  borde: en r = 2f / tan(el)).
+- El subreflector y la bocina van en acero y no en blanco: de frente, blanco sobre el plato
+  blanco, el subreflector desaparecía.
+
+| Antena | Ø | Pedestal | Montura | Eje de elevación | Alto total | Plano |
+|---|---|---|---|---|---|---|
+| Camatagua 1 | 32 m | 9 × 9 × **9,05** m | 6,4 m | 15,45 m | **30,00 m** | ≈ 30 m ✓ |
+| Camatagua 2 | 30 m | 8,5 × 8,5 × **8,36** m | 6,0 m | 14,36 m | **28,00 m** | ≈ 28 m ✓ |
+| Antena 3 | 11 m | 3 × 3 × 1,5 m | 2,2 m | 3,70 m | 8,70 m | — |
+| Antena 4 | 7 m | 1,75 × 1,75 × 1 m | 1,4 m | 2,40 m | 5,58 m | — |
+| VSAT ×3 | 3,6 m | losa 1,2 × 1,2 × 0,3 m | 1,5 m | 1,80 m | 3,44 m | — |
+
+**Apuntamiento.** El plano dice "al sur, ≈ 60–70°", así que todas están a azimut 180° y
+elevación 65°. Dato para la defensa: **desde Camatagua (≈ 9,8° N, 66,9° O) VENESAT-1 (78° O) se ve
+a El ≈ 72,6°, Az ≈ 229°** (al suroeste, no al sur). Si el tutor quiere que las antenas apunten de
+verdad al satélite del módulo 2D, son dos números por antena en el asset + "Ajustar pedestales".
 
 ### Supuestos (el plano no los da)
 
@@ -193,7 +255,13 @@ Cada campo del `StationLayout` lleva un Tooltip que dice si su número es *Plano
 
 | Qué | Valor | Nota |
 |---|---|---|
-| Altura de los pedestales | 8 · 7,5 · 1,5 · 1 m | **El más discutible.** Ajustar en la Sesión B. |
+| Altura de los pedestales 1 y 2 | 9,05 · 8,36 m | **Deducida** de la altura del plano con la geometría de abajo. |
+| Altura de los pedestales 3 y 4 | 1,5 · 1 m | Sin altura total en el plano con que deducirla. |
+| Losa de las VSAT | 1,2 × 1,2 × 0,3 m | El plano no dibuja pedestal en las VSAT. |
+| Altura de montura (pedestal → eje) | 0,2·D en las grandes; 1,5 m en las VSAT | Para que la VSAT quede a altura de persona. |
+| Antena tipo: f/D | 0,35 | Rango típico de una Cassegrain: 0,3–0,4. |
+| Antena tipo: resto de proporciones | subreflector 0,1·D, eje→vértice 0,09·D, soporte 0,3·D de ancho… | Todas en `AntennaDesign`, con su Tooltip. |
+| Apuntamiento | Az 180°, El 65° | El plano da "sur, 60–70°". |
 | Muro exterior / tabique | 0,20 / 0,15 m | Bloque. |
 | Losa de piso / techo | 0,15 / 0,25 m | Altura libre de muros: 4,5 − 0,15 − 0,25 = 4,1 m. |
 | Altura de puertas | 2,1 m interiores · 2,4 m de fachada | |
@@ -214,7 +282,7 @@ Cada campo del `StationLayout` lleva un Tooltip que dice si su número es *Plano
 ### Orden de construcción sugerido
 
 ~~Terreno y cerca → losa del edificio → muros perimetrales → tabiquería interior → losa de techo →
-pedestales de antenas~~ (hecho) → antenas → servicios → vía, estacionamiento, caseta → props.
+pedestales de antenas → antenas~~ (hecho) → servicios → vía, estacionamiento, caseta → props.
 
 Para cada parte nueva: sus medidas van al `StationLayout` (con su Tooltip Plano/Medido/Supuesto),
 su comprobación a `Validate()`, y su construcción a un `Build…` más en `StationGenerator`.
@@ -250,7 +318,9 @@ por MCP para leer la consola. No puedes ver el resultado, así que cuando esté
 generado pídeme una captura.
 ```
 
-### Sesión B — Antenas
+### Sesión B — Antenas ✅ hecha (2026-09-29)
+
+Resultado en §4.1. Se deja el prompt como registro.
 
 ```
 Continuamos la Fase 4 del Módulo 3D. Lee CLAUDE.md, Handoff.md y MODULO-3D.md.
@@ -294,7 +364,9 @@ Necesito: colisiones en muros y props, que no se pueda atravesar la cerca, el bo
 Atrás del UI funcionando durante el recorrido, y que no se pierda el cursor.
 
 Las piezas del blockout ya llevan BoxCollider (menos los postes; la malla y el portón
-sí). La vista provisional Modulo3DView.uxml tapa toda la pantalla con un panel de
+sí). En las antenas tienen collider el pedestal, el tronco y los brazos del soporte;
+el plato no, porque las VSAT tienen el borde inferior a 1,85 m y se pasa por debajo.
+La vista provisional Modulo3DView.uxml tapa toda la pantalla con un panel de
 "Escena en construcción": hay que cambiarla por un HUD mínimo con el botón Atrás.
 La Main Camera sigue en (0, 1, -10), fuera de la parcela.
 
@@ -339,9 +411,11 @@ Assets/UI/Styles/Variables.uss y el criterio de diseño en la memoria del proyec
     frame viejo de otra escena. La UI sigue necesitando captura del usuario.
   - Las capturas se guardan bajo `Assets/` aunque se pida `Temp/`: copiarlas fuera y borrar la
     carpeta con `delete_asset` al acabar.
-- **La escena regenerada pesa.** El blockout son ≈ 27 000 líneas de YAML en `Modulo3D.unity`, y
-  cada regeneración cambia todos los fileID, así que el diff es la escena entera. Los 226 postes
-  son la mayor parte; si molesta, subir `fence.postSpacing`. Regenerar solo cuando cambie algo.
+- **La escena regenerada pesa.** Con las antenas, `Modulo3D.unity` son ≈ 43 000 líneas de YAML
+  (1,2 MB), y cada regeneración cambia los fileID, así que el diff es grande. Los 226 postes son
+  la mayor parte; si molesta, subir `fence.postSpacing`. Regenerar solo cuando cambie algo. Las
+  mallas de los platos NO van en la escena: son assets compartidos (`Paraboloide_fD*.asset`,
+  ≈ 250 KB cada una), uno por cada f/D distinto.
 - **Texturas en la Sesión D**: como cada pieza es un cubo de 1 m escalado, una textura normal se
   estira con la pieza. Usar un material con mapeo en espacio de mundo (triplanar) o escalar el
   tiling por material. Los `Blockout_*.mat` se pueden editar o sustituir: regenerar no los pisa.

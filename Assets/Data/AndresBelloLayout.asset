@@ -114,46 +114,85 @@ MonoBehaviour:
           offset: 9.7
           width: 1.2
           height: 2.1
+  antennaDesign:
+    focalRatio: 0.35
+    vertexOffset: 0.09
+    hubSize: 0.12
+    backupRibs: 8
+    backupAttach: 0.7
+    backupRibThickness: 0.012
+    subreflectorDiameter: 0.1
+    subreflectorFocalRatio: 0.6
+    feedLength: 0.08
+    feedDiameter: 0.035
+    strutAttach: 0.8
+    strutThickness: 0.008
+    yokeWidth: 0.3
+    yokeThickness: 0.035
+    stemWidth: 0.12
+    stemFraction: 0.45
+    turntableHeight: 0.025
   antennas:
   - name: Camatagua 1 (1970)
     position: {x: 50, y: 85}
     dishDiameter: 32
     overallHeight: 30
     pedestalSize: {x: 9, y: 9}
-    pedestalHeight: 8
+    pedestalHeight: 9.05
+    mountHeight: 6.4
+    azimuth: 180
+    elevation: 65
   - name: Camatagua 2 (1980)
     position: {x: 120, y: 85}
     dishDiameter: 30
     overallHeight: 28
     pedestalSize: {x: 8.5, y: 8.5}
-    pedestalHeight: 7.5
+    pedestalHeight: 8.36
+    mountHeight: 6
+    azimuth: 180
+    elevation: 65
   - name: Antena 3
     position: {x: 168, y: 100}
     dishDiameter: 11
     overallHeight: 0
     pedestalSize: {x: 3, y: 3}
     pedestalHeight: 1.5
+    mountHeight: 2.2
+    azimuth: 180
+    elevation: 65
   - name: Antena 4
     position: {x: 170, y: 62}
     dishDiameter: 7
     overallHeight: 0
     pedestalSize: {x: 1.75, y: 1.75}
     pedestalHeight: 1
+    mountHeight: 1.4
+    azimuth: 180
+    elevation: 65
   - name: VSAT 1
     position: {x: 178, y: 44}
     dishDiameter: 3.6
     overallHeight: 0
-    pedestalSize: {x: 0, y: 0}
-    pedestalHeight: 0
+    pedestalSize: {x: 1.2, y: 1.2}
+    pedestalHeight: 0.3
+    mountHeight: 1.5
+    azimuth: 180
+    elevation: 65
   - name: VSAT 2
     position: {x: 186, y: 44}
     dishDiameter: 3.6
     overallHeight: 0
-    pedestalSize: {x: 0, y: 0}
-    pedestalHeight: 0
+    pedestalSize: {x: 1.2, y: 1.2}
+    pedestalHeight: 0.3
+    mountHeight: 1.5
+    azimuth: 180
+    elevation: 65
   - name: VSAT 3
     position: {x: 194, y: 44}
     dishDiameter: 3.6
     overallHeight: 0
-    pedestalSize: {x: 0, y: 0}
-    pedestalHeight: 0
+    pedestalSize: {x: 1.2, y: 1.2}
+    pedestalHeight: 0.3
+    mountHeight: 1.5
+    azimuth: 180
+    elevation: 65

@@ -39,7 +39,7 @@ public class StationBuilderWindow : EditorWindow
         options.building  = EditorGUILayout.Toggle("Edificio", options.building);
         using (new EditorGUI.DisabledScope(!options.building))
             options.roof  = EditorGUILayout.Toggle("   Losa de techo", options.roof);
-        options.pedestals = EditorGUILayout.Toggle("Pedestales de antenas", options.pedestals);
+        options.antennas  = EditorGUILayout.Toggle("Antenas", options.antennas);
         if (EditorGUI.EndChangeCheck()) options.Save();
 
         if (layout == null)
@@ -52,6 +52,7 @@ public class StationBuilderWindow : EditorWindow
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Comprobación contra el plano", EditorStyles.boldLabel);
         DrawSums(layout.building);
+        DrawAntennaHeights(layout);
         var issues = layout.Validate();
         if (issues.Count == 0)
             EditorGUILayout.HelpBox("Todo cuadra: filas, fondos, puertas y posiciones dentro de la parcela.", MessageType.Info);
@@ -93,4 +94,43 @@ public class StationBuilderWindow : EditorWindow
 
     static string Mark(float value, float expected) =>
         Mathf.Abs(value - expected) <= 0.01f ? "✓" : $"✗ (debe ser {expected:0.##})";
+
+    /// <summary>
+    /// Altura total de cada antena calculada con su geometría, frente a la "≈" del plano, y el botón
+    /// que recalcula los pedestales para que coincidan (el plano no da la altura del pedestal).
+    /// </summary>
+    static void DrawAntennaHeights(StationLayout layout)
+    {
+        bool anyOff = false;
+        foreach (var a in layout.antennas)
+        {
+            float h = AntennaGeometry.OverallHeight(a, layout.antennaDesign);
+            string plan = a.overallHeight > 0f ? $"plano ≈ {a.overallHeight:0.#} m" : "plano: sin rotular";
+            string mark = a.overallHeight > 0f ? (Mathf.Abs(h - a.overallHeight) <= StationLayout.HeightTolerance ? " ✓" : " ✗") : "";
+            EditorGUILayout.LabelField(a.name, $"alto {h:0.00} m · {plan}{mark}");
+            anyOff |= a.overallHeight > 0f && Mathf.Abs(h - a.overallHeight) > 0.01f;
+        }
+
+        using (new EditorGUI.DisabledScope(!anyOff))
+            if (GUILayout.Button("Ajustar pedestales a la altura del plano"))
+                FitPedestals(layout);
+    }
+
+    public static void FitPedestals(StationLayout layout)
+    {
+        Undo.RecordObject(layout, "Ajustar pedestales");
+        foreach (var a in layout.antennas)
+        {
+            if (a.overallHeight <= 0f || !a.HasPedestal) continue;
+            float fitted = AntennaGeometry.PedestalHeightFor(a, layout.antennaDesign, a.overallHeight);
+            if (fitted <= 0f)
+            {
+                Debug.LogWarning($"[Estación] '{a.name}' ya pasa de {a.overallHeight:0.#} m sin pedestal: baja la montura.", layout);
+                continue;
+            }
+            a.pedestalHeight = Mathf.Round(fitted * 100f) / 100f;
+        }
+        EditorUtility.SetDirty(layout);
+        AssetDatabase.SaveAssetIfDirty(layout);
+    }
 }
