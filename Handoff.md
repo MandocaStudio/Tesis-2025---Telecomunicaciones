@@ -14,7 +14,7 @@ Cubre estado actual, arquitectura, decisiones y pendientes para continuar sin co
 | 1 | Base conceptual UI Toolkit: menús + colorimetría | ✅ Hecho |
 | 2 | Área Teórica (Marco Teórico) en UI Toolkit | ✅ Lector completo + **revisión del tutor aplicada** (§10) |
 | 3 | Área de Simulación — Módulo 2D (enlace satelital VENESAT-1) | ✅ Primera versión + **revisión del tutor aplicada** (§9, §10) |
-| 4 | Instalaciones (modelado 3D + interacción) | 🔨 Escena `Modulo3D` creada y enlazada; falta el contenido 3D |
+| 4 | Instalaciones (modelado 3D + interacción) | 🔨 Escena `Modulo3D` creada y enlazada · plan y plano digitalizado en [MODULO-3D.md](MODULO-3D.md) · falta construir |
 
 ---
 
@@ -171,8 +171,9 @@ Las figuras/tablas viven en sus secciones como botón `[ Ver ]`.
 ## 6. Pendientes / próximos pasos
 
 - [ ] Conectar `BtnTransporte` (último botón con texto lorem) a su escena, o quitarlo del menú.
-- [ ] **Montar el contenido de la escena `Modulo3D`**: hoy solo tiene cámara, EventSystem y una
-      vista provisional (`Modulo3DView.uxml`) con el botón Atrás.
+- [ ] **Montar el contenido de la escena `Modulo3D`** (Estación Terrena "Andrés Bello"): hoy solo
+      tiene cámara, EventSystem y una vista provisional (`Modulo3DView.uxml`) con el botón Atrás.
+      El plano digitalizado, el enfoque y los prompts por sesión están en [MODULO-3D.md](MODULO-3D.md).
 - [ ] (Opcional) Lista de **referencias bibliográficas** [1]–[18] al final del Marco Teórico.
 - [ ] Importar fuentes **Phonk** e **Inter** a `Assets/Fonts/` y asignarlas en los tokens/estilos.
 - [ ] Borrar la escena vieja `Teoria.unity` (uGUI) y la imagen sin uso

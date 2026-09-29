@@ -15,6 +15,10 @@ Plataforma virtual interactiva de un enlace satelital (VENESAT-1), en Unity con 
 pendientes y gotchas. Léelo antes de tocar nada y actualízalo cuando cambies algo estructural.
 La §10 recoge la revisión del tutor y las reglas de dibujo de la escena del simulador.
 
+**[MODULO-3D.md](MODULO-3D.md)** es el arranque de la Fase 4: el plano de la estación terrena
+digitalizado, el enfoque elegido (blockout generado por datos + ProBuilder para el detalle), el
+diseño de la herramienta y los prompts de cada sesión. Léelo antes de tocar la escena `Modulo3D`.
+
 Documentos de apoyo para la defensa: [FORMULAS.md](FORMULAS.md), [VARIABLES.md](VARIABLES.md),
 [PANEL-NOTAS.md](PANEL-NOTAS.md), [INSTRUMENTOS.md](INSTRUMENTOS.md) y
 [LIBRETO-MODULO-2D.md](LIBRETO-MODULO-2D.md) (guion hablado, sin jerga de programación).
@@ -28,11 +32,57 @@ No basta con que compile: verifica siempre que puedas.
    consola limpia tras Play confirma que UXML/USS parsean, que los `Resources.Load` encuentran sus
    assets y que el Painter2D no revienta. Deja el Editor como lo encontraste.
 3. **No se puede capturar el Game View** desde las herramientas (`RunCommand` exige aprobación
-   interactiva y `Camera_Capture` da la Scene View, donde la UI overlay no aparece). Es decir:
-   puedes garantizar que no hay errores, **no** que se vea bien. Dilo claramente y pide una captura.
+   interactiva y `Camera_Capture` da la Scene View). Es decir: puedes garantizar que no hay
+   errores, **no** que se vea bien. Dilo claramente y pide una captura.
+   - En **UI** la Scene View no sirve de nada: la UI Toolkit es overlay de pantalla y no sale.
+   - En **3D sí sirve**: la geometría aparece en la Scene View, así que `Camera_Capture` es una
+     herramienta real para comprobar un blockout sin molestar al usuario.
 
 Truco: deja `Debug.LogWarning` como canarios en los puntos frágiles; si la consola sale limpia tras
 Play, esos caminos quedan verificados.
+
+## Skills de Unity — cuáles existen y cuándo tirar de ellas
+
+Hay un plugin de Unity instalado con skills `unity:*`. **Cárgalas antes de escribir**, no después:
+traen decisiones que cambian el resultado (p. ej. `ui-uitk` desaconseja las alturas fijas, y su
+`references/painter2d.md` avisa de que no se puede mutar el elemento dentro de
+`generateVisualContent`). Cargar una skill es barato; rehacer el trabajo, no.
+
+**Se usan en casi cualquier tarea de este proyecto:**
+
+| Skill | Cuándo |
+|---|---|
+| `unity:unity-cli` | Manejar el Editor en vivo, instalar editores, ver logs. El CLI `unity` ya está instalado y el paquete `com.unity.pipeline` también. |
+| `unity:ui-uitk` | Cualquier `.uxml` / `.uss`. **Toda la UI del proyecto es UI Toolkit.** Sus referencias de Painter2D y de errores comunes son muy útiles. |
+| `unity:unity-package-management` | Instalar o subir paquetes UPM. El CLI de Unity NO gestiona paquetes; esto cubre ese hueco. |
+| `unity:generate-editor-search-query` | Localizar assets u objetos de escena concretos en el proyecto. |
+
+**Fase 4 (Módulo 3D):**
+
+| Skill | Cuándo |
+|---|---|
+| `unity:initialize-ai-navigation` | NavMesh para el recorrido por la estación. El paquete ya está instalado. |
+| `unity:urp-postprocessing` | Volúmenes, bloom, tonemapping y demás en la escena 3D. Proyecto en URP 17.6. |
+| `unity:shader-graph-create-custom-node` | Si hace falta un shader propio (rejilla de la malla ciclón, grama, etc.). |
+| `unity:validate-urp-render-graph-renderer-feature` | Solo si se escribe un ScriptableRendererFeature. |
+| `unity:migrate-birp-to-urp` | Solo si aparecen materiales rosas. El proyecto ya nació en URP, así que no debería. |
+| `unity:optimize-text-mesh-pro` | Rótulos y texto dentro de la escena 3D. |
+
+**Existen pero es improbable que apliquen aquí:** `ui-ugui` (la teoría vieja en Canvas),
+`localization`, `audio-setup-mixers`, `optimize-audio`, `optimize-web`, `2d-pixel-perfect`,
+`sprite-editor`, `manage-sprite-atlas`, `sprite-segment-3x3grid`, `tilemap-palette-create`,
+`tilemap-ruletile-createempty`, `new-unity-project`, `build-live-game`,
+`implement-in-app-purchases`, `levelplay-unity-integration`, `setup-multiplayer-services`,
+`setup-vivox-voice-chat`.
+
+## Paquetes instalados que conviene recordar
+
+ProBuilder 6.1.2 (modelado en editor) · AI Navigation 2.0.14 · Cinemachine 6.6.0 ·
+Input System 1.20.0 · URP 17.6 · `com.unity.pipeline` (control del Editor por CLI/MCP).
+
+`activeInputHandler` está en **2 (Both)**: conviven el Input Manager antiguo y el Input System
+nuevo. `Assets/script/movement.cs` (del compañero) usa el antiguo y **funciona** — no lo
+"arregles" sin hablarlo.
 
 ## Gotchas que cuestan tiempo
 
