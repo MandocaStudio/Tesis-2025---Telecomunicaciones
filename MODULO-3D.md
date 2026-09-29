@@ -2,7 +2,7 @@
 
 > Documento de arranque de la **Fase 4**. Escrito para que una sesión nueva pueda empezar en frío:
 > trae el plano digitalizado, la decisión de enfoque con su porqué, el diseño de la herramienta y
-> los prompts listos para pegar. Estado a 2026-09-29.
+> los prompts listos para pegar. Estado a 2026-09-29, tras la **Sesión A** (blockout generado).
 >
 > Contexto general del proyecto: [Handoff.md](Handoff.md) · Reglas del repo: [CLAUDE.md](CLAUDE.md)
 
@@ -12,8 +12,10 @@
 
 | Pieza | Estado |
 |---|---|
-| Escena `Modulo3D.unity` | ✅ Creada, en Build Settings (idx 6). Cámara + EventSystem + vista provisional con botón Atrás. |
+| Escena `Modulo3D.unity` | ✅ En Build Settings (idx 6). Cámara + EventSystem + vista provisional (`UI — Módulo 3D`, botón Atrás) + el blockout generado. |
 | Botón "Módulo 3D" en el menú | ✅ `BtnModulo3D` → escena `Modulo3D` vía `MenuNavigation`. |
+| Generador del blockout (Sesión A) | ✅ `StationLayout` + `StationGenerator` + ventana **PVI > Estación 3D > Constructor**. Terreno, cerca con portón, edificio con tabiquería y puertas, pedestales. Ver §4. |
+| Antenas, servicios, vía, caseta | ❌ Sesiones B y siguientes. Las posiciones ya están medidas en §2. |
 | `Assets/script/movement.cs` | ⚠️ Movimiento en primera persona del compañero (Rigidbody + `Input.GetAxis`). Ver §6. |
 | ProBuilder 6.1.2 | ✅ Añadido al manifest (2026-09-29). Unity lo resuelve al recuperar el foco. |
 | AI Navigation 2.0.14 · Cinemachine 6.6.0 | ✅ Ya estaban en el proyecto. |
@@ -29,9 +31,17 @@ Plano original: [`Planos/estacion-andres-bello-plano-conjunto.png`](Planos/estac
 Sistema de coordenadas propuesto para Unity: **origen en la esquina SO del terreno**, X hacia el
 este, Z hacia el norte, Y arriba. Terreno **200 m (X) × 140 m (Z)**.
 
-Las **dimensiones** de esta sección son las rotuladas en el plano (exactas). Las **posiciones** las
-medí sobre el dibujo y son aproximadas (±1 m) — la escala se verificó cruzando el Ø 32 m de la
-Antena 1 con su radio dibujado, y cuadra.
+Las **dimensiones** de esta sección son las rotuladas en el plano (exactas). Las **posiciones** están
+medidas píxel a píxel sobre el PNG (±0,5 m): la cerca va de x = 97,5 a 2057,5 px y de y = 111,5 a
+1483,5 px, es decir **9,8 px/m** en el PNG (el "1 m = 7 px" del rótulo es del dibujo a 1×; el PNG está
+a 1,4×). La escala cuadra con todo lo rotulado: el Ø 32 m de la Antena 1 mide 31,9 m, el edificio
+66,2 × 22,2 m, el pedestal 1 9,0 m.
+
+> **Corregido en la Sesión A.** La primera versión de esta sección tenía posiciones estimadas a ojo
+> sobre una imagen reescalada. Las que cambiaron: edificio Z 50 → **51**; Antena 2 X 121 → **120**;
+> **Antena 4 (181, 61) → (170, 62)** (estaba 11 m desplazada); VSAT Z 42 → **44**; vía Z 16,5 → **18**;
+> caseta Z 7 → **9,5**; estacionamiento → (86, 30) y 32 × 12; transformador → (161, 57); chillers →
+> (139, 46) y 10 × 6; tanque de agua Z 33 → **35**.
 
 ### 2.1 Terreno y cerramiento
 
@@ -39,15 +49,16 @@ Antena 1 con su radio dibujado, y cuadra.
 |---|---|---|
 | Parcela | 200 × 140 m | — |
 | Cerca perimetral | malla ciclón, h = 2,5 m | todo el perímetro |
-| Vía interna de acceso | asfalto, ancho 8 m, cruza de este a oeste | Z ≈ 16,5 m |
-| Portón | en la cerca sur | X ≈ 100 m, Z = 0 |
-| Caseta de vigilancia | 6 × 5 m | X ≈ 109 m, Z ≈ 7 m |
-| Estacionamiento | 8 puestos, ≈ 32 × 12,5 m | X ≈ 86 m, Z ≈ 29 m |
+| Vía interna de acceso | asfalto, ancho 8 m, cruza de este a oeste | Z = 14–22 (centro 18) |
+| Portón | en la cerca sur, 8 m de ancho | X = 96–104, Z = 0 |
+| Acceso del portón a la vía | 8 m de ancho | X = 96–104, Z = 0–14 |
+| Caseta de vigilancia | 6 × 5 m | X = 109, Z = 9,5 |
+| Estacionamiento | 8 puestos, 32 × 12 m (no rotulado) | X = 86, Z = 30 |
 
 ### 2.2 Edificio de Operaciones
 
-**66 × 22 m · 1 nivel · h = 4,5 m · techo plano (losa).** Centro ≈ X 95 m, Z 50 m.
-Fachada principal al sur.
+**66 × 22 m · 1 nivel · h = 4,5 m · techo plano (losa).** Centro X 95, Z 51 (va de X 62 a 128 y
+de Z 40 a 62). Fachada principal al sur.
 
 Distribución interna (suma exacta: 26+20+20 = 66 y 16+18+12+20 = 66; 12+3+7 = 22):
 
@@ -62,6 +73,11 @@ Distribución interna (suma exacta: 26+20+20 = 66 y 16+18+12+20 = 66; 12+3+7 = 2
 | Sur | Baños / Cocina | 12 × 7 | |
 | Sur | Taller / Depósito | 20 × 7 | **Acceso taller**, puerta 2 m |
 
+**Puertas** (medidas sobre los arcos del plano; centro del vano desde el extremo oeste del local):
+entrada principal 2 m a 6,1 m en Recepción; acceso taller 2 m a 13 m en Taller; una puerta de
+≈ 1,2 m al pasillo en cada local, casi centrada (Recepción 6,7 · RF 12,7 · Oficinas 8,6 ·
+Baños 5,6 · Control, Energía y Taller 9,7). Las ventanas no están dibujadas.
+
 Acabado: bloque pintado de blanco con franja azul, ventanas horizontales, losa plana con equipos
 de A/A encima.
 
@@ -72,10 +88,13 @@ Todas apuntan al **sur** (arco geoestacionario), elevación ≈ 60–70°.
 | Antena | Ø plato | Pedestal | Altura | Posición (X, Z) |
 |---|---|---|---|---|
 | Camatagua 1 (1970) | 32 m | 9 × 9 m | ≈ 30 m | 50, 85 |
-| Camatagua 2 (1980) | 30 m | 8,5 × 8,5 m | ≈ 28 m | 121, 85 |
-| Antena 3 | 11 m | — | — | 168, 100 |
-| Antena 4 | 7 m | — | — | 181, 61 |
-| VSAT / respaldo ×3 | 3,6 m | — | — | 178 / 186 / 194, Z ≈ 42 |
+| Camatagua 2 (1980) | 30 m | 8,5 × 8,5 m | ≈ 28 m | 120, 85 |
+| Antena 3 | 11 m | 3 × 3 m (medido, no rotulado) | — | 168, 100 |
+| Antena 4 | 7 m | 1,75 × 1,75 m (medido, no rotulado) | — | 170, 62 |
+| VSAT / respaldo ×3 | 3,6 m | — | — | 178 / 186 / 194, Z = 44 |
+
+La **altura de los pedestales no está en el plano**. El blockout usa 8 / 7,5 / 1,5 / 1 m como
+supuesto, a revisar en la Sesión B para que pedestal + soporte + plato den la altura total.
 
 **Anatomía para el modelado** (del propio plano): pedestal de concreto (caja) + soporte en Y +
 plato paraboloide inclinado + subreflector en el foco (configuración **Cassegrain**).
@@ -84,11 +103,11 @@ plato paraboloide inclinado + subreflector en el foco (configuración **Cassegra
 
 | Elemento | Dimensión | Posición (X, Z) |
 |---|---|---|
-| Planta eléctrica (generadores) | 14 × 9 m | 141, 55 |
-| Tanque diésel | ≈ 6 × 9 m | 153, 55 |
-| Transformador | 6 × 6 m | 162, 56 |
-| Chillers A/A | ≈ 11 × 7 m | 139, 43 |
-| Tanque de agua | Ø 8 m | 20, 33 |
+| Planta eléctrica (generadores) | 14 × 9 m | 141, 55,5 |
+| Tanque diésel | 6 × 9 m (medido) | 153, 55,5 |
+| Transformador | 6 × 6 m | 161, 57 |
+| Chillers A/A | 10 × 6 m (medido) | 139, 46 |
+| Tanque de agua | Ø 8 m | 20, 35 |
 
 ### 2.5 Entorno
 
@@ -132,18 +151,54 @@ para el edificio y quedarse con él solo para atrezo.
 
 ---
 
-## 4. Diseño de la herramienta (a construir en la próxima sesión)
+## 4. La herramienta (construida en la Sesión A)
 
 ```
 Assets/Scripts/Station3D/
 ├── Data/
-│   └── StationLayout.cs          ScriptableObject: parcela, edificio (lista de locales),
-│                                 antenas (Ø, pedestal, altura, pos), servicios, vía
+│   └── StationLayout.cs          ScriptableObject: parcela, cerca y portón, edificio (filas de
+│                                 locales con sus puertas), antenas (Ø, pedestal, altura, pos).
+│                                 Validate() devuelve un mensaje por cada cosa que no cuadra.
+├── StationGeneratedRoot.cs       Marca del root generado (y qué layout lo generó)
 ├── Editor/
 │   ├── StationGenerator.cs       Construye la jerarquía a partir del StationLayout
-│   └── StationBuilderWindow.cs   EditorWindow con el botón "Generar" y sus opciones
-Assets/Data/AndresBelloLayout.asset   Instancia con los datos de §2
+│   ├── StationBuilderWindow.cs   PVI > Estación 3D > Constructor: partes, sumas del plano, Generar
+│   └── BlockoutAssets.cs         Malla BloqueUnidad y materiales Blockout_* (se crean una vez)
+Assets/Data/AndresBelloLayout.asset        Instancia con los datos de §2 — la fuente de verdad
+Assets/Data/Station3D/Blockout/            BloqueUnidad.asset + 9 materiales Blockout_*.mat
 ```
+
+**Uso.** `PVI > Estación 3D > Constructor` abre la ventana: layout, qué partes levantar (terreno,
+cerca, edificio, losa de techo, pedestales), las sumas del plano con ✓/✗ ("26 + 20 + 20 = 66 m ✓")
+y el botón Generar/Regenerar. `PVI > Estación 3D > Regenerar blockout` hace lo mismo sin ventana.
+Para ver el interior en la Scene View, desmarca "Losa de techo" y regenera. Regenerar entra en el
+Undo como un solo paso.
+
+**Cómo está hecho.** Todas las piezas son la misma malla `BloqueUnidad` (cubo de 1 m con el pivote
+en el centro de la cara inferior), así que en el Inspector **la escala de cada pieza es su medida
+real en metros** y su posición, el punto donde se apoya. Las puertas no son agujeros: cada muro se
+parte en tramos alrededor del vano y lleva un dintel encima, que es como se construiría. Los
+muros exteriores van por dentro de la huella de 66 × 22; los tabiques, centrados en el eje entre
+locales y de cara interior a cara interior. Todo lleva `BoxCollider` (menos los postes de la
+cerca, que son finos y los tapa la malla), listo para el recorrido de la Sesión C.
+
+**Resultado en `Modulo3D`:** 277 piezas — terreno, 5 paños de malla + portón + 226 postes,
+8 pisos de local, 4 fachadas, 7 tabiques, losa de techo y 4 pedestales. Las 3 VSAT quedan como
+anclas vacías en `Antenas/`, en su posición, esperando a la Sesión B.
+
+### Supuestos (el plano no los da)
+
+Cada campo del `StationLayout` lleva un Tooltip que dice si su número es *Plano* (rotulado),
+*Medido* (sobre el dibujo) o *Supuesto*. Los supuestos:
+
+| Qué | Valor | Nota |
+|---|---|---|
+| Altura de los pedestales | 8 · 7,5 · 1,5 · 1 m | **El más discutible.** Ajustar en la Sesión B. |
+| Muro exterior / tabique | 0,20 / 0,15 m | Bloque. |
+| Losa de piso / techo | 0,15 / 0,25 m | Altura libre de muros: 4,5 − 0,15 − 0,25 = 4,1 m. |
+| Altura de puertas | 2,1 m interiores · 2,4 m de fachada | |
+| Postes de la cerca | cada ≤ 3 m, sección 8 cm | Portón con postes de 20 cm. |
+| Terreno | losa de 0,5 m, cara superior en Y = 0 | La sabana y los cerros son de la Sesión D. |
 
 ### Reglas de diseño que NO se deben saltar
 
@@ -158,8 +213,11 @@ Assets/Data/AndresBelloLayout.asset   Instancia con los datos de §2
 
 ### Orden de construcción sugerido
 
-Terreno y cerca → losa del edificio → muros perimetrales → tabiquería interior → losa de techo →
-pedestales de antenas → antenas → servicios → vía, estacionamiento, caseta → props.
+~~Terreno y cerca → losa del edificio → muros perimetrales → tabiquería interior → losa de techo →
+pedestales de antenas~~ (hecho) → antenas → servicios → vía, estacionamiento, caseta → props.
+
+Para cada parte nueva: sus medidas van al `StationLayout` (con su Tooltip Plano/Medido/Supuesto),
+su comprobación a `Validate()`, y su construcción a un `Build…` más en `StationGenerator`.
 
 ---
 
@@ -167,7 +225,9 @@ pedestales de antenas → antenas → servicios → vía, estacionamiento, caset
 
 Pegar tal cual. Cada uno es autosuficiente.
 
-### Sesión A — Datos y generador del blockout
+### Sesión A — Datos y generador del blockout ✅ hecha (2026-09-29)
+
+Resultado en §4. Se deja el prompt como registro.
 
 ```
 Vamos a arrancar la Fase 4 (Módulo 3D) del proyecto de tesis. Lee primero CLAUDE.md,
@@ -194,15 +254,22 @@ generado pídeme una captura.
 
 ```
 Continuamos la Fase 4 del Módulo 3D. Lee CLAUDE.md, Handoff.md y MODULO-3D.md.
-El blockout del terreno y el edificio ya está generado por StationGenerator.
+El blockout (terreno, cerca, edificio y pedestales) ya lo genera StationGenerator a
+partir de Assets/Data/AndresBelloLayout.asset (MODULO-3D.md §4).
 
 Toca modelar las antenas. Son la pieza que identifica visualmente la estación, así
 que merecen cuidado. Según el plano (MODULO-3D.md §2.3) cada una es: pedestal de
 concreto (caja) + soporte en Y + plato paraboloide + subreflector en el foco
 (Cassegrain). Todas apuntan al sur con 60-70 grados de elevación.
 
+Cada antena ya tiene un ancla en "Antenas/<nombre>" con su pedestal. Construye la
+antena desde el generador, colgando de esa ancla y con sus medidas en el
+StationLayout (AntennaSpec ya trae dishDiameter y overallHeight): nada a mano, que se
+perdería al regenerar. La altura de los pedestales es un SUPUESTO (§4): ajústala para
+que el conjunto dé la altura total del plano (≈30 m y ≈28 m) y dime qué valores quedan.
+
 Hay cuatro tamaños muy distintos (32, 30, 11 y 7 m) más tres VSAT de 3,6 m, así que
-quiero UN prefab parametrizado por diámetro, no siete modelos sueltos.
+quiero UNA sola pieza parametrizada por diámetro, no siete modelos sueltos.
 
 El plato paraboloide genéralo por código (una malla de revolución a partir de
 y = x²/4f es exacta y sale barata); usa ProBuilder solo si algo se resiste.
@@ -225,6 +292,11 @@ porqué antes de tocarlo, que es código de otra persona.
 
 Necesito: colisiones en muros y props, que no se pueda atravesar la cerca, el botón
 Atrás del UI funcionando durante el recorrido, y que no se pierda el cursor.
+
+Las piezas del blockout ya llevan BoxCollider (menos los postes; la malla y el portón
+sí). La vista provisional Modulo3DView.uxml tapa toda la pantalla con un panel de
+"Escena en construcción": hay que cambiarla por un HUD mínimo con el botón Atrás.
+La Main Camera sigue en (0, 1, -10), fuera de la parcela.
 
 Considera la skill unity:initialize-ai-navigation si conviene un NavMesh (por ejemplo
 para limitar por dónde se puede caminar). El paquete ya está instalado.
@@ -255,14 +327,30 @@ Assets/UI/Styles/Variables.uss y el criterio de diseño en la memoria del proyec
 - **`movement.cs` usa el Input Manager antiguo** (`Input.GetAxis`) mientras el resto del proyecto
   usa el Input System nuevo. **No está roto**: `activeInputHandler` está en `2` (Both), así que
   ambos conviven. No "arreglarlo" sin hablarlo — es código del compañero.
-- **Unity solo refresca al recuperar el foco.** ProBuilder no aparecerá hasta que se haga clic en
-  la ventana de Unity. Igual para cualquier cambio en `Packages/manifest.json`.
-- **No se puede capturar el Game View** desde las herramientas. En un módulo 3D esto pesa mucho
-  más que en la UI: hay que pedirle capturas al usuario a cada paso. Para inspeccionar la escena
-  sí sirve `Unity_Camera_Capture`, que devuelve la Scene View — y en 3D eso **sí** es útil,
-  al contrario que con la UI overlay.
+- **Unity solo refresca al recuperar el foco**, pero `unity command recompile` fuerza la importación
+  de scripts nuevos con el Editor sin foco. Para `Packages/manifest.json` sigue haciendo falta el
+  foco (o `unity command package_resolve`).
+- **Ver la escena 3D sí se puede** con el CLI `unity command` (Pipeline), y así se verificó la
+  Sesión A:
+  - `capture_scene_view` tras colocar la cámara con `SceneView.lastActiveSceneView.LookAt(...)`
+    (vía `eval_file`). Una vista cenital ortográfica sin techo se compara directamente con el plano.
+  - `capture_game_view --source camera` renderiza la cámara del juego, sin la UI.
+  - `capture_game_view --source screen` (con UI) **no es fiable** con Unity sin foco: devolvió un
+    frame viejo de otra escena. La UI sigue necesitando captura del usuario.
+  - Las capturas se guardan bajo `Assets/` aunque se pida `Temp/`: copiarlas fuera y borrar la
+    carpeta con `delete_asset` al acabar.
+- **La escena regenerada pesa.** El blockout son ≈ 27 000 líneas de YAML en `Modulo3D.unity`, y
+  cada regeneración cambia todos los fileID, así que el diff es la escena entera. Los 226 postes
+  son la mayor parte; si molesta, subir `fence.postSpacing`. Regenerar solo cuando cambie algo.
+- **Texturas en la Sesión D**: como cada pieza es un cubo de 1 m escalado, una textura normal se
+  estira con la pieza. Usar un material con mapeo en espacio de mundo (triplanar) o escalar el
+  tiling por material. Los `Blockout_*.mat` se pueden editar o sustituir: regenerar no los pisa.
+- **La vista provisional estaba mal cableada** hasta la Sesión A: `Modulo3D` era una copia del
+  menú principal (cargaba `MenuPrincipal_Azul.uxml` y no tenía botón Atrás). Ya carga
+  `Modulo3DView.uxml` con `BtnBack → Menu Inicial`, como decía el Handoff.
 - **Escala**: el plano dice "1 m = 7 px", pero eso es del dibujo. En Unity, **1 unidad = 1 metro**.
-- Las **posiciones** de §2 son aproximadas (±1 m); las **dimensiones rotuladas** son exactas. Si
-  algo no encaja, manda la dimensión del plano.
+- Las **posiciones** de §2 están medidas (±0,5 m); las **dimensiones rotuladas** son exactas. Si
+  algo no encaja, manda la dimensión del plano. Para medir más cosas: Pillow está instalado y a
+  9,8 px/m con origen en (97,5, 1483,5) px, `X = (px − 97,5)/9,8` y `Z = (1483,5 − py)/9,8`.
 - El terreno es grande (200 × 140 m) con antenas de 30 m. Cuidar el **near/far clip** de la cámara
   y las sombras, o el rendimiento y el z-fighting darán problemas.

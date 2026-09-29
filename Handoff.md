@@ -1,6 +1,6 @@
 # Handoff — PVI Telecomunicaciones (UI Toolkit)
 
-> Última actualización: 2026-09-16 · Unity 6000.6.0f1 · URP 17.6.0 · Input System 1.19.0
+> Última actualización: 2026-09-29 · Unity 6000.6.0f1 · URP 17.6.0 · Input System 1.20.0
 
 Documento de traspaso del rediseño en **UI Toolkit** del simulador de telecomunicaciones (tesis).
 Cubre estado actual, arquitectura, decisiones y pendientes para continuar sin contexto previo.
@@ -14,7 +14,7 @@ Cubre estado actual, arquitectura, decisiones y pendientes para continuar sin co
 | 1 | Base conceptual UI Toolkit: menús + colorimetría | ✅ Hecho |
 | 2 | Área Teórica (Marco Teórico) en UI Toolkit | ✅ Lector completo + **revisión del tutor aplicada** (§10) |
 | 3 | Área de Simulación — Módulo 2D (enlace satelital VENESAT-1) | ✅ Primera versión + **revisión del tutor aplicada** (§9, §10) |
-| 4 | Instalaciones (modelado 3D + interacción) | 🔨 Escena `Modulo3D` creada y enlazada · plan y plano digitalizado en [MODULO-3D.md](MODULO-3D.md) · falta construir |
+| 4 | Instalaciones (modelado 3D + interacción) | 🔨 Blockout generado por datos (terreno, cerca, edificio, pedestales) · faltan antenas, recorrido y acabado — ver [MODULO-3D.md](MODULO-3D.md) |
 
 ---
 
@@ -63,6 +63,11 @@ Assets/
 ├── Scripts UI/
 │   ├── MenuNavigation.cs     (conecta botones del menú → escenas)
 │   └── TheoryReader.cs       (lector del Marco Teórico, 100% data-driven)
+├── Scripts/Station3D/        (Módulo 3D: StationLayout + generador del blockout, ver MODULO-3D.md §4)
+├── Data/
+│   ├── VenesatParameters.asset   (parámetros del simulador 2D)
+│   ├── AndresBelloLayout.asset   (medidas de la estación: fuente de verdad del modelo 3D)
+│   └── Station3D/Blockout/       (malla BloqueUnidad y materiales Blockout_* del generador)
 └── Scenes/
     ├── Menu Inicial.unity    (menú; en Build Settings idx 0)
     ├── MarcoTeorico.unity    (lector UI Toolkit; idx 4)
@@ -171,9 +176,11 @@ Las figuras/tablas viven en sus secciones como botón `[ Ver ]`.
 ## 6. Pendientes / próximos pasos
 
 - [ ] Conectar `BtnTransporte` (último botón con texto lorem) a su escena, o quitarlo del menú.
-- [ ] **Montar el contenido de la escena `Modulo3D`** (Estación Terrena "Andrés Bello"): hoy solo
-      tiene cámara, EventSystem y una vista provisional (`Modulo3DView.uxml`) con el botón Atrás.
-      El plano digitalizado, el enfoque y los prompts por sesión están en [MODULO-3D.md](MODULO-3D.md).
+- [ ] **Seguir con la escena `Modulo3D`** (Estación Terrena "Andrés Bello"). Hecho: el blockout
+      generado desde `AndresBelloLayout.asset` (Sesión A). Faltan antenas (B), recorrido en primera
+      persona (C) y acabado visual (D); los prompts están en [MODULO-3D.md](MODULO-3D.md) §5.
+      Ojo: la escena cargaba una copia del menú principal en lugar de `Modulo3DView.uxml`; ya está
+      corregido (2026-09-29).
 - [ ] (Opcional) Lista de **referencias bibliográficas** [1]–[18] al final del Marco Teórico.
 - [ ] Importar fuentes **Phonk** e **Inter** a `Assets/Fonts/` y asignarlas en los tokens/estilos.
 - [ ] Borrar la escena vieja `Teoria.unity` (uGUI) y la imagen sin uso

@@ -31,12 +31,14 @@ No basta con que compile: verifica siempre que puedas.
 2. Con el Editor abierto, vía MCP de Unity: cargar la escena → `Play` → leer la consola. Una
    consola limpia tras Play confirma que UXML/USS parsean, que los `Resources.Load` encuentran sus
    assets y que el Painter2D no revienta. Deja el Editor como lo encontraste.
-3. **No se puede capturar el Game View** desde las herramientas (`RunCommand` exige aprobación
-   interactiva y `Camera_Capture` da la Scene View). Es decir: puedes garantizar que no hay
-   errores, **no** que se vea bien. Dilo claramente y pide una captura.
-   - En **UI** la Scene View no sirve de nada: la UI Toolkit es overlay de pantalla y no sale.
-   - En **3D sí sirve**: la geometría aparece en la Scene View, así que `Camera_Capture` es una
-     herramienta real para comprobar un blockout sin molestar al usuario.
+3. **Mirar el resultado** con el CLI `unity command` (Pipeline), que va mejor que el MCP:
+   `eval`/`eval_file` ejecutan C# sin aprobación interactiva y `recompile` funciona sin foco.
+   - En **3D sí se puede ver**: `capture_scene_view` (colocando la cámara con
+     `SceneView.lastActiveSceneView.LookAt` por `eval_file`) y `capture_game_view --source camera`.
+   - En **UI no**: la UI Toolkit es overlay y no sale en esas capturas, y `--source screen` no es
+     fiable con Unity sin foco (devuelve frames viejos). Puedes garantizar que no hay errores y
+     leer el layout resuelto, **no** que se vea bien. Dilo claramente y pide una captura.
+   - Las capturas caen bajo `Assets/` aunque pidas `Temp/`: bórralas al terminar.
 
 Truco: deja `Debug.LogWarning` como canarios en los puntos frágiles; si la consola sale limpia tras
 Play, esos caminos quedan verificados.

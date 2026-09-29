@@ -1,0 +1,159 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa29e0867a0de8442aba3bdc0b98fec3, type: 3}
+  m_Name: AndresBelloLayout
+  m_EditorClassIdentifier: Assembly-CSharp::StationLayout
+  plotSize: {x: 200, y: 140}
+  groundThickness: 0.5
+  fence:
+    height: 2.5
+    postSpacing: 3
+    postSize: 0.08
+    meshThickness: 0.04
+    gateSide: 0
+    gateCenter: 100
+    gateWidth: 8
+    gatePostSize: 0.2
+    gateLeafThickness: 0.08
+  building:
+    name: Edificio de Operaciones
+    center: {x: 95, y: 51}
+    size: {x: 66, y: 22}
+    height: 4.5
+    floorThickness: 0.15
+    roofThickness: 0.25
+    exteriorWallThickness: 0.2
+    interiorWallThickness: 0.15
+    rows:
+    - name: Fila norte
+      depth: 12
+      isCorridor: 0
+      rooms:
+      - name: Sala de Equipos RF
+        width: 26
+        notes: Racks, HPA, LNA
+        doors:
+        - side: 0
+          offset: 12.7
+          width: 1.2
+          height: 2.1
+      - name: Sala de Control
+        width: 20
+        notes: Consolas
+        doors:
+        - side: 0
+          offset: 9.7
+          width: 1.2
+          height: 2.1
+      - name: "Energ\xEDa / UPS"
+        width: 20
+        notes: 
+        doors:
+        - side: 0
+          offset: 9.7
+          width: 1.2
+          height: 2.1
+    - name: Pasillo
+      depth: 3
+      isCorridor: 1
+      rooms:
+      - name: Pasillo
+        width: 66
+        notes: Recorre todo el edificio
+        doors: []
+    - name: Fila sur
+      depth: 7
+      isCorridor: 0
+      rooms:
+      - name: "Recepci\xF3n"
+        width: 16
+        notes: Entrada principal
+        doors:
+        - side: 1
+          offset: 6.1
+          width: 2
+          height: 2.4
+        - side: 0
+          offset: 6.7
+          width: 1.2
+          height: 2.1
+      - name: Oficinas
+        width: 18
+        notes: 
+        doors:
+        - side: 0
+          offset: 8.6
+          width: 1.2
+          height: 2.1
+      - name: "Ba\xF1os / Cocina"
+        width: 12
+        notes: 
+        doors:
+        - side: 0
+          offset: 5.6
+          width: 1.2
+          height: 2.1
+      - name: "Taller / Dep\xF3sito"
+        width: 20
+        notes: Acceso taller
+        doors:
+        - side: 1
+          offset: 13
+          width: 2
+          height: 2.4
+        - side: 0
+          offset: 9.7
+          width: 1.2
+          height: 2.1
+  antennas:
+  - name: Camatagua 1 (1970)
+    position: {x: 50, y: 85}
+    dishDiameter: 32
+    overallHeight: 30
+    pedestalSize: {x: 9, y: 9}
+    pedestalHeight: 8
+  - name: Camatagua 2 (1980)
+    position: {x: 120, y: 85}
+    dishDiameter: 30
+    overallHeight: 28
+    pedestalSize: {x: 8.5, y: 8.5}
+    pedestalHeight: 7.5
+  - name: Antena 3
+    position: {x: 168, y: 100}
+    dishDiameter: 11
+    overallHeight: 0
+    pedestalSize: {x: 3, y: 3}
+    pedestalHeight: 1.5
+  - name: Antena 4
+    position: {x: 170, y: 62}
+    dishDiameter: 7
+    overallHeight: 0
+    pedestalSize: {x: 1.75, y: 1.75}
+    pedestalHeight: 1
+  - name: VSAT 1
+    position: {x: 178, y: 44}
+    dishDiameter: 3.6
+    overallHeight: 0
+    pedestalSize: {x: 0, y: 0}
+    pedestalHeight: 0
+  - name: VSAT 2
+    position: {x: 186, y: 44}
+    dishDiameter: 3.6
+    overallHeight: 0
+    pedestalSize: {x: 0, y: 0}
+    pedestalHeight: 0
+  - name: VSAT 3
+    position: {x: 194, y: 44}
+    dishDiameter: 3.6
+    overallHeight: 0
+    pedestalSize: {x: 0, y: 0}
+    pedestalHeight: 0
