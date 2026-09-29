@@ -6,24 +6,24 @@
     <ui:Style src="project://database/Assets/UI/Styles/Variables.uss?fileID=7433441132597879392&amp;guid=67449ffd870bf064ab75437fdd68ebb3&amp;type=3#Variables" />
     <ui:Style src="project://database/Assets/UI/Styles/Common.uss?fileID=7433441132597879392&amp;guid=417764cf809bc9d41a6fd7df4cfc816b&amp;type=3#Common" />
 
-    <ui:VisualElement name="Root" class="screen-root m3d-root">
+    <ui:VisualElement name="Root" class="m3d-hud" picking-mode="Ignore">
 
-        <ui:VisualElement name="BgGridOverlay" class="bg-grid-overlay" />
-
-        <ui:VisualElement name="Header" class="m3d-header">
-            <ui:Label text="Módulo 3D · Instalaciones" class="title-section" />
+        <ui:VisualElement name="TitleChip" class="m3d-chip" picking-mode="Ignore">
+            <ui:VisualElement name="AnchorAccent" class="anchor-accent" picking-mode="Ignore" />
+            <ui:Label text="Módulo 3D · Instalaciones" class="label-on-dark m3d-chip-title" picking-mode="Ignore" />
+            <ui:Label text="Estación Terrena «Andrés Bello» · Camatagua, Aragua" class="label-on-dark-muted" picking-mode="Ignore" />
         </ui:VisualElement>
 
-        <ui:VisualElement name="HeaderSep" class="separator-blue" />
-
-        <ui:VisualElement name="Stage" class="m3d-stage">
-            <ui:VisualElement name="PlaceholderPanel" class="anchor-panel m3d-panel">
-                <ui:VisualElement name="AnchorAccent" class="anchor-accent" />
-                <ui:Label text="Escena en construcción" class="label-on-dark m3d-title" />
-                <ui:Label name="LblNota"
-                          text="Aquí irá el recorrido 3D de las instalaciones (Fase 4). La escena ya está creada y enlazada desde el menú, lista para montar el modelado y la interacción encima."
-                          class="label-on-dark-muted m3d-note" />
+        <ui:VisualElement name="Center" class="m3d-center" picking-mode="Ignore">
+            <ui:VisualElement name="StartPrompt" class="m3d-prompt" picking-mode="Ignore">
+                <ui:Label text="Haz clic para recorrer la estación" class="label-on-dark m3d-prompt-title" picking-mode="Ignore" />
+                <ui:Label text="W A S D o flechas: caminar  ·  Ratón: mirar  ·  Shift: correr  ·  Esc: soltar el cursor" class="label-on-dark-muted" picking-mode="Ignore" />
             </ui:VisualElement>
+            <ui:VisualElement name="Crosshair" class="m3d-crosshair" picking-mode="Ignore" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="ControlsHint" class="m3d-hint" picking-mode="Ignore">
+            <ui:Label text="Esc: soltar el cursor para usar el menú" class="label-on-dark-muted" picking-mode="Ignore" />
         </ui:VisualElement>
 
         <ui:Button name="BtnBack" text="Atrás" class="btn-back" />

@@ -14,7 +14,7 @@ Cubre estado actual, arquitectura, decisiones y pendientes para continuar sin co
 | 1 | Base conceptual UI Toolkit: menús + colorimetría | ✅ Hecho |
 | 2 | Área Teórica (Marco Teórico) en UI Toolkit | ✅ Lector completo + **revisión del tutor aplicada** (§10) |
 | 3 | Área de Simulación — Módulo 2D (enlace satelital VENESAT-1) | ✅ Primera versión + **revisión del tutor aplicada** (§9, §10) |
-| 4 | Instalaciones (modelado 3D + interacción) | 🔨 Generado por datos: terreno, cerca, edificio y las 7 antenas · faltan servicios, recorrido y acabado — ver [MODULO-3D.md](MODULO-3D.md) |
+| 4 | Instalaciones (modelado 3D + interacción) | ✅ Estación completa generada por datos, recorrido en primera persona y acabado visual · falta el atrezo interior — ver [MODULO-3D.md](MODULO-3D.md) |
 
 ---
 
@@ -62,8 +62,9 @@ Assets/
 │   └── Textures/  (HexPatternBlue, CtaGradientBlue, DotGrid, photo_…jpg)
 ├── Scripts UI/
 │   ├── MenuNavigation.cs     (conecta botones del menú → escenas)
-│   └── TheoryReader.cs       (lector del Marco Teórico, 100% data-driven)
-├── Scripts/Station3D/        (Módulo 3D: StationLayout + generador del blockout, ver MODULO-3D.md §4)
+│   ├── TheoryReader.cs       (lector del Marco Teórico, 100% data-driven)
+│   └── Modulo3DHud.cs        (HUD del recorrido 3D: aviso / punto de mira, clics sobre botones)
+├── Scripts/Station3D/        (Módulo 3D: StationLayout + generador + FirstPersonWalker, ver MODULO-3D.md §4)
 ├── Data/
 │   ├── VenesatParameters.asset   (parámetros del simulador 2D)
 │   ├── AndresBelloLayout.asset   (medidas de la estación: fuente de verdad del modelo 3D)
@@ -176,10 +177,10 @@ Las figuras/tablas viven en sus secciones como botón `[ Ver ]`.
 ## 6. Pendientes / próximos pasos
 
 - [ ] Conectar `BtnTransporte` (último botón con texto lorem) a su escena, o quitarlo del menú.
-- [ ] **Seguir con la escena `Modulo3D`** (Estación Terrena "Andrés Bello"). Hecho: el blockout
-      (Sesión A) y las antenas (Sesión B), todo generado desde `AndresBelloLayout.asset`. Faltan
-      servicios/vía/caseta, recorrido en primera persona (C) y acabado visual (D); los prompts
-      están en [MODULO-3D.md](MODULO-3D.md) §5.
+- [ ] **Seguir con la escena `Modulo3D`** (Estación Terrena "Andrés Bello"). Hecho: todo el plano
+      de conjunto generado desde `AndresBelloLayout.asset`, el recorrido en primera persona con su
+      HUD y el acabado visual (Sesiones A–D, [MODULO-3D.md](MODULO-3D.md)). El usuario probó el
+      recorrido con teclado y ratón. Queda, si se quiere, el atrezo interior (racks, consolas).
       Ojo: la escena cargaba una copia del menú principal en lugar de `Modulo3DView.uxml`; ya está
       corregido (2026-09-29).
 - [ ] (Opcional) Lista de **referencias bibliográficas** [1]–[18] al final del Marco Teórico.
@@ -187,7 +188,7 @@ Las figuras/tablas viven en sus secciones como botón `[ Ver ]`.
 - [ ] Borrar la escena vieja `Teoria.unity` (uGUI) y la imagen sin uso
       `Assets/UI/Textures/photo_2026-06-20_11-57-47.jpg` (ver §10.1).
 - [ ] **Renumerar el Capítulo I de la tesis escrita** para que coincida con la plataforma (§10.1).
-- [ ] **Fase 4 — Instalaciones 3D**.
+- [x] **Fase 4 — Instalaciones 3D** (Sesiones A–D en [MODULO-3D.md](MODULO-3D.md)); recorrido probado por el usuario.
 - [ ] Ajustes finos del lector si hace falta: reparto de páginas en el array `Layout`, tamaño de
       cajas de diagrama si filas largas se cortan, alto de la imagen (`.fig-image` 92%×560).
 

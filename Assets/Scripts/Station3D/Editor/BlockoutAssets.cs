@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -50,17 +51,26 @@ public static class BlockoutAssets
         return mesh;
     }
 
-    public static Material Material(string name, Color color, bool transparent = false)
+    /// <summary>
+    /// Material URP/Lit por nombre. Si ya existe se devuelve tal cual, para no pisar lo que se haya
+    /// retocado a mano, salvo con <paramref name="overwrite"/> (menú "Reaplicar colores del acabado").
+    /// </summary>
+    public static Material Material(string name, Color color, float smoothness = 0.15f, float metallic = 0f,
+                                    bool transparent = false, bool overwrite = false)
     {
         string path = $"{Folder}/{name}.mat";
         var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
-        if (mat != null) return mat;
+        bool created = mat == null;
+        if (!created && !overwrite) return mat;
 
-        EnsureFolder(Folder);
-        var shader = Shader.Find("Universal Render Pipeline/Lit");
-        mat = new Material(shader) { name = name };
+        if (created)
+        {
+            EnsureFolder(Folder);
+            mat = new Material(Shader.Find("Universal Render Pipeline/Lit")) { name = name };
+        }
         mat.SetColor("_BaseColor", color);
-        mat.SetFloat("_Smoothness", 0.15f);
+        mat.SetFloat("_Smoothness", smoothness);
+        mat.SetFloat("_Metallic", metallic);
         if (transparent)
         {
             // Las mismas propiedades que pone el Inspector de URP al elegir Surface Type = Transparent.
@@ -75,8 +85,167 @@ public static class BlockoutAssets
             mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
             mat.renderQueue = (int)RenderQueue.Transparent;
         }
-        AssetDatabase.CreateAsset(mat, path);
+
+        if (created) AssetDatabase.CreateAsset(mat, path);
+        else EditorUtility.SetDirty(mat);
         return mat;
+    }
+
+    /// <summary>
+    /// Textura de grama de sabana, 512 px, generada por código y sin costuras al repetirse: el ruido
+    /// sale de rejillas que dividen exacto el tamaño y se leen en módulo. Mezcla verde oscuro, verde
+    /// y paja seca, con grano por píxel. Se crea una vez (Grama.png) y luego se reutiliza.
+    /// </summary>
+    public static Texture2D GrassTexture()
+    {
+        string path = Folder + "/Grama.png";
+        var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        if (tex != null) return tex;
+
+        const int size = 512;
+        var rnd = new System.Random(7);
+        float[] Grid(int cells)
+        {
+            var g = new float[cells * cells];
+            for (int i = 0; i < g.Length; i++) g[i] = (float)rnd.NextDouble();
+            return g;
+        }
+        float Sample(float[] g, int cells, float u, float v)
+        {
+            float x = u * cells, y = v * cells;
+            int x0 = (int)x, y0 = (int)y;
+            float fx = Mathf.SmoothStep(0f, 1f, x - x0), fy = Mathf.SmoothStep(0f, 1f, y - y0);
+            float At(int i, int j) => g[(j % cells) * cells + (i % cells)];
+            return Mathf.Lerp(Mathf.Lerp(At(x0, y0), At(x0 + 1, y0), fx),
+                              Mathf.Lerp(At(x0, y0 + 1), At(x0 + 1, y0 + 1), fx), fy);
+        }
+        float[] large = Grid(4), medium = Grid(16), fine = Grid(64);
+        Color dark = new Color(0.30f, 0.40f, 0.17f), mid = new Color(0.45f, 0.53f, 0.24f), dry = new Color(0.64f, 0.61f, 0.35f);
+
+        var img = new Texture2D(size, size, TextureFormat.RGB24, false);
+        var pixels = new Color[size * size];
+        for (int y = 0; y < size; y++)
+        for (int x = 0; x < size; x++)
+        {
+            float u = x / (float)size, v = y / (float)size;
+            float n = 0.5f * Sample(large, 4, u, v) + 0.3f * Sample(medium, 16, u, v) + 0.2f * Sample(fine, 64, u, v);
+            n = Mathf.Clamp01((n - 0.5f) * 1.8f + 0.5f);
+            var c = n < 0.5f ? Color.Lerp(dark, mid, n * 2f) : Color.Lerp(mid, dry, (n - 0.5f) * 2f);
+            pixels[y * size + x] = c * (0.92f + 0.16f * (float)rnd.NextDouble());
+        }
+        img.SetPixels(pixels);
+        EnsureFolder(Folder);
+        File.WriteAllBytes(path, img.EncodeToPNG());
+        UnityEngine.Object.DestroyImmediate(img);
+
+        AssetDatabase.ImportAsset(path);
+        var importer = (TextureImporter)AssetImporter.GetAtPath(path);
+        importer.wrapMode = TextureWrapMode.Repeat;
+        importer.anisoLevel = 8;
+        importer.maxTextureSize = size;
+        importer.SaveAndReimport();
+        return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+    }
+
+    /// <summary>
+    /// Grano fino de la grama para el detail map de URP Lit: gris centrado en 0,5 (que URP multiplica
+    /// por 2, así que en promedio no oscurece ni aclara) con matas y briznas. Se repite a pocos
+    /// metros encima de la textura grande y rompe la cuadrícula que se vería con una sola escala.
+    /// </summary>
+    public static Texture2D GrassDetailTexture()
+    {
+        string path = Folder + "/GramaDetalle.png";
+        var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        if (tex != null) return tex;
+
+        const int size = 256, cells = 16;
+        var rnd = new System.Random(11);
+        var grid = new float[cells * cells];
+        for (int i = 0; i < grid.Length; i++) grid[i] = (float)rnd.NextDouble();
+        float Clumps(float u, float v)
+        {
+            float x = u * cells, y = v * cells;
+            int x0 = (int)x, y0 = (int)y;
+            float fx = Mathf.SmoothStep(0f, 1f, x - x0), fy = Mathf.SmoothStep(0f, 1f, y - y0);
+            float At(int i, int j) => grid[(j % cells) * cells + (i % cells)];
+            return Mathf.Lerp(Mathf.Lerp(At(x0, y0), At(x0 + 1, y0), fx),
+                              Mathf.Lerp(At(x0, y0 + 1), At(x0 + 1, y0 + 1), fx), fy);
+        }
+
+        var img = new Texture2D(size, size, TextureFormat.RGB24, false);
+        var pixels = new Color[size * size];
+        for (int y = 0; y < size; y++)
+        for (int x = 0; x < size; x++)
+        {
+            float g = 0.5f + 0.10f * (Clumps(x / (float)size, y / (float)size) - 0.5f) * 2f
+                           + 0.08f * ((float)rnd.NextDouble() - 0.5f) * 2f;
+            pixels[y * size + x] = new Color(g, g, g);
+        }
+        img.SetPixels(pixels);
+        EnsureFolder(Folder);
+        File.WriteAllBytes(path, img.EncodeToPNG());
+        UnityEngine.Object.DestroyImmediate(img);
+
+        AssetDatabase.ImportAsset(path);
+        var importer = (TextureImporter)AssetImporter.GetAtPath(path);
+        importer.wrapMode = TextureWrapMode.Repeat;
+        importer.anisoLevel = 8;
+        importer.maxTextureSize = size;
+        importer.SaveAndReimport();
+        return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+    }
+
+    /// <summary>
+    /// Anillo de cerros alrededor de la parcela (origen en su centro, base en Y = 0). Suben desde el
+    /// radio interior y su altura varía con senos de frecuencia entera en el ángulo, así que el
+    /// anillo cierra sin costura. Se reescribe en su asset (Cerros.asset) conservando el GUID; con
+    /// la misma semilla sale idéntico.
+    /// </summary>
+    public static Mesh Hills(EnvironmentSpec e)
+    {
+        const int segments = 192, rings = 20;
+        var rnd = new System.Random(e.hillsSeed);
+        float p1 = (float)rnd.NextDouble() * 6.2832f, p2 = (float)rnd.NextDouble() * 6.2832f, p3 = (float)rnd.NextDouble() * 6.2832f;
+        var b = new MeshBuilder();
+
+        for (int i = 0; i <= rings; i++)
+        {
+            float t = i / (float)rings;
+            float r = Mathf.Lerp(e.hillsInnerRadius, e.hillsOuterRadius, t);
+            float rise = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / 0.35f));
+            for (int j = 0; j < segments; j++)
+            {
+                float a = j / (float)segments * Mathf.PI * 2f;
+                float n = 0.5f + 0.5f * (0.5f * Mathf.Sin(3f * a + p1 + 1.5f * t)
+                                       + 0.3f * Mathf.Sin(7f * a + p2 + 3f * t)
+                                       + 0.2f * Mathf.Sin(13f * a + p3 + 6f * t));
+                float h = rise * Mathf.Lerp(e.hillsMinHeight, e.hillsMaxHeight, n);
+                var p = new Vector3(Mathf.Cos(a) * r, h, Mathf.Sin(a) * r);
+                b.Vertex(p, Vector3.up, new Vector2(p.x, p.z));
+            }
+        }
+        for (int i = 1; i <= rings; i++)
+        for (int j = 0; j < segments; j++)
+        {
+            int Ix(int ri, int sj) => ri * segments + (sj % segments);
+            b.Quad(Ix(i - 1, j), Ix(i, j), Ix(i, j + 1), Ix(i - 1, j + 1));
+        }
+
+        var mesh = b.ToMesh("Cerros");
+        mesh.RecalculateNormals();
+        mesh.RecalculateTangents();
+
+        string path = Folder + "/Cerros.asset";
+        var existing = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+        if (existing == null)
+        {
+            EnsureFolder(Folder);
+            AssetDatabase.CreateAsset(mesh, path);
+            return mesh;
+        }
+        EditorUtility.CopySerialized(mesh, existing);
+        UnityEngine.Object.DestroyImmediate(mesh);
+        return existing;
     }
 
     static Mesh BuildUnitBlock()

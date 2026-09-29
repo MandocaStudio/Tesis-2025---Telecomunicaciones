@@ -2,8 +2,8 @@
 
 > Documento de arranque de la **Fase 4**. Escrito para que una sesión nueva pueda empezar en frío:
 > trae el plano digitalizado, la decisión de enfoque con su porqué, el diseño de la herramienta y
-> los prompts listos para pegar. Estado a 2026-09-29, tras las **Sesiones A** (blockout generado)
-> **y B** (antenas).
+> los prompts listos para pegar. Estado a 2026-09-29: **Fase 4 completa** — Sesiones A (blockout),
+> B (antenas), servicios y vías, C (recorrido en primera persona) y D (acabado visual).
 >
 > Contexto general del proyecto: [Handoff.md](Handoff.md) · Reglas del repo: [CLAUDE.md](CLAUDE.md)
 
@@ -13,13 +13,15 @@
 
 | Pieza | Estado |
 |---|---|
-| Escena `Modulo3D.unity` | ✅ En Build Settings (idx 6). Cámara + EventSystem + vista provisional (`UI — Módulo 3D`, botón Atrás) + el blockout generado. |
+| Escena `Modulo3D.unity` | ✅ En Build Settings (idx 6). `Jugador` (con la cámara) + EventSystem + HUD (`UI — Módulo 3D`) + la estación generada. |
 | Botón "Módulo 3D" en el menú | ✅ `BtnModulo3D` → escena `Modulo3D` vía `MenuNavigation`. |
 | Generador del blockout (Sesión A) | ✅ `StationLayout` + `StationGenerator` + ventana **PVI > Estación 3D > Constructor**. Terreno, cerca con portón, edificio con tabiquería y puertas, pedestales. Ver §4. |
 | Antenas (Sesión B) | ✅ Las 7, generadas desde la misma antena tipo parametrizada por diámetro: pedestal, montura azimut-elevación con soporte en Y, plato paraboloide, subreflector en el foco. Ver §4.1. |
-| Servicios, vía, estacionamiento, caseta | ❌ Pendiente. Las posiciones ya están medidas en §2. |
-| Recorrido (C) y acabado visual (D) | ❌ Pendiente. Prompts en §5. |
-| `Assets/script/movement.cs` | ⚠️ Movimiento en primera persona del compañero (Rigidbody + `Input.GetAxis`). Ver §6. |
+| Servicios, vías y caseta | ✅ Vía, acceso del portón, estacionamiento con 8 puestos, guías de onda, planta eléctrica, tanque diésel, transformador, chillers, tanque de agua y caseta. Ver §4.2. |
+| Recorrido en primera persona (Sesión C) | ✅ `FirstPersonWalker` + HUD. Ver §4.3. |
+| Acabado visual (Sesión D) | ✅ Fachada blanca con franja azul y ventanas, A/A en la losa, grama, sabana y cerros, sol, niebla, sombras y postprocesado. Ver §4.4. |
+| Atrezo interior (racks, consolas, mobiliario) | ❌ No empezado. Los locales están vacíos. |
+| `Assets/script/movement.cs` | Del compañero. **No se usa en Modulo3D** (decisión de la Sesión C, ver §4.3); sigue intacto en `Practica Test`. |
 | ProBuilder 6.1.2 | ✅ Añadido al manifest (2026-09-29). Unity lo resuelve al recuperar el foco. |
 | AI Navigation 2.0.14 · Cinemachine 6.6.0 | ✅ Ya estaban en el proyecto. |
 | Easy Designer | ❌ El usuario lo tiene, pero **no está importado**. Ver §3. |
@@ -192,8 +194,9 @@ muros exteriores van por dentro de la huella de 66 × 22; los tabiques, centrado
 locales y de cara interior a cara interior. Todo lleva `BoxCollider` (menos los postes de la
 cerca, que son finos y los tapa la malla), listo para el recorrido de la Sesión C.
 
-**Resultado en `Modulo3D`:** 427 piezas — terreno, 5 paños de malla + portón + 226 postes,
-8 pisos de local, 4 fachadas, 7 tabiques, losa de techo, y 7 antenas de 22 piezas cada una.
+**Resultado en `Modulo3D`:** 453 piezas — terreno, 5 paños de malla + portón + 226 postes,
+8 pisos de local, 4 fachadas, 7 tabiques, losa de techo, 7 antenas de 22 piezas cada una, y
+26 de servicios, vías y ductos. **Todo el plano de conjunto está modelado.**
 
 ### 4.1 La antena tipo (Sesión B)
 
@@ -248,6 +251,88 @@ elevación 65°. Dato para la defensa: **desde Camatagua (≈ 9,8° N, 66,9° O)
 a El ≈ 72,6°, Az ≈ 229°** (al suroeste, no al sur). Si el tutor quiere que las antenas apunten de
 verdad al satélite del módulo 2D, son dos números por antena en el asset + "Ajustar pedestales".
 
+### 4.2 Servicios, vías y caseta
+
+Mismo patrón: los datos en `StationLayout` (`site` para lo que va a ras de suelo, `facilities`
+para lo que se levanta) y un `Build…` por grupo en el generador.
+
+- **Pavimentos:** vía de lado a lado (Z 14–22), acceso del portón (X 96–104) y estacionamiento
+  (X 70–102, Z 24–36), con 5 cm de asfalto sobre el terreno para que no haya z-fighting.
+- **Estacionamiento:** los 8 puestos del plano (3,75 × 6 m, centrados, a 1 m del borde norte),
+  marcados con 9 líneas blancas.
+- **Guías de onda:** las líneas discontinuas verde oliva del plano como ductos de 0,6 × 0,4 m a
+  ras de suelo. Las de las antenas 1 y 2 salen del eje de la antena y llegan a la fachada norte;
+  la tercera es el tramo corto que el plano dibuja al norte del transformador, tal cual.
+- **Servicios:** cada uno tiene una forma (`Edificio`, `Equipo`, `TanqueVertical`,
+  `TanqueHorizontal`), una losa opcional y un margen. El margen existe porque la huella del plano
+  incluye el espacio alrededor del equipo: el transformador ocupa 6 × 6 en el plano, pero el
+  aparato mide 3 × 3 sobre su losa. El tanque diésel se tumba solo a lo largo de su lado mayor.
+- `Validate()` avisa si algo se sale de la parcela, se mete en el edificio, se pisa con otro
+  servicio, si el margen se come la huella, si un tanque no cabe en su losa, si los puestos no
+  caben en el estacionamiento o si un ducto tiene menos de dos puntos.
+
+### 4.3 Recorrido en primera persona (Sesión C)
+
+**Decisión (con el usuario): controlador nuevo, `movement.cs` sin tocar.** El del compañero
+gira solo en horizontal (no se puede mirar una antena de 30 m), descarta los movimientos de ratón
+por debajo de ±0,5 (apuntar va a saltos), bloquea el cursor para siempre (el botón Atrás no se
+podría pulsar) y en su escena el Rigidbody tiene la altura congelada (no sube la losa de 15 cm).
+Sigue funcionando en `Practica Test`, que es donde se usa.
+
+| Pieza | Qué hace |
+|---|---|
+| `Assets/Scripts/Station3D/FirstPersonWalker.cs` | CharacterController + Input System. W A S D / flechas / stick izquierdo para caminar (4,5 m/s; 9 con Shift o gatillo), ratón / stick derecho para mirar (±85°). Esc o Start sueltan el cursor; clic en la escena o A lo vuelven a bloquear. Suelta el cursor al perder el foco y al salir de la escena. |
+| `Assets/Scripts UI/Modulo3DHud.cs` | Pone `.m3d-hud--walking` en la raíz del HUD mientras se camina, y le dice al caminante qué clics caen sobre un botón para que Atrás no bloquee el cursor. |
+| `Modulo3DView.uxml` + `Common.uss` (`.m3d-*`) | HUD transparente: título arriba a la izquierda, aviso central "Haz clic para recorrer la estación" con los controles, punto de mira y ayuda "Esc" mientras se camina, y el Atrás de siempre (lo cablea `MenuNavigation`). |
+| Objeto `Jugador` en `Modulo3D` | Fuera del root generado, así que regenerar no lo toca. Empieza en (100, 0,1, 6), en el acceso del portón mirando al norte. Cápsula de 1,8 × 0,35 m, escalón máximo 0,3 m; la Main Camera es hija suya a 1,65 m, con near clip 0,1 m. |
+
+**Sin NavMesh.** Los colliders del blockout ya bastan para limitar por dónde se camina: la cerca y
+el portón cierran la parcela, y el recorrido es libre, no por rutas. Un NavMesh solo haría falta
+para clic-para-ir o guías automáticas.
+
+**Verificado en Play** (moviendo la cápsula por código): el portón y la cerca paran a 0,4 m; la
+fachada, los tabiques, el pedestal de la Antena 1 y el tanque de agua paran justo en su cara; por
+la entrada principal y por la puerta de la Sala RF se pasa, y la cápsula sube sola la losa del
+edificio. El HUD cambia de estado como debe: aviso ↔ punto de mira centrado. **El usuario lo probó
+a mano (2026-09-29):** clic para empezar, caminar, mirar, entrar al edificio, Esc y Atrás, todo bien.
+Desde el CLI no se puede, porque el Input System solo le da la entrada al juego con la ventana Game
+enfocada (ver §6).
+
+### 4.4 Acabado visual (Sesión D)
+
+**Generado por datos** (en `StationLayout` y `StationGenerator`, como todo lo demás):
+
+- **Fachada:** bloque blanco con la **franja azul** del plano (el azul de acento del aplicativo,
+  `#1560D8`, el mismo `--color-purple` de `Variables.uss`), a 3,4–3,85 m. Son cuatro bandas por fuera
+  de la huella que no se solapan en las esquinas. **Ventanas horizontales**, una por local de fachada,
+  con antepecho de 1,1 m y 1 m de alto (el dintel queda a la altura del de las puertas) y vidrio
+  translúcido en medio del muro; se ven por las dos caras. `Validate()` avisa si una ventana se sale
+  de su local, pisa la puerta o si la franja taparía algún vano.
+- **Losa:** 6 equipos de A/A en fila sobre el eje.
+- **Grama en dos escalas:** una textura grande de manchas verde/paja cada 50 m y un *detail map* de
+  grano fino cada 2,5 m (URP Lit, `_DETAIL_MULX2`). Con una sola escala de 6 m la repetición se veía
+  en cuadrícula desde el aire. Las dos texturas se generan por código (`Grama.png`, `GramaDetalle.png`)
+  y no tienen costuras. El tiling se recalcula en cada generación a partir de las medidas.
+- **Entorno** (`EnvironmentSpec`): sabana de 3,4 km alrededor de la parcela, 2 cm por debajo de ella,
+  y un **anillo de cerros** de 650 a 1600 m del centro, de 60 a 240 m de alto, con perfil de senos
+  de frecuencia entera (cierra sin costura) y semilla fija (1970): siempre salen los mismos cerros.
+- **Paleta:** los colores de acabado viven en el `Kit` del generador. Regenerar NO los pisa (respeta
+  retoques a mano); para volver a ellos, **PVI > Estación 3D > Reaplicar colores del acabado**.
+
+**Ajustes de escena** (fuera del root generado, puestos una vez; regenerar no los toca):
+
+| Qué | Valor |
+|---|---|
+| Sol (Directional Light) | desde el sureste, 48° de altura (rotación 48, −35, 0), intensidad 1,3, luz cálida, sombras suaves |
+| Niebla | exponencial², densidad 0,0006, color del horizonte: funde los cerros con el cielo |
+| Cámara del jugador | far clip 2500 m (para ver los cerros), near 0,1 m |
+| Sombras (**`PC_RPAsset`, afecta a todo el proyecto**) | distancia 50 → **250 m** (ya tenía 4 cascadas; el `m_ShadowCascades: 0` del YAML es un campo heredado que no se usa). Las demás escenas son UI y no lo notan. |
+| Postprocesado | perfil propio `Assets/Settings/Modulo3DProfile.asset` (el `SampleSceneProfile` lo comparte el menú): tonemapping Neutral (respeta los colores de marca), bloom suave (umbral 1, intensidad 0,3), contraste +8, saturación +6, exposición +0,1, viñeta 0,18 |
+
+**Verificado:** compila, `Validate()` limpio, Play con el juego corriendo sin errores ni warnings,
+y capturas desde el jugador, desde el aire y desde dentro de la Sala de Equipos RF (las ventanas se
+ven por las dos caras). El usuario confirmó con una captura el HUD sobre el 3D y probó el recorrido.
+
 ### Supuestos (el plano no los da)
 
 Cada campo del `StationLayout` lleva un Tooltip que dice si su número es *Plano* (rotulado),
@@ -262,6 +347,14 @@ Cada campo del `StationLayout` lleva un Tooltip que dice si su número es *Plano
 | Antena tipo: f/D | 0,35 | Rango típico de una Cassegrain: 0,3–0,4. |
 | Antena tipo: resto de proporciones | subreflector 0,1·D, eje→vértice 0,09·D, soporte 0,3·D de ancho… | Todas en `AntennaDesign`, con su Tooltip. |
 | Apuntamiento | Az 180°, El 65° | El plano da "sur, 60–70°". |
+| Alturas de servicios | planta 4,5 · caseta 3 · transformador 2,5 · chillers 2,4 · tanque de agua 6 m | Tanque diésel: Ø 3 m. |
+| Losas y márgenes de equipos | losa 0,3 m; margen 1–1,5 m | Transformador, chillers y tanque diésel. |
+| Asfalto / pintura | 5 cm / 1 cm | |
+| Ductos | 0,6 × 0,4 m a ras de suelo | En una estación real pueden ir elevados. |
+| Franja azul | 3,4 m del suelo, 0,45 m de ancho | El plano dice "franja azul", no dónde. |
+| Ventanas | una por local de fachada; antepecho 1,1 m, alto 1 m | El plano dice "ventanas horizontales", no las dibuja. |
+| Equipos de A/A | 6 de 1,4 × 1,1 × 0,9 m | |
+| Entorno | sabana de 3,4 km; cerros de 60–240 m a 0,65–1,6 km | Sin precisión métrica, como decía §3. |
 | Muro exterior / tabique | 0,20 / 0,15 m | Bloque. |
 | Losa de piso / techo | 0,15 / 0,25 m | Altura libre de muros: 4,5 − 0,15 − 0,25 = 4,1 m. |
 | Altura de puertas | 2,1 m interiores · 2,4 m de fachada | |
@@ -282,7 +375,8 @@ Cada campo del `StationLayout` lleva un Tooltip que dice si su número es *Plano
 ### Orden de construcción sugerido
 
 ~~Terreno y cerca → losa del edificio → muros perimetrales → tabiquería interior → losa de techo →
-pedestales de antenas → antenas~~ (hecho) → servicios → vía, estacionamiento, caseta → props.
+pedestales de antenas → antenas → servicios → vía, estacionamiento, caseta~~ (hecho) → props
+(mobiliario, racks, A/A del techo: Sesión D).
 
 Para cada parte nueva: sus medidas van al `StationLayout` (con su Tooltip Plano/Medido/Supuesto),
 su comprobación a `Validate()`, y su construcción a un `Build…` más en `StationGenerator`.
@@ -348,7 +442,9 @@ Ojo con una lección del módulo 2D: la parábola tiene foco en R²/(4·profundi
 subreflector va ahí. Verifica compilación y consola como dice CLAUDE.md.
 ```
 
-### Sesión C — Recorrido en primera persona
+### Sesión C — Recorrido en primera persona ✅ hecha (2026-09-29)
+
+Resultado en §4.3. Se deja el prompt como registro.
 
 ```
 Continuamos la Fase 4 del Módulo 3D. Lee CLAUDE.md, Handoff.md y MODULO-3D.md.
@@ -374,7 +470,9 @@ Considera la skill unity:initialize-ai-navigation si conviene un NavMesh (por ej
 para limitar por dónde se puede caminar). El paquete ya está instalado.
 ```
 
-### Sesión D — Acabado visual
+### Sesión D — Acabado visual ✅ hecha (2026-09-29)
+
+Resultado en §4.4. Se deja el prompt como registro.
 
 ```
 Continuamos la Fase 4 del Módulo 3D. Lee CLAUDE.md, Handoff.md y MODULO-3D.md.
@@ -419,6 +517,17 @@ Assets/UI/Styles/Variables.uss y el criterio de diseño en la memoria del proyec
 - **Texturas en la Sesión D**: como cada pieza es un cubo de 1 m escalado, una textura normal se
   estira con la pieza. Usar un material con mapeo en espacio de mundo (triplanar) o escalar el
   tiling por material. Los `Blockout_*.mat` se pueden editar o sustituir: regenerar no los pisa.
+- **Play se congela con Unity sin foco.** `PlayerSettings.runInBackground` está en falso, así
+  que en cuanto el Editor pierde el foco el juego no avanza fotogramas (`Time.frameCount` se queda
+  quieto) y el HUD no recalcula estilos. Para probar desde el CLI: `Application.runInBackground =
+  true` por `eval` dentro de Play (solo dura esa sesión de Play; no toca los ajustes del proyecto).
+- **El primer `eval` tras entrar en Play puede agotar sus 5 s** mientras Unity compila shaders
+  (niebla, vidrio, detail map) y deja un error `Failed to handle /api/exec request` en la consola.
+  Es de la herramienta, no del proyecto: esperar ~15 s tras `editor_play`, limpiar la consola con el
+  juego ya corriendo y volver a leerla.
+- **El teclado no se puede inyectar** desde el CLI: `InputSystem.QueueStateEvent` marca la tecla
+  como pulsada, pero con `editorInputBehaviorInPlayMode = PointersAndKeyboardsRespectGameViewFocus`
+  el juego no la recibe sin la ventana Game enfocada. Caminar de verdad lo prueba el usuario.
 - **La vista provisional estaba mal cableada** hasta la Sesión A: `Modulo3D` era una copia del
   menú principal (cargaba `MenuPrincipal_Azul.uxml` y no tenía botón Atrás). Ya carga
   `Modulo3DView.uxml` con `BtnBack → Menu Inicial`, como decía el Handoff.

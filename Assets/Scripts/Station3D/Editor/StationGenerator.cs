@@ -24,7 +24,7 @@ public static class StationGenerator
     /// <summary>Qué partes construir. Se recuerdan entre sesiones del Editor.</summary>
     public struct Options
     {
-        public bool terrain, fence, building, roof, antennas;
+        public bool terrain, fence, building, roof, antennas, site, environment;
 
         const string Prefix = "PVI.Station3D.";
 
@@ -35,6 +35,8 @@ public static class StationGenerator
             building  = EditorPrefs.GetBool(Prefix + "building", true),
             roof      = EditorPrefs.GetBool(Prefix + "roof", true),
             antennas  = EditorPrefs.GetBool(Prefix + "antennas", true),
+            site      = EditorPrefs.GetBool(Prefix + "site", true),
+            environment = EditorPrefs.GetBool(Prefix + "environment", true),
         };
 
         public void Save()
@@ -44,6 +46,8 @@ public static class StationGenerator
             EditorPrefs.SetBool(Prefix + "building", building);
             EditorPrefs.SetBool(Prefix + "roof", roof);
             EditorPrefs.SetBool(Prefix + "antennas", antennas);
+            EditorPrefs.SetBool(Prefix + "site", site);
+            EditorPrefs.SetBool(Prefix + "environment", environment);
         }
     }
 
@@ -58,6 +62,18 @@ public static class StationGenerator
             return;
         }
         Generate(layout, Options.Load());
+    }
+
+    /// <summary>
+    /// Vuelve a poner en los materiales los colores de acabado del generador. Regenerar no los toca
+    /// (para respetar retoques a mano); esto sí, y solo cuando se pide.
+    /// </summary>
+    [MenuItem("PVI/Estación 3D/Reaplicar colores del acabado")]
+    static void ReapplyFinish()
+    {
+        new Kit(reapplyFinish: true);
+        AssetDatabase.SaveAssets();
+        Debug.Log($"{LogTag} Colores del acabado reaplicados en {BlockoutAssets.Folder}.");
     }
 
     /// <summary>Roots generados en la escena activa.</summary>
@@ -95,6 +111,8 @@ public static class StationGenerator
         if (opts.fence)     BuildFence(root.transform, layout, kit);
         if (opts.building)  BuildBuilding(root.transform, layout.building, kit, opts.roof);
         if (opts.antennas)  BuildAntennas(root.transform, layout, kit);
+        if (opts.site)      { BuildSite(root.transform, layout, kit); BuildFacilities(root.transform, layout, kit); }
+        if (opts.environment) BuildEnvironment(root.transform, layout, kit);
 
         // Se registra al final para que el Undo se lleve la jerarquía entera de una vez.
         Undo.RegisterCreatedObjectUndo(root, "Regenerar estación");
@@ -122,6 +140,8 @@ public static class StationGenerator
 
     static void BuildTerrain(Transform root, StationLayout L, Kit k)
     {
+        // Grama a escala real, en sus dos escalas (ver EnvironmentSpec).
+        k.Tile(k.Ground, L.plotSize, L.environment);
         // Cara superior en Y = 0: la losa crece hacia abajo.
         k.Box(root, "Terreno",
               new Vector3(L.plotSize.x / 2f, -L.groundThickness, L.plotSize.y / 2f),
@@ -214,6 +234,13 @@ public static class StationGenerator
                 var roomGo = Group(rooms, room.name, new Vector3((x0 + x1) / 2f, 0f, (zTop + zBot) / 2f));
                 k.Box(roomGo, "Piso", Vector3.zero, new Vector3(room.width, b.floorThickness, row.depth), k.Floor);
 
+                foreach (var w in room.windows)
+                {
+                    var window = new Opening(x0 + w.offset + W / 2f, w.width, b.windowHeight, b.windowSill, glazed: true);
+                    if (r == 0) northOpenings.Add(window);
+                    else if (r == last) southOpenings.Add(window);
+                }
+
                 foreach (var door in room.doors)
                 {
                     float fromWest = x0 + door.offset + W / 2f;
@@ -248,8 +275,17 @@ public static class StationGenerator
 
         // Muros exteriores por dentro de la huella. Norte y sur de punta a punta; este y oeste
         // entre ellos, para que las esquinas no se solapen.
-        Wall(k, exterior, "Fachada norte", true, new Vector3(-W / 2f, floorTop, D / 2f - tE / 2f), W, tE, wallH, northOpenings, k.ExteriorWall);
-        Wall(k, exterior, "Fachada sur", true, new Vector3(-W / 2f, floorTop, -D / 2f + tE / 2f), W, tE, wallH, southOpenings, k.ExteriorWall);
+        Wall(k, exterior, "Fachada norte", true, new Vector3(-W / 2f, floorTop, D / 2f - tE / 2f), W, tE, wallH, northOpenings, k.ExteriorWall, b.glassThickness);
+        Wall(k, exterior, "Fachada sur", true, new Vector3(-W / 2f, floorTop, -D / 2f + tE / 2f), W, tE, wallH, southOpenings, k.ExteriorWall, b.glassThickness);
+
+        // Franja azul: cuatro bandas pegadas por fuera de la huella. Las de norte y sur cubren las
+        // esquinas; las de este y oeste van entre ellas, así ninguna cara se solapa con otra.
+        float sd = b.stripeDepth;
+        var stripe = Group(exterior, "Franja azul");
+        k.Box(stripe, "Norte", new Vector3(0f, b.stripeBottom, D / 2f + sd / 2f), new Vector3(W + 2f * sd, b.stripeHeight, sd), k.Stripe, collider: false);
+        k.Box(stripe, "Sur", new Vector3(0f, b.stripeBottom, -D / 2f - sd / 2f), new Vector3(W + 2f * sd, b.stripeHeight, sd), k.Stripe, collider: false);
+        k.Box(stripe, "Oeste", new Vector3(-W / 2f - sd / 2f, b.stripeBottom, 0f), new Vector3(sd, b.stripeHeight, D), k.Stripe, collider: false);
+        k.Box(stripe, "Este", new Vector3(W / 2f + sd / 2f, b.stripeBottom, 0f), new Vector3(sd, b.stripeHeight, D), k.Stripe, collider: false);
         Wall(k, exterior, "Fachada oeste", false, new Vector3(-W / 2f + tE / 2f, floorTop, -D / 2f + tE), D - 2f * tE, tE, wallH, null, k.ExteriorWall);
         Wall(k, exterior, "Fachada este", false, new Vector3(W / 2f - tE / 2f, floorTop, -D / 2f + tE), D - 2f * tE, tE, wallH, null, k.ExteriorWall);
 
@@ -262,9 +298,15 @@ public static class StationGenerator
                  new Vector3(-W / 2f + tE, floorTop, zTop), W - 2f * tE, tI, wallH, rowBoundaryOpenings[r], k.Partition);
         }
 
-        if (roof)
-            k.Box(bld, "Losa de techo", new Vector3(0f, b.height - b.roofThickness, 0f),
-                  new Vector3(W, b.roofThickness, D), k.Roof);
+        if (!roof) return;
+        k.Box(bld, "Losa de techo", new Vector3(0f, b.height - b.roofThickness, 0f),
+              new Vector3(W, b.roofThickness, D), k.Roof);
+
+        // Equipos de A/A repartidos en fila a lo largo del eje de la losa.
+        var units = Group(bld, "Equipos de A/A");
+        for (int i = 0; i < b.roofUnits; i++)
+            k.Box(units, $"Equipo A/A {i + 1}", new Vector3(-W / 2f + (i + 0.5f) * W / b.roofUnits, b.height, 0f),
+                  b.roofUnitSize, k.Steel);
     }
 
     static void BuildAntennas(Transform root, StationLayout L, Kit k)
@@ -364,20 +406,124 @@ public static class StationGenerator
             GameObjectUtility.SetStaticEditorFlags(t.gameObject, 0);
     }
 
+    static void BuildSite(Transform root, StationLayout L, Kit k)
+    {
+        var s = L.site;
+        var site = Group(root, "Vías, estacionamiento y ductos");
+
+        foreach (var p in s.paving)
+            k.Box(site, p.name, Flat((p.min + p.max) / 2f), Flat3(p.max - p.min, s.pavingThickness), k.Asphalt);
+
+        // Estacionamiento: losa de asfalto y, encima, las líneas que separan los puestos.
+        var pk = s.parking;
+        var parking = Group(site, "Estacionamiento");
+        k.Box(parking, "Losa", Flat((pk.min + pk.max) / 2f), Flat3(pk.max - pk.min, s.pavingThickness), k.Asphalt);
+        float rowStart = (pk.min.x + pk.max.x) / 2f - pk.stalls * pk.stallWidth / 2f;
+        float stallNorth = pk.max.y - pk.stallSetback;
+        for (int i = 0; i <= pk.stalls; i++)
+        {
+            var line = new Vector2(rowStart + i * pk.stallWidth, stallNorth - pk.stallDepth / 2f);
+            k.Box(parking, $"Línea {i + 1}", Flat(line) + Vector3.up * s.pavingThickness,
+                  new Vector3(pk.lineWidth, s.pavingThickness / 5f, pk.stallDepth), k.Paint, collider: false);
+        }
+
+        // Ductos a ras de suelo, un tramo recto por segmento de la polilínea.
+        var ducts = Group(site, "Guías de onda y ductos");
+        foreach (var d in s.ducts)
+        {
+            var duct = Group(ducts, d.name);
+            for (int i = 1; i < d.path.Count; i++)
+            {
+                Vector3 a = Flat(d.path[i - 1]), b = Flat(d.path[i]);
+                k.Piece(duct, $"Tramo {i}", (a + b) / 2f, Quaternion.LookRotation(b - a),
+                        new Vector3(s.ductWidth, s.ductHeight, Vector3.Distance(a, b)), k.Block, k.Concrete, collider: true);
+            }
+        }
+    }
+
+    static void BuildFacilities(Transform root, StationLayout L, Kit k)
+    {
+        var group = Group(root, "Servicios");
+        foreach (var f in L.facilities)
+        {
+            // Ancla a ras de suelo en el centro de la huella; losa opcional y el cuerpo encima.
+            var anchor = Group(group, f.name, Flat(f.position));
+            if (f.padHeight > 0f)
+                k.Box(anchor, "Losa", Vector3.zero, Flat3(f.size, f.padHeight), k.Concrete);
+
+            var inner = f.size - Vector2.one * (2f * f.inset);
+            var bodyBase = Vector3.up * f.padHeight;
+            switch (f.shape)
+            {
+                case FacilityShape.Edificio:
+                    k.Box(anchor, "Cuerpo", bodyBase, Flat3(inner, f.height), k.ExteriorWall);
+                    break;
+                case FacilityShape.Equipo:
+                    k.Box(anchor, "Equipo", bodyBase, Flat3(inner, f.height), k.Steel);
+                    break;
+                case FacilityShape.TanqueVertical:
+                    float dia = Mathf.Min(inner.x, inner.y);
+                    k.Piece(anchor, "Tanque", bodyBase, Quaternion.identity, new Vector3(dia, f.height, dia),
+                            k.Cylinder, k.Tank, collider: true);
+                    break;
+                case FacilityShape.TanqueHorizontal:
+                    // Tumbado a lo largo del lado mayor, apoyado en la losa: el eje queda a medio diámetro.
+                    bool alongX = inner.x >= inner.y;
+                    float length = alongX ? inner.x : inner.y;
+                    var axis = alongX ? Vector3.right : Vector3.forward;
+                    var center = bodyBase + Vector3.up * (f.height / 2f);
+                    k.Strut(anchor, "Tanque", center - axis * (length / 2f), center + axis * (length / 2f),
+                            f.height, k.Cylinder, k.Tank, collider: true);
+                    break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Sabana alrededor de la parcela y anillo de cerros al fondo, centrados en la parcela. La sabana
+    /// queda un poco por debajo de Y = 0 para no hacer z-fighting con el terreno de la parcela.
+    /// </summary>
+    static void BuildEnvironment(Transform root, StationLayout L, Kit k)
+    {
+        var e = L.environment;
+        var env = Group(root, "Entorno");
+        var center = Flat(L.plotSize / 2f);
+
+        k.Tile(k.Savanna, Vector2.one * e.savannaSize, e);
+        k.Box(env, "Sabana", center + Vector3.down * (e.savannaDrop + L.groundThickness),
+              Flat3(Vector2.one * e.savannaSize, L.groundThickness), k.Savanna);
+        k.Piece(env, "Cerros", center + Vector3.down * e.savannaDrop, Quaternion.identity, Vector3.one,
+                BlockoutAssets.Hills(e), k.Hills);
+    }
+
+    /// <summary>Punto de la planta (X, Z) a ras de suelo.</summary>
+    static Vector3 Flat(Vector2 p) => new Vector3(p.x, 0f, p.y);
+
+    /// <summary>Tamaño de una pieza con huella X × Z y altura <paramref name="height"/>.</summary>
+    static Vector3 Flat3(Vector2 footprint, float height) => new Vector3(footprint.x, height, footprint.y);
+
     // ------------------------------------------------------------------ muros
 
+    /// <summary>Vano en un muro: puerta (antepecho 0) o ventana (con antepecho y vidrio).</summary>
     readonly struct Opening
     {
-        public readonly float center, width, height;
-        public Opening(float center, float width, float height) { this.center = center; this.width = width; this.height = height; }
+        public readonly float center, width, height, sill;
+        public readonly bool glazed;
+
+        public Opening(float center, float width, float height, float sill = 0f, bool glazed = false)
+        {
+            this.center = center; this.width = width; this.height = height; this.sill = sill; this.glazed = glazed;
+        }
     }
 
     /// <summary>
     /// Muro recto de <paramref name="length"/> m a lo largo de X o de Z, desde <paramref name="start"/>
-    /// (punto del eje del muro en su base). Cada vano parte el muro en tramos y deja un dintel encima.
+    /// (punto del eje del muro en su base). Cada vano parte el muro en tramos y deja un dintel encima;
+    /// las ventanas llevan además antepecho debajo y un vidrio de <paramref name="glass"/> m en medio.
     /// </summary>
     static void Wall(Kit k, Transform parent, string name, bool alongX, Vector3 start,
-                     float length, float thickness, float height, List<Opening> openings, Material mat)
+                     float length, float thickness, float height, List<Opening> openings, Material mat,
+                     float glass = 0f)
     {
         if (openings == null || openings.Count == 0)
         {
@@ -387,7 +533,7 @@ public static class StationGenerator
 
         var wall = Group(parent, name, start);
         float cursor = 0f;
-        int piece = 1, lintel = 1;
+        int piece = 1, n = 0;
         foreach (var o in openings.OrderBy(o => o.center))
         {
             float a = Mathf.Clamp(o.center - o.width / 2f, 0f, length);
@@ -399,11 +545,17 @@ public static class StationGenerator
             }
             if (b <= a) continue;
 
+            n++;
+            var mid = Along(alongX, (a + b) / 2f);
+            float head = o.sill + o.height;
             if (a > cursor)
                 k.Box(wall, $"Tramo {piece++}", Along(alongX, (cursor + a) / 2f), Oriented(alongX, a - cursor, height, thickness), mat);
-            if (height > o.height)
-                k.Box(wall, $"Dintel {lintel++}", Along(alongX, (a + b) / 2f) + Vector3.up * o.height,
-                      Oriented(alongX, b - a, height - o.height, thickness), mat);
+            if (o.sill > 0f)
+                k.Box(wall, $"Antepecho {n}", mid, Oriented(alongX, b - a, o.sill, thickness), mat);
+            if (height > head)
+                k.Box(wall, $"Dintel {n}", mid + Vector3.up * head, Oriented(alongX, b - a, height - head, thickness), mat);
+            if (o.glazed && glass > 0f)
+                k.Box(wall, $"Vidrio {n}", mid + Vector3.up * o.sill, Oriented(alongX, b - a, o.height, glass), k.Glass);
             cursor = b;
         }
         if (cursor < length)
@@ -429,17 +581,63 @@ public static class StationGenerator
     /// <summary>Malla, materiales y contador de piezas de una generación.</summary>
     sealed class Kit
     {
-        public readonly Material Ground       = BlockoutAssets.Material("Blockout_Terreno",      new Color(0.56f, 0.64f, 0.42f));
-        public readonly Material ChainLink    = BlockoutAssets.Material("Blockout_Malla",        new Color(0.30f, 0.33f, 0.36f, 0.35f), transparent: true);
-        public readonly Material Post         = BlockoutAssets.Material("Blockout_Poste",        new Color(0.28f, 0.30f, 0.33f));
-        public readonly Material Gate         = BlockoutAssets.Material("Blockout_Porton",       new Color(0.20f, 0.22f, 0.26f));
-        public readonly Material Floor        = BlockoutAssets.Material("Blockout_Piso",         new Color(0.62f, 0.63f, 0.66f));
-        public readonly Material ExteriorWall = BlockoutAssets.Material("Blockout_MuroExterior", new Color(0.93f, 0.94f, 0.96f));
-        public readonly Material Partition    = BlockoutAssets.Material("Blockout_Tabique",      new Color(0.80f, 0.83f, 0.88f));
-        public readonly Material Roof         = BlockoutAssets.Material("Blockout_Techo",        new Color(0.70f, 0.72f, 0.76f));
-        public readonly Material Concrete     = BlockoutAssets.Material("Blockout_Concreto",     new Color(0.66f, 0.65f, 0.62f));
-        public readonly Material Antenna      = BlockoutAssets.Material("Blockout_Antena",       new Color(0.90f, 0.91f, 0.93f));
-        public readonly Material Steel        = BlockoutAssets.Material("Blockout_Acero",        new Color(0.52f, 0.55f, 0.60f));
+        public readonly Material Ground, Savanna, Hills, ChainLink, Post, Gate, Floor, ExteriorWall, Stripe,
+                                 Glass, Partition, Roof, Concrete, Antenna, Steel, Asphalt, Paint, Tank;
+
+        /// <summary>
+        /// Paleta del acabado (Sesión D). Los materiales se crean con estos valores la primera vez;
+        /// después solo se pisan con <paramref name="reapplyFinish"/>. La franja usa el azul de
+        /// acento del aplicativo (--color-purple de Variables.uss, #1560D8).
+        /// </summary>
+        public Kit(bool reapplyFinish = false)
+        {
+            Material M(string name, Color c, float smoothness = 0.15f, float metallic = 0f, bool transparent = false) =>
+                BlockoutAssets.Material(name, c, smoothness, metallic, transparent, reapplyFinish);
+
+            Ground       = M("Blockout_Terreno",      Color.white, 0.05f);
+            Savanna      = M("Blockout_Sabana",       Color.white, 0.05f);
+            Hills        = M("Blockout_Cerros",       new Color(0.36f, 0.44f, 0.28f), 0.05f);
+            ChainLink    = M("Blockout_Malla",        new Color(0.45f, 0.48f, 0.50f, 0.35f), 0.3f, 0.5f, transparent: true);
+            Post         = M("Blockout_Poste",        new Color(0.50f, 0.52f, 0.55f), 0.4f, 0.6f);
+            Gate         = M("Blockout_Porton",       new Color(0.20f, 0.24f, 0.30f), 0.35f, 0.5f);
+            Floor        = M("Blockout_Piso",         new Color(0.74f, 0.74f, 0.72f), 0.45f);
+            ExteriorWall = M("Blockout_MuroExterior", new Color(0.95f, 0.95f, 0.94f), 0.1f);
+            Stripe       = M("Blockout_Franja",       new Color(0.082f, 0.376f, 0.847f), 0.3f);
+            Glass        = M("Blockout_Vidrio",       new Color(0.30f, 0.45f, 0.60f, 0.45f), 0.95f, transparent: true);
+            Partition    = M("Blockout_Tabique",      new Color(0.90f, 0.91f, 0.92f), 0.1f);
+            Roof         = M("Blockout_Techo",        new Color(0.62f, 0.62f, 0.60f), 0.1f);
+            Concrete     = M("Blockout_Concreto",     new Color(0.68f, 0.66f, 0.62f), 0.1f);
+            Antenna      = M("Blockout_Antena",       new Color(0.93f, 0.94f, 0.95f), 0.35f);
+            Steel        = M("Blockout_Acero",        new Color(0.55f, 0.58f, 0.62f), 0.4f, 0.6f);
+            Asphalt      = M("Blockout_Asfalto",      new Color(0.29f, 0.29f, 0.30f), 0.1f);
+            Paint        = M("Blockout_Pintura",      new Color(0.95f, 0.95f, 0.92f), 0.2f);
+            Tank         = M("Blockout_Tanque",       new Color(0.88f, 0.89f, 0.87f), 0.3f, 0.2f);
+
+            // Grama en dos escalas: manchas grandes (base) y grano fino (detail map de URP Lit).
+            foreach (var grass in new[] { Ground, Savanna })
+            {
+                if (reapplyFinish || grass.GetTexture("_BaseMap") == null)
+                    grass.SetTexture("_BaseMap", BlockoutAssets.GrassTexture());
+                if (reapplyFinish || grass.GetTexture("_DetailAlbedoMap") == null)
+                {
+                    grass.SetTexture("_DetailAlbedoMap", BlockoutAssets.GrassDetailTexture());
+                    grass.SetFloat("_DetailAlbedoMapScale", 1f);
+                    grass.EnableKeyword("_DETAIL_MULX2");
+                }
+                EditorUtility.SetDirty(grass);
+            }
+        }
+
+        /// <summary>
+        /// Repeticiones de la grama sobre una pieza de <paramref name="size"/> metros, en sus dos
+        /// escalas. Se deduce de las medidas en cada generación.
+        /// </summary>
+        public void Tile(Material mat, Vector2 size, EnvironmentSpec e)
+        {
+            mat.SetTextureScale("_BaseMap", size / e.grassTile);
+            mat.SetTextureScale("_DetailAlbedoMap", size / e.grassDetailTile);
+            EditorUtility.SetDirty(mat);
+        }
 
         public readonly Mesh Block    = BlockoutAssets.UnitBlock();
         public readonly Mesh Cylinder = BlockoutAssets.Frustum("CilindroUnidad", 0.5f, 0.5f);

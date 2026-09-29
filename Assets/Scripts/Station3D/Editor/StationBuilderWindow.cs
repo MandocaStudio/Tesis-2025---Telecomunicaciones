@@ -40,6 +40,8 @@ public class StationBuilderWindow : EditorWindow
         using (new EditorGUI.DisabledScope(!options.building))
             options.roof  = EditorGUILayout.Toggle("   Losa de techo", options.roof);
         options.antennas  = EditorGUILayout.Toggle("Antenas", options.antennas);
+        options.site      = EditorGUILayout.Toggle("Servicios, vías y caseta", options.site);
+        options.environment = EditorGUILayout.Toggle("Entorno (sabana y cerros)", options.environment);
         if (EditorGUI.EndChangeCheck()) options.Save();
 
         if (layout == null)

@@ -96,3 +96,8 @@ nuevo. `Assets/script/movement.cs` (del compañero) usa el antiguo y **funciona*
   flexbox (una palabra por `Label`); los degradados van como textura horneada.
 - `var()` no funciona en `style="..."` inline de UXML, solo dentro de clases USS.
 - Prefiere `flex-grow` a alturas fijas: el `PanelSettings` escala desde 1920×1080.
+- **Play se congela con Unity sin foco** (`runInBackground` está en falso): `Time.frameCount` no
+  avanza y la UI no recalcula estilos. Para probar por el CLI, `Application.runInBackground = true`
+  por `eval` dentro de Play; dura solo esa sesión y no toca los ajustes.
+- **No se puede inyectar teclado ni ratón** en Play desde el CLI: el Input System solo se los da al
+  juego con la ventana Game enfocada. Lo que dependa de input real, que lo pruebe el usuario.

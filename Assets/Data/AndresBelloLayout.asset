@@ -33,6 +33,14 @@ MonoBehaviour:
     roofThickness: 0.25
     exteriorWallThickness: 0.2
     interiorWallThickness: 0.15
+    stripeBottom: 3.4
+    stripeHeight: 0.45
+    stripeDepth: 0.03
+    windowSill: 1.1
+    windowHeight: 1
+    glassThickness: 0.02
+    roofUnits: 6
+    roofUnitSize: {x: 1.4, y: 1.1, z: 0.9}
     rows:
     - name: Fila norte
       depth: 12
@@ -46,6 +54,9 @@ MonoBehaviour:
           offset: 12.7
           width: 1.2
           height: 2.1
+        windows:
+        - offset: 13
+          width: 16
       - name: Sala de Control
         width: 20
         notes: Consolas
@@ -54,6 +65,9 @@ MonoBehaviour:
           offset: 9.7
           width: 1.2
           height: 2.1
+        windows:
+        - offset: 10
+          width: 12
       - name: "Energ\xEDa / UPS"
         width: 20
         notes: 
@@ -62,6 +76,9 @@ MonoBehaviour:
           offset: 9.7
           width: 1.2
           height: 2.1
+        windows:
+        - offset: 10
+          width: 10
     - name: Pasillo
       depth: 3
       isCorridor: 1
@@ -70,6 +87,7 @@ MonoBehaviour:
         width: 66
         notes: Recorre todo el edificio
         doors: []
+        windows: []
     - name: Fila sur
       depth: 7
       isCorridor: 0
@@ -86,6 +104,9 @@ MonoBehaviour:
           offset: 6.7
           width: 1.2
           height: 2.1
+        windows:
+        - offset: 11.5
+          width: 6
       - name: Oficinas
         width: 18
         notes: 
@@ -94,6 +115,9 @@ MonoBehaviour:
           offset: 8.6
           width: 1.2
           height: 2.1
+        windows:
+        - offset: 9
+          width: 12
       - name: "Ba\xF1os / Cocina"
         width: 12
         notes: 
@@ -102,6 +126,9 @@ MonoBehaviour:
           offset: 5.6
           width: 1.2
           height: 2.1
+        windows:
+        - offset: 6
+          width: 6
       - name: "Taller / Dep\xF3sito"
         width: 20
         notes: Acceso taller
@@ -114,6 +141,96 @@ MonoBehaviour:
           offset: 9.7
           width: 1.2
           height: 2.1
+        windows:
+        - offset: 6
+          width: 8
+  site:
+    pavingThickness: 0.05
+    paving:
+    - name: "V\xEDa interna de acceso"
+      min: {x: 0, y: 14}
+      max: {x: 200, y: 22}
+    - name: "Acceso del port\xF3n"
+      min: {x: 96, y: 0}
+      max: {x: 104, y: 14}
+    parking:
+      min: {x: 70, y: 24}
+      max: {x: 102, y: 36}
+      stalls: 8
+      stallWidth: 3.75
+      stallDepth: 6
+      stallSetback: 1
+      lineWidth: 0.12
+    ductWidth: 0.6
+    ductHeight: 0.4
+    ducts:
+    - name: "Gu\xEDa de onda \xB7 Camatagua 1"
+      path:
+      - {x: 50, y: 85}
+      - {x: 60, y: 69}
+      - {x: 74.7, y: 62}
+    - name: "Gu\xEDa de onda \xB7 Camatagua 2"
+      path:
+      - {x: 120, y: 85}
+      - {x: 110, y: 70}
+      - {x: 110, y: 62}
+    - name: Ducto del transformador
+      path:
+      - {x: 158, y: 60}
+      - {x: 158, y: 64}
+  environment:
+    savannaSize: 3400
+    savannaDrop: 0.02
+    grassTile: 50
+    grassDetailTile: 2.5
+    hillsInnerRadius: 650
+    hillsOuterRadius: 1600
+    hillsMinHeight: 60
+    hillsMaxHeight: 240
+    hillsSeed: 1970
+  facilities:
+  - name: "Planta el\xE9ctrica (generadores)"
+    shape: 0
+    position: {x: 141, y: 55.5}
+    size: {x: 14, y: 9}
+    height: 4.5
+    padHeight: 0
+    inset: 0
+  - name: "Tanque di\xE9sel"
+    shape: 3
+    position: {x: 153, y: 55.5}
+    size: {x: 6, y: 9}
+    height: 3
+    padHeight: 0.3
+    inset: 1
+  - name: Transformador
+    shape: 1
+    position: {x: 161, y: 57}
+    size: {x: 6, y: 6}
+    height: 2.5
+    padHeight: 0.3
+    inset: 1.5
+  - name: Chillers A/A
+    shape: 1
+    position: {x: 139, y: 46}
+    size: {x: 10, y: 6}
+    height: 2.4
+    padHeight: 0.3
+    inset: 1
+  - name: Tanque de agua
+    shape: 2
+    position: {x: 20, y: 35}
+    size: {x: 8, y: 8}
+    height: 6
+    padHeight: 0
+    inset: 0
+  - name: Caseta de vigilancia
+    shape: 0
+    position: {x: 109, y: 9.5}
+    size: {x: 6, y: 5}
+    height: 3
+    padHeight: 0
+    inset: 0
   antennaDesign:
     focalRatio: 0.35
     vertexOffset: 0.09

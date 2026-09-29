@@ -929,40 +929,81 @@
 }
 
 /* ============================================================
-   MÓDULO 3D (Fase 4) — vista provisional
+   MÓDULO 3D (Fase 4) — HUD del recorrido
+   Raíz transparente: el 3D se ve detrás. Paneles en el azul ancla
+   semitransparente. La raíz lleva .m3d-hud--walking mientras el
+   cursor está bloqueado (lo pone Modulo3DHud.cs).
    ============================================================ */
 
-.m3d-root {
-    flex-direction: column;
-    padding: 28px;
-}
-
-.m3d-header {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 6px;
-}
-
-.m3d-stage {
+.m3d-hud {
     flex-grow: 1;
+}
+
+.m3d-chip {
+    position: absolute;
+    left: 28px;
+    top: 28px;
+    padding: 14px 22px 12px 22px;
+    background-color: rgba(18, 41, 74, 0.82);
+    border-width: 1px;
+    border-color: var(--color-anchor-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.m3d-chip-title {
+    margin-bottom: 2px;
+}
+
+.m3d-center {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
     align-items: center;
     justify-content: center;
 }
 
-.m3d-panel {
-    width: 52%;
-    max-width: 760px;
-    height: 320px;
-    padding: 36px;
+.m3d-prompt {
+    align-items: center;
+    padding: 28px 44px;
+    background-color: rgba(18, 41, 74, 0.88);
+    border-width: 1px;
+    border-color: var(--color-anchor-border);
+    border-radius: var(--radius-lg);
 }
 
-.m3d-title {
+.m3d-prompt-title {
     font-size: var(--font-section);
-    margin-bottom: var(--space-sm);
+    margin-bottom: var(--space-xs);
 }
 
-.m3d-note {
-    white-space: normal;
-    -unity-text-align: middle-center;
+.m3d-crosshair {
+    display: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-width: 1px;
+    border-color: rgba(12, 21, 40, 0.6);
+}
+
+.m3d-hint {
+    display: none;
+    position: absolute;
+    left: 28px;
+    bottom: 28px;
+    padding: 8px 14px;
+    background-color: rgba(18, 41, 74, 0.7);
+    border-radius: var(--radius-sm);
+}
+
+.m3d-hud--walking .m3d-prompt {
+    display: none;
+}
+
+.m3d-hud--walking .m3d-crosshair,
+.m3d-hud--walking .m3d-hint {
+    display: flex;
 }

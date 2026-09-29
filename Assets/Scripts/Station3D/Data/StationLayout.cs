@@ -29,6 +29,20 @@ public class StationLayout : ScriptableObject
 
     public FenceSpec fence = new FenceSpec();
     public BuildingSpec building = new BuildingSpec();
+    public SiteSpec site = new SiteSpec();
+    public EnvironmentSpec environment = new EnvironmentSpec();
+
+    [Tooltip("Servicios y edificios auxiliares (§2.4 del plano y la caseta). Posiciones y huellas medidas; alturas supuestas.")]
+    public List<FacilitySpec> facilities = new List<FacilitySpec>
+    {
+        //               nombre                           forma                            centro (X, Z)              huella (X × Z)          alto   losa   margen
+        new FacilitySpec("Planta eléctrica (generadores)", FacilityShape.Edificio,         new Vector2(141f, 55.5f),  new Vector2(14f, 9f),   4.5f,  0f,    0f),
+        new FacilitySpec("Tanque diésel",                  FacilityShape.TanqueHorizontal, new Vector2(153f, 55.5f),  new Vector2(6f, 9f),    3f,    0.3f,  1f),
+        new FacilitySpec("Transformador",                  FacilityShape.Equipo,           new Vector2(161f, 57f),    new Vector2(6f, 6f),    2.5f,  0.3f,  1.5f),
+        new FacilitySpec("Chillers A/A",                   FacilityShape.Equipo,           new Vector2(139f, 46f),    new Vector2(10f, 6f),   2.4f,  0.3f,  1f),
+        new FacilitySpec("Tanque de agua",                 FacilityShape.TanqueVertical,   new Vector2(20f, 35f),     new Vector2(8f, 8f),    6f,    0f,    0f),
+        new FacilitySpec("Caseta de vigilancia",           FacilityShape.Edificio,         new Vector2(109f, 9.5f),   new Vector2(6f, 5f),    3f,    0f,    0f),
+    };
 
     [Tooltip("Proporciones comunes a todas las antenas, como fracción del diámetro: una sola antena " +
              "parametrizada por su diámetro, no un modelo por antena.")]
@@ -89,6 +103,34 @@ public class StationLayout : ScriptableObject
         if (b.WallHeight <= 0f)
             issues.Add($"Las losas de piso y techo ({b.floorThickness + b.roofThickness:0.##} m) no dejan altura para los muros ({b.height:0.##} m).");
 
+        // Fachada: ventanas dentro de su local y sin pisar la puerta; franja por encima de todos los vanos.
+        float openingTop = b.floorThickness + b.windowSill + b.windowHeight;
+        if (b.windowSill + b.windowHeight >= b.WallHeight)
+            issues.Add($"Las ventanas (antepecho {b.windowSill:0.##} + {b.windowHeight:0.##} m) no caben en el muro de {b.WallHeight:0.##} m.");
+        for (int r = 0; r < b.rows.Count; r++)
+        foreach (var room in b.rows[r].rooms)
+        {
+            if (room.windows.Count > 0 && r != 0 && r != b.rows.Count - 1)
+                issues.Add($"'{room.name}' tiene ventanas pero su fila no da a ninguna fachada.");
+            foreach (var w in room.windows)
+            {
+                if (w.offset - w.width / 2f < 0f || w.offset + w.width / 2f > room.width)
+                    issues.Add($"La ventana de '{room.name}' se sale del local.");
+                foreach (var door in room.doors)
+                    if (door.side == DoorSide.Fachada && Mathf.Abs(w.offset - door.offset) < (w.width + door.width) / 2f)
+                        issues.Add($"La ventana de '{room.name}' se pisa con su puerta de fachada.");
+            }
+            foreach (var door in room.doors)
+                if (door.side == DoorSide.Fachada)
+                    openingTop = Mathf.Max(openingTop, b.floorThickness + door.height);
+        }
+        if (b.stripeBottom < openingTop)
+            issues.Add($"La franja azul empieza a {b.stripeBottom:0.##} m y hay vanos de fachada hasta {openingTop:0.##} m: los taparía.");
+        if (b.stripeBottom + b.stripeHeight > b.height - b.roofThickness)
+            issues.Add("La franja azul se mete en la losa de techo.");
+        if (b.roofUnits * b.roofUnitSize.x > b.size.x)
+            issues.Add($"Los {b.roofUnits} equipos de A/A no caben a lo largo de la losa.");
+
         var min = b.center - b.size / 2f;
         var max = b.center + b.size / 2f;
         if (min.x < 0f || min.y < 0f || max.x > plotSize.x || max.y > plotSize.y)
@@ -121,8 +163,63 @@ public class StationLayout : ScriptableObject
         if (fence.gateCenter - fence.gateWidth / 2f < 0f || fence.gateCenter + fence.gateWidth / 2f > sideLength)
             issues.Add($"El portón se sale del lado {fence.gateSide} de la cerca.");
 
+        foreach (var p in site.paving)
+            if (!InsidePlot(p.min, p.max))
+                issues.Add($"El pavimento '{p.name}' se sale de la parcela.");
+
+        var pk = site.parking;
+        if (!InsidePlot(pk.min, pk.max))
+            issues.Add("El estacionamiento se sale de la parcela.");
+        if (pk.stalls * pk.stallWidth > pk.max.x - pk.min.x + tol)
+            issues.Add($"Los {pk.stalls} puestos ({pk.stalls * pk.stallWidth:0.##} m) no caben en los {pk.max.x - pk.min.x:0.##} m del estacionamiento.");
+        if (pk.stallSetback + pk.stallDepth > pk.max.y - pk.min.y + tol)
+            issues.Add("Los puestos son más profundos que el estacionamiento.");
+
+        foreach (var d in site.ducts)
+            if (d.path.Count < 2)
+                issues.Add($"El ducto '{d.name}' necesita al menos dos puntos.");
+
+        var buildingRect = (min, max);
+        for (int i = 0; i < facilities.Count; i++)
+        {
+            var f = facilities[i];
+            var (fMin, fMax) = f.Footprint;
+            if (!InsidePlot(fMin, fMax))
+                issues.Add($"'{f.name}' se sale de la parcela.");
+            if (Overlaps((fMin, fMax), buildingRect))
+                issues.Add($"'{f.name}' se mete en el edificio.");
+            for (int j = 0; j < i; j++)
+                if (Overlaps(f.Footprint, facilities[j].Footprint))
+                    issues.Add($"'{f.name}' se pisa con '{facilities[j].name}'.");
+
+            var inner = f.size - Vector2.one * (2f * f.inset);
+            if (inner.x <= 0f || inner.y <= 0f)
+                issues.Add($"El margen de '{f.name}' ({f.inset:0.##} m) se come toda su huella.");
+            else if (f.shape == FacilityShape.TanqueHorizontal && f.height > Mathf.Min(inner.x, inner.y) + tol)
+                issues.Add($"El tanque '{f.name}' (Ø {f.height:0.##} m) no cabe en su losa.");
+        }
+
+        var env = environment;
+        float plotHalfDiagonal = plotSize.magnitude / 2f;
+        if (env.hillsInnerRadius <= plotHalfDiagonal)
+            issues.Add($"Los cerros empiezan a {env.hillsInnerRadius:0} m del centro y la parcela llega a {plotHalfDiagonal:0} m: se meterían en ella.");
+        if (env.hillsOuterRadius <= env.hillsInnerRadius)
+            issues.Add("El radio exterior de los cerros tiene que ser mayor que el interior.");
+        if (env.savannaSize / 2f < env.hillsOuterRadius)
+            issues.Add("La sabana no llega hasta el borde exterior de los cerros: se vería el vacío por debajo.");
+        if (env.hillsMinHeight > env.hillsMaxHeight)
+            issues.Add("La altura mínima de los cerros supera a la máxima.");
+
         return issues;
     }
+
+    bool InsidePlot(Vector2 min, Vector2 max) =>
+        min.x >= -0.01f && min.y >= -0.01f && max.x <= plotSize.x + 0.01f && max.y <= plotSize.y + 0.01f;
+
+    /// <summary>Solape estricto de dos rectángulos en planta (tocarse por un borde no cuenta).</summary>
+    static bool Overlaps((Vector2 min, Vector2 max) a, (Vector2 min, Vector2 max) b) =>
+        a.min.x < b.max.x - 0.01f && b.min.x < a.max.x - 0.01f &&
+        a.min.y < b.max.y - 0.01f && b.min.y < a.max.y - 0.01f;
 }
 
 public enum PlotSide { Sur, Norte, Este, Oeste }
@@ -177,22 +274,42 @@ public class BuildingSpec
     [Tooltip("Tabique interior, centrado en el eje entre locales.")]
     public float interiorWallThickness = 0.15f;
 
+    [Header("Acabado de fachada (plano: bloque blanco con franja azul, ventanas horizontales)")]
+    [Tooltip("Supuesto. Altura del borde inferior de la franja azul, desde el suelo.")]
+    public float stripeBottom = 3.4f;
+    [Tooltip("Supuesto. Ancho de la franja.")]
+    public float stripeHeight = 0.45f;
+    [Tooltip("Supuesto. Lo que sobresale la franja del muro (así no hace z-fighting con él).")]
+    public float stripeDepth = 0.03f;
+    [Tooltip("Supuesto. Antepecho de las ventanas, desde el piso terminado.")]
+    public float windowSill = 1.1f;
+    [Tooltip("Supuesto. Alto de las ventanas: con 1,1 + 1 m su dintel queda a la altura del de las puertas (2,1 m).")]
+    public float windowHeight = 1f;
+    [Tooltip("Supuesto. Espesor del vidrio, centrado en el muro.")]
+    public float glassThickness = 0.02f;
+
+    [Header("Equipos de A/A sobre la losa (plano: losa plana con equipos de A/A)")]
+    [Tooltip("Supuesto. Cuántos, repartidos en fila a lo largo del eje de la losa.")]
+    public int roofUnits = 6;
+    [Tooltip("Supuesto. Tamaño de cada equipo: X × alto × Z.")]
+    public Vector3 roofUnitSize = new Vector3(1.4f, 1.1f, 0.9f);
+
     [Header("Distribución")]
     [Tooltip("Filas de NORTE a SUR. Sus fondos deben sumar el fondo del edificio y los anchos de cada fila, su ancho. " +
              "Las cotas de los locales son a ejes de tabique.")]
     public List<RoomRow> rows = new List<RoomRow>
     {
         new RoomRow("Fila norte", 12f, false,
-            new Room("Sala de Equipos RF", 26f, "Racks, HPA, LNA", Door.Corridor(12.7f)),
-            new Room("Sala de Control",    20f, "Consolas",        Door.Corridor(9.7f)),
-            new Room("Energía / UPS",      20f, "",                Door.Corridor(9.7f))),
+            new Room("Sala de Equipos RF", 26f, "Racks, HPA, LNA", Door.Corridor(12.7f)).WithWindow(13f, 16f),
+            new Room("Sala de Control",    20f, "Consolas",        Door.Corridor(9.7f)).WithWindow(10f, 12f),
+            new Room("Energía / UPS",      20f, "",                Door.Corridor(9.7f)).WithWindow(10f, 10f)),
         new RoomRow("Pasillo", 3f, true,
             new Room("Pasillo", 66f, "Recorre todo el edificio")),
         new RoomRow("Fila sur", 7f, false,
-            new Room("Recepción",         16f, "Entrada principal", Door.Facade(6.1f), Door.Corridor(6.7f)),
-            new Room("Oficinas",          18f, "",                  Door.Corridor(8.6f)),
-            new Room("Baños / Cocina",    12f, "",                  Door.Corridor(5.6f)),
-            new Room("Taller / Depósito", 20f, "Acceso taller",     Door.Facade(13f), Door.Corridor(9.7f))),
+            new Room("Recepción",         16f, "Entrada principal", Door.Facade(6.1f), Door.Corridor(6.7f)).WithWindow(11.5f, 6f),
+            new Room("Oficinas",          18f, "",                  Door.Corridor(8.6f)).WithWindow(9f, 12f),
+            new Room("Baños / Cocina",    12f, "",                  Door.Corridor(5.6f)).WithWindow(6f, 6f),
+            new Room("Taller / Depósito", 20f, "Acceso taller",     Door.Facade(13f), Door.Corridor(9.7f)).WithWindow(6f, 8f)),
     };
 
     /// <summary>Altura libre de los muros, entre la losa de piso y la de techo.</summary>
@@ -241,6 +358,8 @@ public class Room
     [Tooltip("Uso del local según el plano.")]
     public string notes;
     public List<Door> doors = new List<Door>();
+    [Tooltip("Supuesto (el plano no dibuja ventanas). Ventanas en el muro de fachada del local: la fila norte da a la fachada norte, la sur a la sur.")]
+    public List<Window> windows = new List<Window>();
 
     public Room() { }
 
@@ -251,6 +370,20 @@ public class Room
         this.notes = notes;
         this.doors = doors.ToList();
     }
+
+    public Room WithWindow(float offset, float width)
+    {
+        windows.Add(new Window { offset = offset, width = width });
+        return this;
+    }
+}
+
+[Serializable]
+public class Window
+{
+    [Tooltip("Centro de la ventana, en metros desde el extremo oeste del local.")]
+    public float offset;
+    public float width;
 }
 
 [Serializable]
@@ -363,4 +496,144 @@ public class AntennaDesign
     public float stemFraction = 0.45f;
     [Tooltip("Espesor de la plataforma giratoria de azimut.")]
     public float turntableHeight = 0.025f;
+}
+
+/// <summary>Lo que está a ras de suelo: pavimentos, estacionamiento y ductos.</summary>
+[Serializable]
+public class SiteSpec
+{
+    [Header("Pavimentos")]
+    [Tooltip("Supuesto. Espesor del asfalto sobre el terreno.")]
+    public float pavingThickness = 0.05f;
+    [Tooltip("Medido. Rectángulos en planta, de la esquina SO (mín.) a la NE (máx.).")]
+    public List<PavedArea> paving = new List<PavedArea>
+    {
+        new PavedArea("Vía interna de acceso", new Vector2(0f, 14f),  new Vector2(200f, 22f)),
+        new PavedArea("Acceso del portón",     new Vector2(96f, 0f),  new Vector2(104f, 14f)),
+    };
+
+    public ParkingSpec parking = new ParkingSpec();
+
+    [Header("Guías de onda y ductos de cables")]
+    [Tooltip("Supuesto. Sección del ducto, que va a ras de suelo.")]
+    public float ductWidth = 0.6f;
+    public float ductHeight = 0.4f;
+    [Tooltip("Medido: las líneas discontinuas verde oliva del plano. Las dos primeras salen del eje de su antena, " +
+             "pasan por donde el plano empieza a dibujarlas y llegan a la fachada norte (Z = 62).")]
+    public List<DuctSpec> ducts = new List<DuctSpec>
+    {
+        new DuctSpec("Guía de onda · Camatagua 1", new Vector2(50f, 85f),  new Vector2(60f, 69f),  new Vector2(74.7f, 62f)),
+        new DuctSpec("Guía de onda · Camatagua 2", new Vector2(120f, 85f), new Vector2(110f, 70f), new Vector2(110f, 62f)),
+        new DuctSpec("Ducto del transformador",    new Vector2(158f, 60f), new Vector2(158f, 64f)),
+    };
+}
+
+[Serializable]
+public class PavedArea
+{
+    public string name;
+    public Vector2 min, max;
+
+    public PavedArea() { }
+    public PavedArea(string name, Vector2 min, Vector2 max) { this.name = name; this.min = min; this.max = max; }
+}
+
+[Serializable]
+public class ParkingSpec
+{
+    [Header("Estacionamiento")]
+    [Tooltip("Medido: X 70–102, Z 24–36 (32 × 12 m; el plano no lo rotula).")]
+    public Vector2 min = new Vector2(70f, 24f);
+    public Vector2 max = new Vector2(102f, 36f);
+    [Tooltip("Plano: 8 puestos, en fila a lo largo del borde norte, centrados.")]
+    public int stalls = 8;
+    [Tooltip("Medido: 3,75 m entre ejes de puesto.")]
+    public float stallWidth = 3.75f;
+    [Tooltip("Medido: 6 m de fondo.")]
+    public float stallDepth = 6f;
+    [Tooltip("Medido: los puestos empiezan 1 m por dentro del borde norte.")]
+    public float stallSetback = 1f;
+    [Tooltip("Supuesto. Ancho de la línea pintada entre puestos.")]
+    public float lineWidth = 0.12f;
+}
+
+[Serializable]
+public class DuctSpec
+{
+    public string name;
+    [Tooltip("Polilínea en planta (X, Z).")]
+    public List<Vector2> path = new List<Vector2>();
+
+    public DuctSpec() { }
+    public DuctSpec(string name, params Vector2[] path) { this.name = name; this.path = path.ToList(); }
+}
+
+/// <summary>
+/// Edificio = caja con el material de fachada. Equipo = caja de acero. TanqueVertical = cilindro
+/// con Ø = lado menor de la huella. TanqueHorizontal = cilindro tumbado a lo largo del lado mayor,
+/// con Ø = la altura.
+/// </summary>
+public enum FacilityShape { Edificio, Equipo, TanqueVertical, TanqueHorizontal }
+
+[Serializable]
+public class FacilitySpec
+{
+    public string name;
+    public FacilityShape shape;
+    [Tooltip("Medido: centro de la huella en planta (X, Z).")]
+    public Vector2 position;
+    [Tooltip("Plano / medido: huella X × Z.")]
+    public Vector2 size;
+    [Tooltip("Supuesto: altura del cuerpo sobre la losa (en un tanque horizontal, su diámetro).")]
+    public float height;
+    [Tooltip("Supuesto: losa de concreto bajo el equipo, de toda la huella. 0 = sin losa.")]
+    public float padHeight;
+    [Tooltip("Supuesto: margen entre el borde de la huella y el equipo. La huella del plano incluye el espacio alrededor.")]
+    public float inset;
+
+    public (Vector2 min, Vector2 max) Footprint => (position - size / 2f, position + size / 2f);
+
+    public FacilitySpec() { }
+
+    public FacilitySpec(string name, FacilityShape shape, Vector2 position, Vector2 size,
+                        float height, float padHeight, float inset)
+    {
+        this.name = name;
+        this.shape = shape;
+        this.position = position;
+        this.size = size;
+        this.height = height;
+        this.padHeight = padHeight;
+        this.inset = inset;
+    }
+}
+
+/// <summary>
+/// Lo que rodea la parcela: la sabana y el anillo de cerros del fondo. Nada de esto viene en el
+/// plano (solo dice "sabana plana con grama, cerros al fondo"): todo son supuestos, sin precisión
+/// métrica, y el centro es el de la parcela.
+/// </summary>
+[Serializable]
+public class EnvironmentSpec
+{
+    [Header("Sabana (supuestos)")]
+    [Tooltip("Lado del suelo exterior, centrado en la parcela.")]
+    public float savannaSize = 3400f;
+    [Tooltip("Cuánto queda por debajo de la parcela (Y = 0), para que no haya z-fighting con ella.")]
+    public float savannaDrop = 0.02f;
+    [Tooltip("Metros que cubre cada repetición de la textura de grama (las manchas de verde y paja). " +
+             "Grande a propósito: con 6 m la repetición se veía en cuadrícula desde el aire.")]
+    public float grassTile = 50f;
+    [Tooltip("Metros que cubre cada repetición del grano fino (detail map). Da el detalle de cerca.")]
+    public float grassDetailTile = 2.5f;
+
+    [Header("Cerros al fondo (supuestos)")]
+    [Tooltip("Distancia del centro de la parcela a la que empiezan a subir.")]
+    public float hillsInnerRadius = 650f;
+    [Tooltip("Borde exterior del anillo de cerros.")]
+    public float hillsOuterRadius = 1600f;
+    public float hillsMinHeight = 60f;
+    public float hillsMaxHeight = 240f;
+    [Tooltip("Semilla del perfil de los cerros: el mismo número da siempre los mismos cerros.")]
+    public int hillsSeed = 1970;
 }
