@@ -12,225 +12,353 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa29e0867a0de8442aba3bdc0b98fec3, type: 3}
   m_Name: AndresBelloLayout
   m_EditorClassIdentifier: Assembly-CSharp::StationLayout
-  plotSize: {x: 200, y: 140}
   groundThickness: 0.5
   fence:
+    outline:
+    - {x: 0, y: 210.9375}
+    - {x: 81.25, y: 245.3125}
+    - {x: 281.25, y: 248.4375}
+    - {x: 281.25, y: 6.25}
+    - {x: 78.125, y: 0}
+    - {x: 0, y: 48.4375}
     height: 2.5
     postSpacing: 3
     postSize: 0.08
     meshThickness: 0.04
-    gateSide: 0
-    gateCenter: 100
-    gateWidth: 8
+    gatePosition: {x: 0, y: 107.8125}
+    gateWidth: 6
     gatePostSize: 0.2
     gateLeafThickness: 0.08
-  building:
-    name: Edificio de Operaciones
-    center: {x: 95, y: 51}
-    size: {x: 66, y: 22}
-    height: 4.5
+  site:
+    pavingThickness: 0.05
+    roads:
+    - name: "V\xEDa de acceso"
+      width: 3.5
+      path:
+      - {x: -12.5, y: 104.6875}
+      - {x: 25, y: 114.0625}
+      - {x: 50, y: 120.3125}
+      - {x: 62.5, y: 125}
+    - name: "Anillo vial \xB7 tramo norte"
+      width: 3
+      path:
+      - {x: 62.5, y: 125}
+      - {x: 60.9375, y: 145.3125}
+      - {x: 68.75, y: 160.9375}
+      - {x: 81.25, y: 167.1875}
+      - {x: 93.75, y: 168.75}
+    - name: "Anillo vial \xB7 tramo sur"
+      width: 3
+      path:
+      - {x: 62.5, y: 125}
+      - {x: 65.625, y: 104.6875}
+      - {x: 78.125, y: 92.1875}
+      - {x: 96.875, y: 89.0625}
+      - {x: 118.75, y: 90.625}
+      - {x: 134.375, y: 98.4375}
+      - {x: 137.5, y: 110.9375}
+      - {x: 135.9375, y: 126.5625}
+      - {x: 134.375, y: 142.1875}
+      - {x: 128.125, y: 148.4375}
+    - name: Ramal norte (sala de equipos y Antena 4)
+      width: 2.5
+      path:
+      - {x: 93.75, y: 168.75}
+      - {x: 112.5, y: 176.5625}
+      - {x: 121.875, y: 189.0625}
+      - {x: 118.75, y: 207.8125}
+      - {x: 121.875, y: 223.4375}
+    - name: Lazo oeste (oficinas y tanques)
+      width: 2.25
+      path:
+      - {x: 62.5, y: 125}
+      - {x: 43.75, y: 132.8125}
+      - {x: 25, y: 148.4375}
+      - {x: 12.5, y: 167.1875}
+      - {x: 9.375, y: 189.0625}
+      - {x: 18.75, y: 204.6875}
+      - {x: 37.5, y: 210.9375}
+      - {x: 56.25, y: 204.6875}
+      - {x: 62.5, y: 189.0625}
+      - {x: 59.375, y: 173.4375}
+      - {x: 50, y: 165.625}
+    - name: Ramal al tanque de agua
+      width: 2
+      path:
+      - {x: 135.9375, y: 126.5625}
+      - {x: 162.5, y: 132.8125}
+      - {x: 181.25, y: 139.0625}
+    - name: Ramal a la losa de antenas
+      width: 2
+      path:
+      - {x: 134.375, y: 98.4375}
+      - {x: 143.75, y: 82.8125}
+      - {x: 162.5, y: 81.25}
+    pads:
+    - name: "Patio de veh\xEDculos"
+      kind: 0
+      center: {x: 189.0625, y: 230.4}
+      size: {x: 21.875, y: 29.6875}
+      rotation: -8
+      thickness: 0.15
+      items: {x: 3, y: 9}
+      itemSize: {x: 5, y: 2.3, z: 2.4}
+    - name: "Recinto de los platos peque\xF1os"
+      kind: 1
+      center: {x: 157.8125, y: 53.75}
+      size: {x: 56.25, y: 53.125}
+      rotation: 0
+      thickness: 0.05
+      items: {x: 0, y: 0}
+      itemSize: {x: 0, y: 0, z: 0}
+    - name: Campo abierto (grama corta)
+      kind: 2
+      center: {x: 232.8125, y: 89.0625}
+      size: {x: 90.625, y: 112.5}
+      rotation: 0
+      thickness: 0.02
+      items: {x: 0, y: 0}
+      itemSize: {x: 0, y: 0, z: 0}
+  buildingDesign:
     floorThickness: 0.15
-    roofThickness: 0.25
     exteriorWallThickness: 0.2
     interiorWallThickness: 0.15
-    stripeBottom: 3.4
+    roofOverhang: 0.6
+    roofFascia: 0.18
+    slabThickness: 0.25
+    stripeBelowEaves: 0.15
     stripeHeight: 0.45
     stripeDepth: 0.03
     windowSill: 1.1
     windowHeight: 1
+    windowWidth: 2.4
+    windowSpacing: 4.5
+    windowCornerMargin: 1.2
     glassThickness: 0.02
-    roofUnits: 6
-    roofUnitSize: {x: 1.4, y: 1.1, z: 0.9}
-    rows:
-    - name: Fila norte
-      depth: 12
-      isCorridor: 0
-      rooms:
-      - name: Sala de Equipos RF
-        width: 26
-        notes: Racks, HPA, LNA
-        doors:
-        - side: 0
-          offset: 12.7
-          width: 1.2
-          height: 2.1
-        windows:
-        - offset: 13
-          width: 16
-      - name: Sala de Control
-        width: 20
-        notes: Consolas
-        doors:
-        - side: 0
-          offset: 9.7
-          width: 1.2
-          height: 2.1
-        windows:
-        - offset: 10
-          width: 12
-      - name: "Energ\xEDa / UPS"
-        width: 20
-        notes: 
-        doors:
-        - side: 0
-          offset: 9.7
-          width: 1.2
-          height: 2.1
-        windows:
-        - offset: 10
-          width: 10
-    - name: Pasillo
-      depth: 3
-      isCorridor: 1
-      rooms:
-      - name: Pasillo
-        width: 66
-        notes: Recorre todo el edificio
-        doors: []
-        windows: []
-    - name: Fila sur
-      depth: 7
-      isCorridor: 0
-      rooms:
-      - name: "Recepci\xF3n"
-        width: 16
-        notes: Entrada principal
-        doors:
-        - side: 1
-          offset: 6.1
-          width: 2
-          height: 2.4
-        - side: 0
-          offset: 6.7
-          width: 1.2
-          height: 2.1
-        windows:
-        - offset: 11.5
-          width: 6
-      - name: Oficinas
-        width: 18
-        notes: 
-        doors:
-        - side: 0
-          offset: 8.6
-          width: 1.2
-          height: 2.1
-        windows:
-        - offset: 9
-          width: 12
-      - name: "Ba\xF1os / Cocina"
-        width: 12
-        notes: 
-        doors:
-        - side: 0
-          offset: 5.6
-          width: 1.2
-          height: 2.1
-        windows:
-        - offset: 6
-          width: 6
-      - name: "Taller / Dep\xF3sito"
-        width: 20
-        notes: Acceso taller
-        doors:
-        - side: 1
-          offset: 13
-          width: 2
-          height: 2.4
-        - side: 0
-          offset: 9.7
-          width: 1.2
-          height: 2.1
-        windows:
-        - offset: 6
-          width: 8
-  site:
-    pavingThickness: 0.05
-    paving:
-    - name: "V\xEDa interna de acceso"
-      min: {x: 0, y: 14}
-      max: {x: 200, y: 22}
-    - name: "Acceso del port\xF3n"
-      min: {x: 96, y: 0}
-      max: {x: 104, y: 14}
-    parking:
-      min: {x: 70, y: 24}
-      max: {x: 102, y: 36}
-      stalls: 8
-      stallWidth: 3.75
-      stallDepth: 6
-      stallSetback: 1
-      lineWidth: 0.12
-    ductWidth: 0.6
-    ductHeight: 0.4
-    ducts:
-    - name: "Gu\xEDa de onda \xB7 Camatagua 1"
-      path:
-      - {x: 50, y: 85}
-      - {x: 60, y: 69}
-      - {x: 74.7, y: 62}
-    - name: "Gu\xEDa de onda \xB7 Camatagua 2"
-      path:
-      - {x: 120, y: 85}
-      - {x: 110, y: 70}
-      - {x: 110, y: 62}
-    - name: Ducto del transformador
-      path:
-      - {x: 158, y: 60}
-      - {x: 158, y: 64}
-  environment:
-    savannaSize: 3400
-    savannaDrop: 0.02
-    grassTile: 50
-    grassDetailTile: 2.5
-    hillsInnerRadius: 650
-    hillsOuterRadius: 1600
-    hillsMinHeight: 60
-    hillsMaxHeight: 240
-    hillsSeed: 1970
+    interiorDoorWidth: 1.2
+    interiorDoorHeight: 2.1
+    doorLeafThickness: 0.06
+  buildings:
+  - name: Edificio principal
+    center: {x: 90.625, y: 125}
+    size: {x: 18.75, y: 46.875}
+    rotation: 0
+    wallHeight: 4
+    roof: 0
+    cover: 0
+    roofPitch: 20
+    walls: 0
+    stripe: 1
+    windows: 1
+    enterable: 1
+    doors:
+    - side: 3
+      offset: 31.25
+      width: 2
+      height: 2.4
+    - side: 1
+      offset: 9.375
+      width: 2
+      height: 2.4
+    - side: 0
+      offset: 14.0625
+      width: 2
+      height: 2.4
+    partitions:
+    - name: Sala de control y equipos RF | Hall
+      northSouth: 0
+      position: 15.625
+      doorOffset: 9.375
+    notes: "Plano: sala de control y equipos RF (\u2248 19 \xD7 47 m; la franja sur de 15,6 m va dibujada aparte)."
+  - name: Ala norte (oficinas)
+    center: {x: 114.0625, y: 155.46875}
+    size: {x: 46.875, y: 14.0625}
+    rotation: 0
+    wallHeight: 4
+    roof: 0
+    cover: 0
+    roofPitch: 20
+    walls: 0
+    stripe: 1
+    windows: 1
+    enterable: 1
+    doors:
+    - side: 1
+      offset: 4.6875
+      width: 2
+      height: 2.4
+    - side: 1
+      offset: 37.5
+      width: 2
+      height: 2.4
+    - side: 2
+      offset: 7.03125
+      width: 2
+      height: 2.4
+    partitions: []
+    notes: "Plano: \u2248 47 \xD7 14 m."
+  - name: Ala este
+    center: {x: 150, y: 157.03125}
+    size: {x: 25, y: 17.1875}
+    rotation: 0
+    wallHeight: 4
+    roof: 2
+    cover: 2
+    roofPitch: 20
+    walls: 0
+    stripe: 1
+    windows: 1
+    enterable: 1
+    doors:
+    - side: 3
+      offset: 7.03125
+      width: 2
+      height: 2.4
+    - side: 1
+      offset: 12.5
+      width: 2
+      height: 2.4
+    partitions: []
+    notes: "Plano: \u2248 25 \xD7 17 m, teja. Foto: techo plano claro (solo una esquina roja), as\xED que va con losa."
+  - name: "Oficinas / Administraci\xF3n"
+    center: {x: 42.1875, y: 158.4375}
+    size: {x: 34.375, y: 16.25}
+    rotation: -8
+    wallHeight: 4
+    roof: 2
+    cover: 2
+    roofPitch: 20
+    walls: 0
+    stripe: 1
+    windows: 1
+    enterable: 1
+    doors:
+    - side: 1
+      offset: 17.1875
+      width: 2
+      height: 2.4
+    - side: 0
+      offset: 25.9
+      width: 2
+      height: 2.4
+    partitions: []
+    notes: "Plano: \u2248 35 \xD7 16 m, techo de teja. Foto: techo plano claro, as\xED que va con losa."
+  - name: "Galp\xF3n"
+    center: {x: 159.375, y: 203.4375}
+    size: {x: 18.75, y: 22.5}
+    rotation: 10
+    wallHeight: 6.5
+    roof: 1
+    cover: 1
+    roofPitch: 12
+    walls: 1
+    stripe: 0
+    windows: 0
+    enterable: 0
+    doors:
+    - side: 3
+      offset: 11.25
+      width: 5
+      height: 4.5
+    partitions: []
+    notes: "Plano: \u2248 19 \xD7 22 m."
+  - name: Sala de equipos
+    center: {x: 122.1875, y: 193.75}
+    size: {x: 13.125, y: 8.125}
+    rotation: 0
+    wallHeight: 3.5
+    roof: 2
+    cover: 2
+    roofPitch: 20
+    walls: 1
+    stripe: 0
+    windows: 1
+    enterable: 0
+    doors:
+    - side: 1
+      offset: 6.25
+      width: 1.2
+      height: 2.2
+    - side: 0
+      offset: 4.8
+      width: 1.2
+      height: 2.2
+    partitions: []
+    notes: 
+  - name: "Planta el\xE9ctrica"
+    center: {x: 28.125, y: 84.375}
+    size: {x: 18.75, y: 18.75}
+    rotation: 0
+    wallHeight: 5
+    roof: 2
+    cover: 2
+    roofPitch: 20
+    walls: 1
+    stripe: 0
+    windows: 0
+    enterable: 0
+    doors:
+    - side: 2
+      offset: 9.375
+      width: 3
+      height: 3
+    partitions: []
+    notes: 'Foto: techo plano claro.'
+  - name: "Dep\xF3sito / taller"
+    center: {x: 39.84375, y: 63.6}
+    size: {x: 23.4375, y: 18.75}
+    rotation: 8
+    wallHeight: 5
+    roof: 2
+    cover: 2
+    roofPitch: 20
+    walls: 1
+    stripe: 0
+    windows: 1
+    enterable: 0
+    doors:
+    - side: 2
+      offset: 9.375
+      width: 4
+      height: 4
+    partitions: []
+    notes: "Medido en (39,8, 67,2); bajado 3,6 m al sur porque en el plano se mete 3,1 m en la planta el\xE9ctrica. Foto: techo plano claro."
+  - name: Caseta
+    center: {x: 75.625, y: 210.9375}
+    size: {x: 8.75, y: 6.25}
+    rotation: 0
+    wallHeight: 3
+    roof: 2
+    cover: 2
+    roofPitch: 20
+    walls: 1
+    stripe: 0
+    windows: 1
+    enterable: 0
+    doors:
+    - side: 1
+      offset: 4.375
+      width: 1
+      height: 2.1
+    partitions: []
+    notes: 
   facilities:
-  - name: "Planta el\xE9ctrica (generadores)"
-    shape: 0
-    position: {x: 141, y: 55.5}
-    size: {x: 14, y: 9}
-    height: 4.5
-    padHeight: 0
-    inset: 0
-  - name: "Tanque di\xE9sel"
-    shape: 3
-    position: {x: 153, y: 55.5}
-    size: {x: 6, y: 9}
-    height: 3
-    padHeight: 0.3
-    inset: 1
-  - name: Transformador
-    shape: 1
-    position: {x: 161, y: 57}
-    size: {x: 6, y: 6}
-    height: 2.5
-    padHeight: 0.3
-    inset: 1.5
-  - name: Chillers A/A
-    shape: 1
-    position: {x: 139, y: 46}
-    size: {x: 10, y: 6}
-    height: 2.4
-    padHeight: 0.3
-    inset: 1
-  - name: Tanque de agua
+  - name: Tanques
     shape: 2
-    position: {x: 20, y: 35}
-    size: {x: 8, y: 8}
-    height: 6
+    position: {x: 27.5, y: 194.4}
+    size: {x: 12, y: 9}
+    height: 3.2
+    padHeight: 0.3
+    inset: 0.6
+    count: 2
+  - name: Tanque de agua
+    shape: 3
+    position: {x: 170.75, y: 140.15}
+    size: {x: 9, y: 13.5}
+    height: 1.2
     padHeight: 0
     inset: 0
-  - name: Caseta de vigilancia
-    shape: 0
-    position: {x: 109, y: 9.5}
-    size: {x: 6, y: 5}
-    height: 3
-    padHeight: 0
-    inset: 0
+    count: 1
   antennaDesign:
     focalRatio: 0.35
     vertexOffset: 0.09
@@ -250,17 +378,17 @@ MonoBehaviour:
     stemFraction: 0.45
     turntableHeight: 0.025
   antennas:
-  - name: Camatagua 1 (1970)
-    position: {x: 50, y: 85}
-    dishDiameter: 32
-    overallHeight: 30
-    pedestalSize: {x: 9, y: 9}
-    pedestalHeight: 9.05
-    mountHeight: 6.4
+  - name: "Antena 1 \xB7 Camatagua 1 (1970)"
+    position: {x: 100.625, y: 171.875}
+    dishDiameter: 28
+    overallHeight: 0
+    pedestalSize: {x: 8, y: 8}
+    pedestalHeight: 8.48
+    mountHeight: 5.6
     azimuth: 180
     elevation: 65
-  - name: Camatagua 2 (1980)
-    position: {x: 120, y: 85}
+  - name: "Antena 3 \xB7 Camatagua 2 (1980)"
+    position: {x: 112.5, y: 114.0625}
     dishDiameter: 30
     overallHeight: 28
     pedestalSize: {x: 8.5, y: 8.5}
@@ -268,48 +396,875 @@ MonoBehaviour:
     mountHeight: 6
     azimuth: 180
     elevation: 65
-  - name: Antena 3
-    position: {x: 168, y: 100}
-    dishDiameter: 11
+  - name: Antena 4
+    position: {x: 121.875, y: 231.25}
+    dishDiameter: 12
     overallHeight: 0
-    pedestalSize: {x: 3, y: 3}
-    pedestalHeight: 1.5
-    mountHeight: 2.2
+    pedestalSize: {x: 3.4, y: 3.4}
+    pedestalHeight: 3.68
+    mountHeight: 2.4
     azimuth: 180
     elevation: 65
-  - name: Antena 4
-    position: {x: 170, y: 62}
+  - name: Plato 1
+    position: {x: 125.93, y: 73.53}
+    dishDiameter: 12
+    overallHeight: 0
+    pedestalSize: {x: 3.2, y: 3.2}
+    pedestalHeight: 2.38
+    mountHeight: 2.4
+    azimuth: 180
+    elevation: 65
+  - name: Plato 2
+    position: {x: 129.95, y: 65.81}
+    dishDiameter: 6
+    overallHeight: 0
+    pedestalSize: {x: 1.6, y: 1.6}
+    pedestalHeight: 1
+    mountHeight: 1.2
+    azimuth: 180
+    elevation: 65
+  - name: Plato 3
+    position: {x: 120.81, y: 56.03}
+    dishDiameter: 10
+    overallHeight: 0
+    pedestalSize: {x: 2.7, y: 2.7}
+    pedestalHeight: 1.87
+    mountHeight: 2
+    azimuth: 180
+    elevation: 65
+  - name: Plato 4
+    position: {x: 98.53, y: 41.44}
+    dishDiameter: 8.5
+    overallHeight: 0
+    pedestalSize: {x: 2.3, y: 2.3}
+    pedestalHeight: 2.43
+    mountHeight: 1.7
+    azimuth: 180
+    elevation: 65
+  - name: Plato 5
+    position: {x: 137.42, y: 17.3}
+    dishDiameter: 16.5
+    overallHeight: 0
+    pedestalSize: {x: 4.5, y: 4.5}
+    pedestalHeight: 6.68
+    mountHeight: 3.3
+    azimuth: 180
+    elevation: 65
+  - name: "Losa \xB7 plato 1"
+    position: {x: 147.54, y: 76.77}
     dishDiameter: 7
     overallHeight: 0
     pedestalSize: {x: 1.75, y: 1.75}
-    pedestalHeight: 1
+    pedestalHeight: 1.2
     mountHeight: 1.4
     azimuth: 180
     elevation: 65
-  - name: VSAT 1
-    position: {x: 178, y: 44}
+  - name: "Losa \xB7 plato 2"
+    position: {x: 150.21, y: 68.25}
+    dishDiameter: 7
+    overallHeight: 0
+    pedestalSize: {x: 1.75, y: 1.75}
+    pedestalHeight: 1.2
+    mountHeight: 1.4
+    azimuth: 180
+    elevation: 65
+  - name: "Losa \xB7 plato 3"
+    position: {x: 153.31, y: 59.52}
+    dishDiameter: 7
+    overallHeight: 0
+    pedestalSize: {x: 1.75, y: 1.75}
+    pedestalHeight: 1.2
+    mountHeight: 1.4
+    azimuth: 180
+    elevation: 65
+  - name: "Losa \xB7 plato 4"
+    position: {x: 157.8, y: 50.27}
+    dishDiameter: 7
+    overallHeight: 0
+    pedestalSize: {x: 1.75, y: 1.75}
+    pedestalHeight: 1.2
+    mountHeight: 1.4
+    azimuth: 180
+    elevation: 65
+  - name: "Losa \xB7 plato 5"
+    position: {x: 160.94, y: 41.76}
+    dishDiameter: 7
+    overallHeight: 0
+    pedestalSize: {x: 1.75, y: 1.75}
+    pedestalHeight: 1.2
+    mountHeight: 1.4
+    azimuth: 180
+    elevation: 65
+  - name: "Losa \xB7 plato 6"
+    position: {x: 160.26, y: 75.41}
+    dishDiameter: 7
+    overallHeight: 0
+    pedestalSize: {x: 1.75, y: 1.75}
+    pedestalHeight: 1.2
+    mountHeight: 1.4
+    azimuth: 180
+    elevation: 65
+  - name: "Losa \xB7 plato 7"
+    position: {x: 162.29, y: 66.23}
+    dishDiameter: 7
+    overallHeight: 0
+    pedestalSize: {x: 1.75, y: 1.75}
+    pedestalHeight: 1.2
+    mountHeight: 1.4
+    azimuth: 180
+    elevation: 65
+  - name: "Losa \xB7 plato 8"
+    position: {x: 166.54, y: 58.13}
+    dishDiameter: 7
+    overallHeight: 0
+    pedestalSize: {x: 1.75, y: 1.75}
+    pedestalHeight: 1.2
+    mountHeight: 1.4
+    azimuth: 180
+    elevation: 65
+  - name: "Losa \xB7 plato 9"
+    position: {x: 170.84, y: 49.2}
+    dishDiameter: 7
+    overallHeight: 0
+    pedestalSize: {x: 1.75, y: 1.75}
+    pedestalHeight: 1.2
+    mountHeight: 1.4
+    azimuth: 180
+    elevation: 65
+  - name: "Losa \xB7 plato 10"
+    position: {x: 173.41, y: 40.54}
+    dishDiameter: 7
+    overallHeight: 0
+    pedestalSize: {x: 1.75, y: 1.75}
+    pedestalHeight: 1.2
+    mountHeight: 1.4
+    azimuth: 180
+    elevation: 65
+  - name: "Losa \xB7 plato 11"
+    position: {x: 176.14, y: 34.55}
     dishDiameter: 3.6
     overallHeight: 0
     pedestalSize: {x: 1.2, y: 1.2}
-    pedestalHeight: 0.3
+    pedestalHeight: 0.5
     mountHeight: 1.5
     azimuth: 180
     elevation: 65
-  - name: VSAT 2
-    position: {x: 186, y: 44}
+  - name: "Losa \xB7 plato 12"
+    position: {x: 177.82, y: 31.14}
     dishDiameter: 3.6
     overallHeight: 0
     pedestalSize: {x: 1.2, y: 1.2}
-    pedestalHeight: 0.3
+    pedestalHeight: 0.5
     mountHeight: 1.5
     azimuth: 180
     elevation: 65
-  - name: VSAT 3
-    position: {x: 194, y: 44}
-    dishDiameter: 3.6
-    overallHeight: 0
-    pedestalSize: {x: 1.2, y: 1.2}
-    pedestalHeight: 0.3
-    mountHeight: 1.5
-    azimuth: 180
-    elevation: 65
+  treeDesign:
+    trunkHeight: 2.4
+    trunkDiameter: 0.35
+    crownHeightRatio: 0.75
+    crownOverlap: 0.4
+  trees:
+  - position: {x: 35.3, y: 259.2}
+    crownDiameter: 6.5
+  - position: {x: 211.3, y: 262.4}
+    crownDiameter: 6
+  - position: {x: 214.6, y: 264.2}
+    crownDiameter: 4.9
+  - position: {x: 225.2, y: 262.5}
+    crownDiameter: 5.5
+  - position: {x: 276.6, y: 264}
+    crownDiameter: 7
+  - position: {x: 279.9, y: 265.3}
+    crownDiameter: 6.5
+  - position: {x: 284.6, y: 264}
+    crownDiameter: 6
+  - position: {x: 27, y: 253.9}
+    crownDiameter: 6
+  - position: {x: 30.9, y: 255.4}
+    crownDiameter: 5
+  - position: {x: 34.8, y: 254.9}
+    crownDiameter: 6.5
+  - position: {x: 40.7, y: 254.4}
+    crownDiameter: 4.9
+  - position: {x: 45.1, y: 254.7}
+    crownDiameter: 7.2
+  - position: {x: 275.6, y: 258.9}
+    crownDiameter: 5.4
+  - position: {x: 281.6, y: 259.8}
+    crownDiameter: 5.7
+  - position: {x: 284.9, y: 258.6}
+    crownDiameter: 5.3
+  - position: {x: 289.6, y: 259.3}
+    crownDiameter: 5.4
+  - position: {x: 295.6, y: 258.3}
+    crownDiameter: 6.1
+  - position: {x: 35.4, y: 250.5}
+    crownDiameter: 6.1
+  - position: {x: 210.7, y: 252.6}
+    crownDiameter: 5.2
+  - position: {x: 281.8, y: 253.8}
+    crownDiameter: 5.1
+  - position: {x: 285.5, y: 254.4}
+    crownDiameter: 6.4
+  - position: {x: 291.3, y: 254.3}
+    crownDiameter: 7.1
+  - position: {x: 296.8, y: 253.5}
+    crownDiameter: 6.5
+  - position: {x: 300.8, y: 254.9}
+    crownDiameter: 6.9
+  - position: {x: 46.6, y: 245.7}
+    crownDiameter: 5
+  - position: {x: 251.5, y: 249.9}
+    crownDiameter: 6.1
+  - position: {x: 301.9, y: 249}
+    crownDiameter: 6.5
+  - position: {x: 305.3, y: 248.7}
+    crownDiameter: 4.9
+  - position: {x: 246.8, y: 242.5}
+    crownDiameter: 5.6
+  - position: {x: 251.5, y: 242.7}
+    crownDiameter: 6.3
+  - position: {x: 266.4, y: 243.1}
+    crownDiameter: 6.1
+  - position: {x: 270.5, y: 242.9}
+    crownDiameter: 5.5
+  - position: {x: 277.3, y: 243.6}
+    crownDiameter: 5.4
+  - position: {x: 266.4, y: 239.3}
+    crownDiameter: 6.1
+  - position: {x: 271.2, y: 239.9}
+    crownDiameter: 6
+  - position: {x: 276.6, y: 239.5}
+    crownDiameter: 6
+  - position: {x: 285.5, y: 238.3}
+    crownDiameter: 6.9
+  - position: {x: 305.1, y: 240.6}
+    crownDiameter: 5.2
+  - position: {x: 220.5, y: 233.3}
+    crownDiameter: 5.8
+  - position: {x: 265.1, y: 235.2}
+    crownDiameter: 6.7
+  - position: {x: 271.5, y: 233.7}
+    crownDiameter: 5.2
+  - position: {x: 275.5, y: 233.8}
+    crownDiameter: 7.2
+  - position: {x: 286.7, y: 235.4}
+    crownDiameter: 5.9
+  - position: {x: 290.6, y: 233.5}
+    crownDiameter: 6.1
+  - position: {x: 296.6, y: 233.7}
+    crownDiameter: 5.3
+  - position: {x: 301.3, y: 234}
+    crownDiameter: 5.2
+  - position: {x: 222, y: 228.5}
+    crownDiameter: 6.6
+  - position: {x: 261.5, y: 230}
+    crownDiameter: 6
+  - position: {x: 267.4, y: 229.2}
+    crownDiameter: 6.6
+  - position: {x: 270.3, y: 229.7}
+    crownDiameter: 5.8
+  - position: {x: 275.2, y: 229.4}
+    crownDiameter: 5.3
+  - position: {x: 292.5, y: 229.1}
+    crownDiameter: 6.3
+  - position: {x: 297, y: 228.6}
+    crownDiameter: 6.5
+  - position: {x: 301.1, y: 229.1}
+    crownDiameter: 6.8
+  - position: {x: 305.2, y: 230.4}
+    crownDiameter: 6.9
+  - position: {x: 167.2, y: 222}
+    crownDiameter: 5.7
+  - position: {x: 246.8, y: 223.6}
+    crownDiameter: 6.5
+  - position: {x: 267.2, y: 223.6}
+    crownDiameter: 6.3
+  - position: {x: 292.2, y: 225.3}
+    crownDiameter: 5.1
+  - position: {x: 296.7, y: 223.5}
+    crownDiameter: 6.5
+  - position: {x: 301.3, y: 224.8}
+    crownDiameter: 7.1
+  - position: {x: 305.7, y: 223.6}
+    crownDiameter: 5.5
+  - position: {x: 162.1, y: 217.8}
+    crownDiameter: 5.8
+  - position: {x: 165.8, y: 216.9}
+    crownDiameter: 5.1
+  - position: {x: 245.7, y: 218.5}
+    crownDiameter: 5.3
+  - position: {x: 251.9, y: 219.5}
+    crownDiameter: 6.3
+  - position: {x: 286.7, y: 218.5}
+    crownDiameter: 6.6
+  - position: {x: 301.5, y: 219}
+    crownDiameter: 5.4
+  - position: {x: 241.5, y: 213.6}
+    crownDiameter: 6.1
+  - position: {x: 246.6, y: 212.5}
+    crownDiameter: 5.6
+  - position: {x: 252.4, y: 213.2}
+    crownDiameter: 6.6
+  - position: {x: 257.7, y: 213.3}
+    crownDiameter: 5.8
+  - position: {x: 272, y: 214.6}
+    crownDiameter: 6.4
+  - position: {x: 291.9, y: 213.8}
+    crownDiameter: 6
+  - position: {x: 296.9, y: 215.7}
+    crownDiameter: 6.8
+  - position: {x: 301.3, y: 215.3}
+    crownDiameter: 6.5
+  - position: {x: 307.2, y: 215.2}
+    crownDiameter: 6.2
+  - position: {x: -2.2, y: 204.1}
+    crownDiameter: 5.8
+  - position: {x: 5.6, y: 205.2}
+    crownDiameter: 5
+  - position: {x: 237, y: 208.8}
+    crownDiameter: 6.4
+  - position: {x: 241.6, y: 208}
+    crownDiameter: 5.8
+  - position: {x: 245.6, y: 209.1}
+    crownDiameter: 5.7
+  - position: {x: 257.1, y: 208.6}
+    crownDiameter: 4.8
+  - position: {x: 261.8, y: 209.6}
+    crownDiameter: 7
+  - position: {x: 266.2, y: 210}
+    crownDiameter: 5.4
+  - position: {x: 271.9, y: 209.6}
+    crownDiameter: 5.6
+  - position: {x: 286.6, y: 208.4}
+    crownDiameter: 6.5
+  - position: {x: 291.8, y: 209.5}
+    crownDiameter: 7.2
+  - position: {x: 296.8, y: 210.2}
+    crownDiameter: 6.4
+  - position: {x: 301.5, y: 210.1}
+    crownDiameter: 5
+  - position: {x: 307.4, y: 210.8}
+    crownDiameter: 6.7
+  - position: {x: 1.6, y: 199.4}
+    crownDiameter: 4.9
+  - position: {x: 257, y: 204.1}
+    crownDiameter: 6.3
+  - position: {x: 263, y: 203.6}
+    crownDiameter: 6.7
+  - position: {x: 266.1, y: 204.4}
+    crownDiameter: 6.3
+  - position: {x: 277.9, y: 204}
+    crownDiameter: 4.9
+  - position: {x: 285.6, y: 204.3}
+    crownDiameter: 5.5
+  - position: {x: 290.7, y: 205.5}
+    crownDiameter: 5.2
+  - position: {x: 296.5, y: 204.8}
+    crownDiameter: 5.7
+  - position: {x: 302, y: 203.7}
+    crownDiameter: 6.9
+  - position: {x: 305.7, y: 204.6}
+    crownDiameter: 4.9
+  - position: {x: 252.4, y: 199.3}
+    crownDiameter: 6.9
+  - position: {x: 286.7, y: 200.2}
+    crownDiameter: 5.2
+  - position: {x: 293.1, y: 198.7}
+    crownDiameter: 5.8
+  - position: {x: 297.9, y: 198.5}
+    crownDiameter: 5.1
+  - position: {x: 301.7, y: 199.9}
+    crownDiameter: 7
+  - position: {x: 307.7, y: 200.1}
+    crownDiameter: 6.2
+  - position: {x: 246.5, y: 194.3}
+    crownDiameter: 5.4
+  - position: {x: 190.9, y: 187.3}
+    crownDiameter: 7
+  - position: {x: 196.1, y: 186.7}
+    crownDiameter: 6.2
+  - position: {x: 147.9, y: 175.7}
+    crownDiameter: 6.1
+  - position: {x: 151.5, y: 177}
+    crownDiameter: 6.2
+  - position: {x: 181.2, y: 176.2}
+    crownDiameter: 6.7
+  - position: {x: 148.4, y: 172.8}
+    crownDiameter: 6.3
+  - position: {x: 178.5, y: 172.8}
+    crownDiameter: 5.6
+  - position: {x: 182.6, y: 171.9}
+    crownDiameter: 5.4
+  - position: {x: 6.5, y: 163.8}
+    crownDiameter: 6.5
+  - position: {x: 182.1, y: 167.2}
+    crownDiameter: 5.4
+  - position: {x: 3.2, y: 158.8}
+    crownDiameter: 5.9
+  - position: {x: 8.8, y: 159.8}
+    crownDiameter: 5.3
+  - position: {x: 81.8, y: 159.6}
+    crownDiameter: 6.5
+  - position: {x: 182.6, y: 163.6}
+    crownDiameter: 6.3
+  - position: {x: 1.5, y: 155.2}
+    crownDiameter: 5.8
+  - position: {x: 86.8, y: 156.7}
+    crownDiameter: 6.8
+  - position: {x: 168.9, y: 156.3}
+    crownDiameter: 5.7
+  - position: {x: 181.6, y: 157.4}
+    crownDiameter: 5.8
+  - position: {x: 47.6, y: 149.4}
+    crownDiameter: 4.9
+  - position: {x: 166.9, y: 151.9}
+    crownDiameter: 6.9
+  - position: {x: 182.8, y: 153.6}
+    crownDiameter: 6
+  - position: {x: 34, y: 145.2}
+    crownDiameter: 5.3
+  - position: {x: 39.1, y: 145.5}
+    crownDiameter: 6.6
+  - position: {x: 41.9, y: 145.1}
+    crownDiameter: 6.3
+  - position: {x: 49, y: 145.6}
+    crownDiameter: 7.1
+  - position: {x: 51.7, y: 145.4}
+    crownDiameter: 6.8
+  - position: {x: 142.8, y: 147.3}
+    crownDiameter: 6.1
+  - position: {x: 146.9, y: 147.3}
+    crownDiameter: 7
+  - position: {x: 151.7, y: 147.3}
+    crownDiameter: 6.3
+  - position: {x: 187.2, y: 147.1}
+    crownDiameter: 6.1
+  - position: {x: 43.6, y: 140.7}
+    crownDiameter: 6.9
+  - position: {x: 48.2, y: 140.2}
+    crownDiameter: 6.2
+  - position: {x: 53.9, y: 140.3}
+    crownDiameter: 7
+  - position: {x: 138.3, y: 140.9}
+    crownDiameter: 5.2
+  - position: {x: 141.9, y: 141.6}
+    crownDiameter: 5.7
+  - position: {x: 147.9, y: 142.3}
+    crownDiameter: 6
+  - position: {x: 153.3, y: 141.8}
+    crownDiameter: 5.6
+  - position: {x: 158.8, y: 142.8}
+    crownDiameter: 7.1
+  - position: {x: 183.3, y: 142.1}
+    crownDiameter: 7.1
+  - position: {x: 188.2, y: 143.3}
+    crownDiameter: 7.1
+  - position: {x: 192, y: 143.6}
+    crownDiameter: 6
+  - position: {x: 9.2, y: 134.4}
+    crownDiameter: 6
+  - position: {x: 11.9, y: 133.9}
+    crownDiameter: 6.5
+  - position: {x: 39.2, y: 133.7}
+    crownDiameter: 4.8
+  - position: {x: 48.8, y: 136}
+    crownDiameter: 5.8
+  - position: {x: 53.3, y: 135.1}
+    crownDiameter: 5.2
+  - position: {x: 58.7, y: 134.7}
+    crownDiameter: 5
+  - position: {x: 139.1, y: 135.9}
+    crownDiameter: 6.5
+  - position: {x: 143.9, y: 137.3}
+    crownDiameter: 6.2
+  - position: {x: 147.2, y: 137.6}
+    crownDiameter: 6.5
+  - position: {x: 157.7, y: 137.4}
+    crownDiameter: 6
+  - position: {x: 162, y: 136.1}
+    crownDiameter: 6.2
+  - position: {x: 188.3, y: 136.8}
+    crownDiameter: 5.1
+  - position: {x: 193.8, y: 138.6}
+    crownDiameter: 5.8
+  - position: {x: 253.7, y: 137.9}
+    crownDiameter: 5.5
+  - position: {x: 4.1, y: 129.6}
+    crownDiameter: 6.5
+  - position: {x: 8.2, y: 129.3}
+    crownDiameter: 4.9
+  - position: {x: 13.6, y: 129.6}
+    crownDiameter: 5.4
+  - position: {x: 17.2, y: 129}
+    crownDiameter: 6.7
+  - position: {x: 42.4, y: 130.4}
+    crownDiameter: 6
+  - position: {x: 54.3, y: 131.1}
+    crownDiameter: 5.1
+  - position: {x: 143.8, y: 130.5}
+    crownDiameter: 6.6
+  - position: {x: 147.2, y: 132.4}
+    crownDiameter: 5.3
+  - position: {x: 182.9, y: 133.3}
+    crownDiameter: 4.9
+  - position: {x: 189.4, y: 132}
+    crownDiameter: 6.2
+  - position: {x: 253.9, y: 133}
+    crownDiameter: 6.9
+  - position: {x: 258.8, y: 134.8}
+    crownDiameter: 5.6
+  - position: {x: 264, y: 134.1}
+    crownDiameter: 6.9
+  - position: {x: 8, y: 125}
+    crownDiameter: 7.2
+  - position: {x: 14.4, y: 125}
+    crownDiameter: 4.9
+  - position: {x: 19.4, y: 123.6}
+    crownDiameter: 5.3
+  - position: {x: 22, y: 124.1}
+    crownDiameter: 6.9
+  - position: {x: 29.4, y: 125}
+    crownDiameter: 5.4
+  - position: {x: 133.5, y: 127.3}
+    crownDiameter: 6.9
+  - position: {x: 143.4, y: 125.8}
+    crownDiameter: 6.6
+  - position: {x: 157.3, y: 127.2}
+    crownDiameter: 6.9
+  - position: {x: 177.5, y: 128.1}
+    crownDiameter: 6.9
+  - position: {x: 182.8, y: 128}
+    crownDiameter: 5.7
+  - position: {x: 248.8, y: 128.1}
+    crownDiameter: 6.6
+  - position: {x: 252.4, y: 128.8}
+    crownDiameter: 7.2
+  - position: {x: 17.8, y: 119.6}
+    crownDiameter: 6.1
+  - position: {x: 22.5, y: 120.2}
+    crownDiameter: 6.1
+  - position: {x: 28.3, y: 120.5}
+    crownDiameter: 7.2
+  - position: {x: 132.4, y: 121.9}
+    crownDiameter: 5.4
+  - position: {x: 142.4, y: 122.6}
+    crownDiameter: 4.9
+  - position: {x: 148, y: 121.7}
+    crownDiameter: 4.9
+  - position: {x: 169.1, y: 122.9}
+    crownDiameter: 6.4
+  - position: {x: 173.8, y: 121.1}
+    crownDiameter: 6.8
+  - position: {x: 253.2, y: 124}
+    crownDiameter: 7
+  - position: {x: 269.4, y: 123.2}
+    crownDiameter: 4.9
+  - position: {x: 273.2, y: 123.2}
+    crownDiameter: 5
+  - position: {x: 49.5, y: 114.6}
+    crownDiameter: 4.9
+  - position: {x: 142.2, y: 117}
+    crownDiameter: 5.1
+  - position: {x: 148.3, y: 117.3}
+    crownDiameter: 6.7
+  - position: {x: 153.1, y: 115.7}
+    crownDiameter: 5
+  - position: {x: 168.9, y: 117.7}
+    crownDiameter: 5.8
+  - position: {x: 174.4, y: 116.2}
+    crownDiameter: 6
+  - position: {x: 188.4, y: 116.3}
+    crownDiameter: 5
+  - position: {x: 194.5, y: 116.8}
+    crownDiameter: 6.7
+  - position: {x: 258.7, y: 118.9}
+    crownDiameter: 6.3
+  - position: {x: 263.7, y: 118.4}
+    crownDiameter: 6.3
+  - position: {x: 269.2, y: 120}
+    crownDiameter: 5.3
+  - position: {x: 273.7, y: 118.8}
+    crownDiameter: 7
+  - position: {x: 288.4, y: 119.7}
+    crownDiameter: 5.6
+  - position: {x: 293.6, y: 119.3}
+    crownDiameter: 4.8
+  - position: {x: 302.8, y: 119.2}
+    crownDiameter: 6.5
+  - position: {x: 48.8, y: 110.6}
+    crownDiameter: 5.5
+  - position: {x: 53.3, y: 109.9}
+    crownDiameter: 5.6
+  - position: {x: 142.4, y: 112}
+    crownDiameter: 6.6
+  - position: {x: 147.9, y: 112.6}
+    crownDiameter: 5.4
+  - position: {x: 163, y: 111.8}
+    crownDiameter: 5.3
+  - position: {x: 167.8, y: 111.2}
+    crownDiameter: 7.1
+  - position: {x: 173.7, y: 113.2}
+    crownDiameter: 6.3
+  - position: {x: 183.9, y: 112.5}
+    crownDiameter: 5.5
+  - position: {x: 188.5, y: 113.5}
+    crownDiameter: 6.3
+  - position: {x: 193.9, y: 111.9}
+    crownDiameter: 5.2
+  - position: {x: 198.2, y: 113.5}
+    crownDiameter: 7.2
+  - position: {x: 204.4, y: 114}
+    crownDiameter: 6.5
+  - position: {x: 257.3, y: 112.7}
+    crownDiameter: 4.9
+  - position: {x: 263.4, y: 115}
+    crownDiameter: 6.4
+  - position: {x: 267.6, y: 113}
+    crownDiameter: 5.9
+  - position: {x: 273.1, y: 114.2}
+    crownDiameter: 6.5
+  - position: {x: 284.8, y: 114.3}
+    crownDiameter: 5.2
+  - position: {x: 288.5, y: 114.7}
+    crownDiameter: 6.7
+  - position: {x: 294.1, y: 115.5}
+    crownDiameter: 7
+  - position: {x: 297.5, y: 113.8}
+    crownDiameter: 6.6
+  - position: {x: 304, y: 113.6}
+    crownDiameter: 6.9
+  - position: {x: 308.6, y: 115}
+    crownDiameter: 7
+  - position: {x: 2.5, y: 105.1}
+    crownDiameter: 5.8
+  - position: {x: 49.7, y: 104.4}
+    crownDiameter: 5.1
+  - position: {x: 52.9, y: 105.3}
+    crownDiameter: 5.5
+  - position: {x: 58.2, y: 105.4}
+    crownDiameter: 7.2
+  - position: {x: 143.3, y: 106.1}
+    crownDiameter: 6.2
+  - position: {x: 169, y: 108.1}
+    crownDiameter: 6.9
+  - position: {x: 183.1, y: 107}
+    crownDiameter: 4.8
+  - position: {x: 188.9, y: 107.1}
+    crownDiameter: 5.7
+  - position: {x: 192.4, y: 107.5}
+    crownDiameter: 6
+  - position: {x: 197.5, y: 107.7}
+    crownDiameter: 5.8
+  - position: {x: 203.9, y: 108.6}
+    crownDiameter: 6.6
+  - position: {x: 263.9, y: 109.7}
+    crownDiameter: 5.6
+  - position: {x: 269.7, y: 110.1}
+    crownDiameter: 5.7
+  - position: {x: 272.5, y: 109.2}
+    crownDiameter: 7.2
+  - position: {x: 289, y: 110.6}
+    crownDiameter: 6.5
+  - position: {x: 293.5, y: 109.1}
+    crownDiameter: 6.6
+  - position: {x: 298.2, y: 108.6}
+    crownDiameter: 6.6
+  - position: {x: 8.8, y: 98.9}
+    crownDiameter: 6.5
+  - position: {x: 14.6, y: 99.1}
+    crownDiameter: 5.2
+  - position: {x: 19.1, y: 98.8}
+    crownDiameter: 5.8
+  - position: {x: 24.5, y: 99.1}
+    crownDiameter: 5.8
+  - position: {x: 29.2, y: 100.1}
+    crownDiameter: 6.4
+  - position: {x: 43.7, y: 99.3}
+    crownDiameter: 4.9
+  - position: {x: 48.9, y: 99.3}
+    crownDiameter: 5.2
+  - position: {x: 52.6, y: 100.9}
+    crownDiameter: 6.4
+  - position: {x: 59.4, y: 99.6}
+    crownDiameter: 6.2
+  - position: {x: 139.5, y: 100.6}
+    crownDiameter: 5
+  - position: {x: 143.1, y: 101.1}
+    crownDiameter: 4.9
+  - position: {x: 188.6, y: 102.2}
+    crownDiameter: 6.7
+  - position: {x: 193.1, y: 102.6}
+    crownDiameter: 5.8
+  - position: {x: 197.9, y: 102.6}
+    crownDiameter: 5.2
+  - position: {x: 202.6, y: 101.8}
+    crownDiameter: 6.3
+  - position: {x: 269.4, y: 103.7}
+    crownDiameter: 5.8
+  - position: {x: 284.9, y: 104.9}
+    crownDiameter: 5.1
+  - position: {x: 292.8, y: 105.3}
+    crownDiameter: 5
+  - position: {x: 297.7, y: 104.4}
+    crownDiameter: 5.9
+  - position: {x: 7.7, y: 95.1}
+    crownDiameter: 5.6
+  - position: {x: 14, y: 94.8}
+    crownDiameter: 6.1
+  - position: {x: 43.5, y: 94.6}
+    crownDiameter: 7
+  - position: {x: 47.8, y: 95.7}
+    crownDiameter: 5.3
+  - position: {x: 52.7, y: 95}
+    crownDiameter: 6.8
+  - position: {x: 59.2, y: 94.8}
+    crownDiameter: 5.9
+  - position: {x: 119.1, y: 95.5}
+    crownDiameter: 5.2
+  - position: {x: 124.5, y: 97.3}
+    crownDiameter: 7
+  - position: {x: 138.7, y: 95.6}
+    crownDiameter: 5.7
+  - position: {x: 143.5, y: 95.5}
+    crownDiameter: 5.4
+  - position: {x: 194.6, y: 98.6}
+    crownDiameter: 6.1
+  - position: {x: 197.7, y: 98.1}
+    crownDiameter: 6.8
+  - position: {x: 274.2, y: 99.9}
+    crownDiameter: 5.8
+  - position: {x: 278.8, y: 99.2}
+    crownDiameter: 6.3
+  - position: {x: 284.1, y: 100.1}
+    crownDiameter: 6.5
+  - position: {x: 290, y: 98.5}
+    crownDiameter: 6.2
+  - position: {x: 295, y: 100.7}
+    crownDiameter: 6.8
+  - position: {x: 299.6, y: 99.6}
+    crownDiameter: 6.9
+  - position: {x: 309.2, y: 100.8}
+    crownDiameter: 4.9
+  - position: {x: 10, y: 88.8}
+    crownDiameter: 5.1
+  - position: {x: 13.2, y: 88.3}
+    crownDiameter: 6.6
+  - position: {x: 44.2, y: 90.9}
+    crownDiameter: 4.8
+  - position: {x: 48.2, y: 88.7}
+    crownDiameter: 5
+  - position: {x: 55, y: 90.8}
+    crownDiameter: 6
+  - position: {x: 58.2, y: 89.8}
+    crownDiameter: 5.5
+  - position: {x: 127.9, y: 92.2}
+    crownDiameter: 5.1
+  - position: {x: 273.7, y: 95.2}
+    crownDiameter: 5.9
+  - position: {x: 288.7, y: 95.2}
+    crownDiameter: 6.6
+  - position: {x: 295, y: 93.5}
+    crownDiameter: 5.1
+  - position: {x: 14.7, y: 84}
+    crownDiameter: 5.6
+  - position: {x: 79.3, y: 85.8}
+    crownDiameter: 5.5
+  - position: {x: 83.7, y: 84.6}
+    crownDiameter: 6.8
+  - position: {x: 88.5, y: 85.3}
+    crownDiameter: 6.1
+  - position: {x: 93.2, y: 85.7}
+    crownDiameter: 6.7
+  - position: {x: 118.4, y: 85.2}
+    crownDiameter: 6.5
+  - position: {x: 123.3, y: 85.2}
+    crownDiameter: 5.9
+  - position: {x: 274.4, y: 88.1}
+    crownDiameter: 6.4
+  - position: {x: 80.1, y: 79.3}
+    crownDiameter: 4.9
+  - position: {x: 83.4, y: 80.6}
+    crownDiameter: 6.9
+  - position: {x: 89.4, y: 80.2}
+    crownDiameter: 6.9
+  - position: {x: 93.8, y: 79.5}
+    crownDiameter: 5.2
+  - position: {x: 303.2, y: 84.3}
+    crownDiameter: 5.7
+  - position: {x: 308.8, y: 85.4}
+    crownDiameter: 7
+  - position: {x: 83.4, y: 75.4}
+    crownDiameter: 4.8
+  - position: {x: 88.5, y: 76.8}
+    crownDiameter: 5
+  - position: {x: 93.7, y: 76.1}
+    crownDiameter: 6.9
+  - position: {x: 303.7, y: 79}
+    crownDiameter: 7
+  - position: {x: 19, y: 68.5}
+    crownDiameter: 5
+  - position: {x: 24.4, y: 68.5}
+    crownDiameter: 7.1
+  - position: {x: 64.1, y: 70}
+    crownDiameter: 5.4
+  - position: {x: 69.4, y: 71.2}
+    crownDiameter: 5.3
+  - position: {x: 83.1, y: 69.8}
+    crownDiameter: 6
+  - position: {x: 89.1, y: 71.1}
+    crownDiameter: 7.1
+  - position: {x: 104, y: 71.2}
+    crownDiameter: 6.5
+  - position: {x: 109.3, y: 71.4}
+    crownDiameter: 6.1
+  - position: {x: 18.5, y: 64.9}
+    crownDiameter: 7.1
+  - position: {x: 25.4, y: 64.3}
+    crownDiameter: 6.3
+  - position: {x: 4, y: 59.4}
+    crownDiameter: 6.4
+  - position: {x: 9.6, y: 58.3}
+    crownDiameter: 6
+  - position: {x: 23.6, y: 58.4}
+    crownDiameter: 7.2
+  - position: {x: 24, y: 53.7}
+    crownDiameter: 6.8
+  - position: {x: 54.9, y: 55.4}
+    crownDiameter: 5.8
+  - position: {x: 24.9, y: 49.8}
+    crownDiameter: 4.9
+  - position: {x: 23.7, y: 39.1}
+    crownDiameter: 5.1
+  - position: {x: 276, y: 33.9}
+    crownDiameter: 5.2
+  - position: {x: 269.7, y: 27.9}
+    crownDiameter: 5
+  - position: {x: 36.1, y: 13.5}
+    crownDiameter: 6.8
+  - position: {x: 41.5, y: 14.8}
+    crownDiameter: 5.4
+  - position: {x: 44.3, y: 15.8}
+    crownDiameter: 7
+  - position: {x: -0.3, y: 9.7}
+    crownDiameter: 6.6
+  - position: {x: 120.4, y: -3.4}
+    crownDiameter: 5.4
+  - position: {x: 126.9, y: -9.8}
+    crownDiameter: 4.8
+  - position: {x: 131, y: -8}
+    crownDiameter: 7.2
+  - position: {x: 135.7, y: -7.4}
+    crownDiameter: 6.2
+  environment:
+    soilTile: 55
+    grassTile: 50
+    savannaTile: 160
+    grassDetailTile: 2.5
+    savannaSize: 3400
+    savannaDrop: 0.02
+    hillsInnerRadius: 650
+    hillsOuterRadius: 1600
+    hillsMinHeight: 60
+    hillsMaxHeight: 240
+    hillsSeed: 1970

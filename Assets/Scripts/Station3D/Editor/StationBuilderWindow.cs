@@ -36,11 +36,11 @@ public class StationBuilderWindow : EditorWindow
         EditorGUI.BeginChangeCheck();
         options.terrain   = EditorGUILayout.Toggle("Terreno", options.terrain);
         options.fence     = EditorGUILayout.Toggle("Cerca perimetral", options.fence);
-        options.building  = EditorGUILayout.Toggle("Edificio", options.building);
+        options.building  = EditorGUILayout.Toggle("Edificios", options.building);
         using (new EditorGUI.DisabledScope(!options.building))
-            options.roof  = EditorGUILayout.Toggle("   Losa de techo", options.roof);
+            options.roof  = EditorGUILayout.Toggle("   Techos", options.roof);
         options.antennas  = EditorGUILayout.Toggle("Antenas", options.antennas);
-        options.site      = EditorGUILayout.Toggle("Servicios, vías y caseta", options.site);
+        options.site      = EditorGUILayout.Toggle("Vías, losas, tanques y árboles", options.site);
         options.environment = EditorGUILayout.Toggle("Entorno (sabana y cerros)", options.environment);
         if (EditorGUI.EndChangeCheck()) options.Save();
 
@@ -53,11 +53,11 @@ public class StationBuilderWindow : EditorWindow
 
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Comprobación contra el plano", EditorStyles.boldLabel);
-        DrawSums(layout.building);
+        DrawBuildings(layout);
         DrawAntennaHeights(layout);
         var issues = layout.Validate();
         if (issues.Count == 0)
-            EditorGUILayout.HelpBox("Todo cuadra: filas, fondos, puertas y posiciones dentro de la parcela.", MessageType.Info);
+            EditorGUILayout.HelpBox("Todo cuadra: todo dentro de la cerca, nada se pisa, y puertas, ventanas y tabiques caben en sus muros.", MessageType.Info);
         foreach (string issue in issues)
             EditorGUILayout.HelpBox(issue, MessageType.Warning);
 
@@ -80,22 +80,16 @@ public class StationBuilderWindow : EditorWindow
         EditorGUILayout.EndScrollView();
     }
 
-    /// <summary>Las sumas del plano a la vista: "26 + 20 + 20 = 66 m ✓".</summary>
-    static void DrawSums(BuildingSpec b)
+    /// <summary>Los edificios a la vista: huella, giro y techo, para compararlos con el plano.</summary>
+    static void DrawBuildings(StationLayout layout)
     {
-        foreach (var row in b.rows)
+        foreach (var b in layout.buildings)
         {
-            float sum = row.rooms.Sum(r => r.width);
-            string parts = string.Join(" + ", row.rooms.Select(r => r.width.ToString("0.##")));
-            EditorGUILayout.LabelField(row.name, $"{parts} = {sum:0.##} m {Mark(sum, b.size.x)}");
+            string turn = Mathf.Approximately(b.rotation, 0f) ? "" : $" · {b.rotation:+0;−0}°";
+            string roof = b.roof == RoofType.Losa ? "losa" : $"{b.roof} de {b.cover.ToString().ToLowerInvariant()}";
+            EditorGUILayout.LabelField(b.name, $"{b.size.x:0.##} × {b.size.y:0.##} m{turn} · {roof}");
         }
-        float depth = b.rows.Sum(r => r.depth);
-        string depths = string.Join(" + ", b.rows.Select(r => r.depth.ToString("0.##")));
-        EditorGUILayout.LabelField("Fondo", $"{depths} = {depth:0.##} m {Mark(depth, b.size.y)}");
     }
-
-    static string Mark(float value, float expected) =>
-        Mathf.Abs(value - expected) <= 0.01f ? "✓" : $"✗ (debe ser {expected:0.##})";
 
     /// <summary>
     /// Altura total de cada antena calculada con su geometría, frente a la "≈" del plano, y el botón

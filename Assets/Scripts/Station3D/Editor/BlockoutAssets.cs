@@ -10,10 +10,66 @@ using UnityEngine.Rendering;
 /// Malla y materiales que usa el blockout. Se crean la primera vez en
 /// Assets/Data/Station3D/Blockout/ y a partir de ahí se REUTILIZAN: regenerar no los pisa, así que
 /// el acabado visual puede editar esos materiales (o sustituirlos) sin que se pierda.
+///
+/// Las mallas que dependen de las medidas (terreno, vías, techos, postes) van aparte, en
+/// Assets/Data/Station3D/Generado/: se reescriben en cada generación conservando su GUID, para que la
+/// escena no guarde geometría dentro del .unity.
 /// </summary>
 public static class BlockoutAssets
 {
     public const string Folder = "Assets/Data/Station3D/Blockout";
+    public const string GeneratedFolder = "Assets/Data/Station3D/Generado";
+
+    static readonly HashSet<string> produced = new HashSet<string>();
+
+    /// <summary>Empieza una generación: lleva la cuenta de qué mallas generadas se escriben.</summary>
+    public static void BeginGenerated() => produced.Clear();
+
+    /// <summary>
+    /// Cierra una generación completa: borra las mallas generadas que ya no salen del layout (un
+    /// edificio renombrado o quitado). Solo tiene sentido si se generaron todas las partes.
+    /// </summary>
+    public static void EndGenerated()
+    {
+        if (!AssetDatabase.IsValidFolder(GeneratedFolder)) return;
+        foreach (string guid in AssetDatabase.FindAssets("t:Mesh", new[] { GeneratedFolder }))
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            if (!produced.Contains(path)) AssetDatabase.DeleteAsset(path);
+        }
+    }
+
+    /// <summary>
+    /// Guarda una malla generada en su asset (por su nombre), o reescribe la que ya había
+    /// conservando el GUID. Devuelve la malla del asset.
+    /// </summary>
+    public static Mesh SaveGenerated(Mesh mesh)
+    {
+        string path = $"{GeneratedFolder}/{mesh.name}.asset";
+        produced.Add(path);
+        var existing = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+        if (existing == null)
+        {
+            EnsureFolder(GeneratedFolder);
+            AssetDatabase.CreateAsset(mesh, path);
+            return mesh;
+        }
+        EditorUtility.CopySerialized(mesh, existing);
+        UnityEngine.Object.DestroyImmediate(mesh);
+        return existing;
+    }
+
+    /// <summary>Nombre de archivo a partir de un nombre del plano ("Oficinas / Administración" → "Oficinas_Administracion").</summary>
+    public static string Slug(string name)
+    {
+        var sb = new System.Text.StringBuilder();
+        foreach (char c in name.Normalize(System.Text.NormalizationForm.FormD))
+        {
+            if (char.IsLetterOrDigit(c) && c < 128) sb.Append(c);
+            else if ((c == ' ' || c == '/' || c == '·' || c == '-' || c == '_') && sb.Length > 0 && sb[sb.Length - 1] != '_') sb.Append('_');
+        }
+        return sb.ToString().Trim('_');
+    }
 
     /// <summary>
     /// Cubo de 1 m con el pivote en el centro de la cara INFERIOR (x, z en [-0,5, 0,5]; y en [0, 1]).
@@ -38,6 +94,9 @@ public static class BlockoutAssets
         string name = "Paraboloide_fD" + focalRatio.ToString("0.###", CultureInfo.InvariantCulture);
         return LoadOrCreate(name, () => BuildParaboloid(name, focalRatio));
     }
+
+    /// <summary>Esfera de 1 m de diámetro con el pivote en su punto más bajo (y en [0, 1]).</summary>
+    public static Mesh Sphere() => LoadOrCreate("EsferaUnidad", BuildSphere);
 
     static Mesh LoadOrCreate(string name, Func<Mesh> build)
     {
@@ -92,18 +151,38 @@ public static class BlockoutAssets
     }
 
     /// <summary>
-    /// Textura de grama de sabana, 512 px, generada por código y sin costuras al repetirse: el ruido
-    /// sale de rejillas que dividen exacto el tamaño y se leen en módulo. Mezcla verde oscuro, verde
-    /// y paja seca, con grano por píxel. Se crea una vez (Grama.png) y luego se reutiliza.
+    /// Grama corta, 512 px: verde oscuro, verde y paja seca, con grano por píxel. Es la del campo
+    /// abierto. Se crea una vez (Grama.png) y luego se reutiliza.
     /// </summary>
-    public static Texture2D GrassTexture()
+    public static Texture2D GrassTexture() => NoiseTexture("Grama", 7,
+        (0f, new Color(0.30f, 0.40f, 0.17f)), (0.5f, new Color(0.45f, 0.53f, 0.24f)), (1f, new Color(0.64f, 0.61f, 0.35f)));
+
+    /// <summary>
+    /// Suelo de la parcela: "tierra ocre + manchas de grama" (plano). La mayor parte es tierra; lo
+    /// más bajo del ruido sale como manchas de grama verde y seca. Tierra.png.
+    /// </summary>
+    public static Texture2D SoilTexture() => NoiseTexture("Tierra", 23,
+        (0f, new Color(0.35f, 0.42f, 0.20f)), (0.26f, new Color(0.47f, 0.48f, 0.26f)),
+        (0.40f, new Color(0.62f, 0.54f, 0.35f)), (0.58f, new Color(0.70f, 0.57f, 0.38f)),
+        (1f, new Color(0.79f, 0.67f, 0.48f)));
+
+    /// <summary>Sabana seca de fuera de la cerca: paja con algo de verde oliva. Sabana.png.</summary>
+    public static Texture2D SavannaTexture() => NoiseTexture("Sabana", 31,
+        (0f, new Color(0.38f, 0.44f, 0.21f)), (0.5f, new Color(0.58f, 0.55f, 0.31f)), (1f, new Color(0.71f, 0.64f, 0.41f)));
+
+    /// <summary>
+    /// Textura de suelo de 512 px, generada por código y sin costuras al repetirse: el ruido sale de
+    /// rejillas que dividen exacto el tamaño y se leen en módulo, y se colorea con una rampa de
+    /// colores (posición 0–1 → color). Se crea una vez y luego se reutiliza.
+    /// </summary>
+    static Texture2D NoiseTexture(string file, int seed, params (float at, Color color)[] ramp)
     {
-        string path = Folder + "/Grama.png";
+        string path = $"{Folder}/{file}.png";
         var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         if (tex != null) return tex;
 
         const int size = 512;
-        var rnd = new System.Random(7);
+        var rnd = new System.Random(seed);
         float[] Grid(int cells)
         {
             var g = new float[cells * cells];
@@ -120,7 +199,13 @@ public static class BlockoutAssets
                               Mathf.Lerp(At(x0, y0 + 1), At(x0 + 1, y0 + 1), fx), fy);
         }
         float[] large = Grid(4), medium = Grid(16), fine = Grid(64);
-        Color dark = new Color(0.30f, 0.40f, 0.17f), mid = new Color(0.45f, 0.53f, 0.24f), dry = new Color(0.64f, 0.61f, 0.35f);
+        Color Ramp(float n)
+        {
+            for (int i = 1; i < ramp.Length; i++)
+                if (n <= ramp[i].at)
+                    return Color.Lerp(ramp[i - 1].color, ramp[i].color, Mathf.InverseLerp(ramp[i - 1].at, ramp[i].at, n));
+            return ramp[ramp.Length - 1].color;
+        }
 
         var img = new Texture2D(size, size, TextureFormat.RGB24, false);
         var pixels = new Color[size * size];
@@ -130,8 +215,7 @@ public static class BlockoutAssets
             float u = x / (float)size, v = y / (float)size;
             float n = 0.5f * Sample(large, 4, u, v) + 0.3f * Sample(medium, 16, u, v) + 0.2f * Sample(fine, 64, u, v);
             n = Mathf.Clamp01((n - 0.5f) * 1.8f + 0.5f);
-            var c = n < 0.5f ? Color.Lerp(dark, mid, n * 2f) : Color.Lerp(mid, dry, (n - 0.5f) * 2f);
-            pixels[y * size + x] = c * (0.92f + 0.16f * (float)rnd.NextDouble());
+            pixels[y * size + x] = Ramp(n) * (0.92f + 0.16f * (float)rnd.NextDouble());
         }
         img.SetPixels(pixels);
         EnsureFolder(Folder);
@@ -248,6 +332,181 @@ public static class BlockoutAssets
         return existing;
     }
 
+    // ------------------------------------------------------------------ mallas generadas
+
+    /// <summary>
+    /// Polígono en planta extruido entre <paramref name="bottom"/> y <paramref name="top"/> (en Y):
+    /// el terreno de la parcela con la forma de la cerca, o una capa de grama. Coordenadas de mundo,
+    /// UV en metros (la repetición la pone el material).
+    /// </summary>
+    public static Mesh Extrusion(string name, IList<Vector2> polygon, float top, float bottom)
+    {
+        var b = new MeshBuilder();
+        var tris = PlanGeometry.Triangulate(polygon);
+        foreach (var (y, n) in new[] { (top, Vector3.up), (bottom, Vector3.down) })
+        {
+            int first = b.Count;
+            foreach (var p in polygon) b.Vertex(new Vector3(p.x, y, p.y), n, p);
+            for (int i = 0; i < tris.Count; i += 3)
+                b.Triangle(first + tris[i], first + tris[i + 1], first + tris[i + 2]);
+        }
+
+        // Cantos: un quad por lado, con la normal hacia fuera del polígono.
+        float sign = Mathf.Sign(PlanGeometry.SignedArea(polygon));
+        for (int i = 0; i < polygon.Count; i++)
+        {
+            Vector2 a = polygon[i], c = polygon[(i + 1) % polygon.Count], d = c - a;
+            var n = new Vector3(d.y * sign, 0f, -d.x * sign).normalized;
+            int v = b.Vertex(new Vector3(a.x, top, a.y), n, new Vector2(0f, top));
+            b.Vertex(new Vector3(c.x, top, c.y), n, new Vector2(d.magnitude, top));
+            b.Vertex(new Vector3(c.x, bottom, c.y), n, new Vector2(d.magnitude, bottom));
+            b.Vertex(new Vector3(a.x, bottom, a.y), n, new Vector2(0f, bottom));
+            b.Quad(v, v + 1, v + 2, v + 3);
+        }
+        return SaveGenerated(b.ToMesh(name));
+    }
+
+    /// <summary>
+    /// Todas las vías en una malla: la cara de arriba del asfalto a <paramref name="height"/> m. Cada
+    /// tramo es un rectángulo del ancho de su vía y cada vértice un disco de ese diámetro, que
+    /// redondea quiebres y extremos como el trazo del plano. Lo que se solapa es coplanar, del mismo
+    /// material y con la misma normal, así que no se nota.
+    /// </summary>
+    public static Mesh Roads(string name, IEnumerable<RoadSpec> roads, float height)
+    {
+        const int discSegments = 20;
+        var b = new MeshBuilder();
+        Vector3 At(Vector2 p) => new Vector3(p.x, height, p.y);
+
+        foreach (var road in roads)
+        {
+            float hw = road.width / 2f;
+            for (int i = 1; i < road.path.Count; i++)
+            {
+                Vector2 a = road.path[i - 1], c = road.path[i], dir = (c - a).normalized;
+                var side = new Vector2(-dir.y, dir.x) * hw;
+                int v = b.Vertex(At(a + side), Vector3.up, a + side);
+                b.Vertex(At(c + side), Vector3.up, c + side);
+                b.Vertex(At(c - side), Vector3.up, c - side);
+                b.Vertex(At(a - side), Vector3.up, a - side);
+                b.Quad(v, v + 1, v + 2, v + 3);
+            }
+            foreach (var p in road.path)
+            {
+                int center = b.Vertex(At(p), Vector3.up, p);
+                for (int j = 0; j <= discSegments; j++)
+                {
+                    float ang = j / (float)discSegments * Mathf.PI * 2f;
+                    var q = p + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * hw;
+                    b.Vertex(At(q), Vector3.up, q);
+                }
+                for (int j = 0; j < discSegments; j++)
+                    b.Triangle(center, center + 1 + j, center + 2 + j);
+            }
+        }
+        return SaveGenerated(b.ToMesh(name));
+    }
+
+    /// <summary>
+    /// Techo inclinado sobre una huella de <paramref name="size"/> m (X × Z local), con el origen en el
+    /// centro de la cabeza de los muros. El caballete va a lo largo del lado mayor. Es un sólido:
+    /// canto de <paramref name="fascia"/> m en el alero, faldones con <paramref name="pitch"/> grados y
+    /// el plafón plano debajo, que desde dentro hace de cielo raso.
+    ///
+    /// Submallas: 0 = cubierta (teja o zinc), 1 = plafón, 2 = hastiales (van con el material del
+    /// muro). Cuatro aguas: los cuatro faldones con la misma pendiente y alero en todo el contorno.
+    /// Dos aguas: alero solo en los lados largos; los hastiales van a ras de los muros.
+    /// </summary>
+    public static Mesh Roof(string name, RoofType type, Vector2 size, float pitch, float overhang, float fascia)
+    {
+        bool ridgeAlongZ = size.y >= size.x;
+        float span = ridgeAlongZ ? size.x : size.y, length = ridgeAlongZ ? size.y : size.x;
+        float so = span / 2f + overhang;
+        float lo = type == RoofType.CuatroAguas ? length / 2f + overhang : length / 2f;
+        float rise = so * Mathf.Tan(pitch * Mathf.Deg2Rad);
+        float ridge = type == RoofType.CuatroAguas ? Mathf.Max(0f, lo - so) : lo;
+        float top = fascia + rise;
+
+        // (u, y, v): u a través del caballete, v a lo largo. Se llevan al marco del edificio al final.
+        Vector3 P(float u, float y, float v) => ridgeAlongZ ? new Vector3(u, y, v) : new Vector3(v, y, u);
+        var b = new MeshBuilder();
+
+        void Face(int sub, Vector3 normal, params Vector3[] pts)
+        {
+            b.SubMesh = sub;
+            int first = b.Count;
+            foreach (var p in pts) b.Vertex(p, normal, new Vector2(p.x, p.z));
+            for (int i = 1; i < pts.Length - 1; i++) b.Triangle(first, first + i, first + i + 1);
+        }
+
+        float s = Mathf.Sin(pitch * Mathf.Deg2Rad), c = Mathf.Cos(pitch * Mathf.Deg2Rad);
+        foreach (float side in new[] { 1f, -1f })
+        {
+            // Faldones largos.
+            Face(0, P(side * s, c, 0f).normalized,
+                 P(side * so, fascia, -lo), P(side * so, fascia, lo), P(0f, top, ridge), P(0f, top, -ridge));
+            // Canto del alero en los lados largos.
+            Face(0, P(side, 0f, 0f), P(side * so, 0f, -lo), P(side * so, 0f, lo), P(side * so, fascia, lo), P(side * so, fascia, -lo));
+
+            if (type == RoofType.CuatroAguas)
+            {
+                // Faldones de los extremos (triángulos) y su canto.
+                float run = lo - ridge;
+                Face(0, P(0f, 1f, side * rise / Mathf.Max(run, 0.001f)).normalized,
+                     P(-so, fascia, side * lo), P(so, fascia, side * lo), P(0f, top, side * ridge));
+                Face(0, P(0f, 0f, side), P(-so, 0f, side * lo), P(so, 0f, side * lo), P(so, fascia, side * lo), P(-so, fascia, side * lo));
+            }
+            else
+            {
+                // Hastial: el pentágono del extremo, con el material del muro.
+                Face(2, P(0f, 0f, side), P(-so, 0f, side * lo), P(so, 0f, side * lo), P(so, fascia, side * lo),
+                     P(0f, top, side * lo), P(-so, fascia, side * lo));
+            }
+        }
+        Face(1, Vector3.down, P(-so, 0f, -lo), P(so, 0f, -lo), P(so, 0f, lo), P(-so, 0f, lo));
+        b.SubMesh = 2; // que exista aunque quede vacía (cuatro aguas): el renderer lleva tres materiales
+        return SaveGenerated(b.ToMesh(name));
+    }
+
+    /// <summary>
+    /// Muchas copias de una malla unidad en una sola malla (p. ej. los cientos de postes de la cerca):
+    /// un objeto en la escena en vez de uno por pieza.
+    /// </summary>
+    public static Mesh Combine(string name, Mesh unit, IList<Matrix4x4> placements)
+    {
+        var parts = new CombineInstance[placements.Count];
+        for (int i = 0; i < placements.Count; i++)
+            parts[i] = new CombineInstance { mesh = unit, transform = placements[i] };
+        var mesh = new Mesh { name = name };
+        if (unit.vertexCount * placements.Count > 65000) mesh.indexFormat = IndexFormat.UInt32;
+        mesh.CombineMeshes(parts, true, true);
+        mesh.RecalculateBounds();
+        return SaveGenerated(mesh);
+    }
+
+    static Mesh BuildSphere()
+    {
+        const int rings = 12, segments = 20;
+        var b = new MeshBuilder();
+        for (int i = 0; i <= rings; i++)
+        {
+            float phi = Mathf.PI * i / rings; // 0 = abajo
+            for (int j = 0; j <= segments; j++)
+            {
+                float theta = 2f * Mathf.PI * j / segments;
+                var n = new Vector3(Mathf.Sin(phi) * Mathf.Cos(theta), -Mathf.Cos(phi), Mathf.Sin(phi) * Mathf.Sin(theta));
+                b.Vertex(n * 0.5f + Vector3.up * 0.5f, n, new Vector2(j / (float)segments, i / (float)rings));
+            }
+        }
+        for (int i = 0; i < rings; i++)
+            for (int j = 0; j < segments; j++)
+            {
+                int a = i * (segments + 1) + j;
+                b.Quad(a, a + 1, a + segments + 2, a + segments + 1);
+            }
+        return b.ToMesh("EsferaUnidad");
+    }
+
     static Mesh BuildUnitBlock()
     {
         var verts = new Vector3[24];
@@ -362,13 +621,23 @@ public static class BlockoutAssets
     /// <summary>
     /// Acumula vértices y triángulos. Cada triángulo se orienta solo según las normales de sus
     /// vértices, así que no hay que acertar a mano el sentido de giro (Unity: horario = cara frontal).
+    /// Los triángulos van a la submalla <see cref="SubMesh"/> (una por material).
     /// </summary>
     sealed class MeshBuilder
     {
         readonly List<Vector3> verts = new List<Vector3>();
         readonly List<Vector3> normals = new List<Vector3>();
         readonly List<Vector2> uvs = new List<Vector2>();
-        readonly List<int> tris = new List<int>();
+        readonly List<List<int>> subMeshes = new List<List<int>> { new List<int>() };
+        int sub;
+
+        public int Count => verts.Count;
+
+        public int SubMesh
+        {
+            get => sub;
+            set { sub = value; while (subMeshes.Count <= sub) subMeshes.Add(new List<int>()); }
+        }
 
         public int Vertex(Vector3 p, Vector3 n, Vector2 uv)
         {
@@ -380,6 +649,7 @@ public static class BlockoutAssets
         {
             var facing = Vector3.Cross(verts[b] - verts[a], verts[c] - verts[a]);
             if (Vector3.Dot(facing, normals[a] + normals[b] + normals[c]) < 0f) (b, c) = (c, b);
+            var tris = subMeshes[sub];
             tris.Add(a); tris.Add(b); tris.Add(c);
         }
 
@@ -392,10 +662,12 @@ public static class BlockoutAssets
         public Mesh ToMesh(string name)
         {
             var mesh = new Mesh { name = name };
+            if (verts.Count > 65000) mesh.indexFormat = IndexFormat.UInt32;
             mesh.SetVertices(verts);
             mesh.SetNormals(normals);
             mesh.SetUVs(0, uvs);
-            mesh.SetTriangles(tris, 0);
+            mesh.subMeshCount = subMeshes.Count;
+            for (int i = 0; i < subMeshes.Count; i++) mesh.SetTriangles(subMeshes[i], i);
             mesh.RecalculateBounds();
             mesh.RecalculateTangents();
             return mesh;

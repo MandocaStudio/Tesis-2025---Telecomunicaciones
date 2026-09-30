@@ -27,8 +27,27 @@ public static class AntennaGeometry
     /// <summary>Distancia del eje de elevación al vértice del plato.</summary>
     public static float VertexOffset(AntennaSpec a, AntennaDesign d) => d.vertexOffset * a.dishDiameter;
 
+    /// <summary>
+    /// Cuánto se adelanta en planta, hacia donde apunta la antena, el centro del plato respecto a su
+    /// eje: el centro de la boca está a (h + profundidad) del eje sobre la dirección de apuntamiento,
+    /// y su proyección horizontal es eso por cos(elevación).
+    /// </summary>
+    public static float PlanOffset(AntennaSpec a, AntennaDesign d) =>
+        (VertexOffset(a, d) + Depth(a, d)) * Mathf.Cos(a.elevation * Mathf.Deg2Rad);
+
+    /// <summary>
+    /// Eje del pedestal en planta. <c>position</c> es el centro del plato visto desde arriba (lo que
+    /// dibuja el plano y se ve en la foto), así que el pedestal queda detrás, hacia donde NO apunta.
+    /// </summary>
+    public static Vector2 PedestalPosition(AntennaSpec a, AntennaDesign d)
+    {
+        if (a.dishDiameter <= 0f) return a.position;
+        float az = a.azimuth * Mathf.Deg2Rad;
+        return a.position - new Vector2(Mathf.Sin(az), Mathf.Cos(az)) * PlanOffset(a, d);
+    }
+
     /// <summary>Altura del eje de elevación sobre el suelo.</summary>
-    public static float AxisHeight(AntennaSpec a) => (a.HasPedestal ? a.pedestalHeight : 0f) + a.mountHeight;
+    public static float AxisHeight(AntennaSpec a) => a.PedestalTop + a.mountHeight;
 
     /// <summary>Punto más alto de la antena sobre su eje: el borde superior del plato o el del subreflector.</summary>
     public static float TopAboveAxis(AntennaSpec a, AntennaDesign d)
