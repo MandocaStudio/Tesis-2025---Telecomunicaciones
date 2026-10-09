@@ -85,10 +85,11 @@ public class StationLayout : ScriptableObject
     public List<FacilitySpec> facilities = new List<FacilitySpec>
     {
         // Foto: los "Tanques" son dos cilindros tumbados de este a oeste, y el tanque de agua, una
-        // cisterna abierta (agua oscura dentro de un borde claro).
+        // cisterna abierta (agua oscura dentro de un borde claro). La cisterna la movió el usuario
+        // 6,9 m al este (2026-10-09; en la foto estaba en X = 170,75).
         //               nombre            forma                           centro (X, Z)                  huella (X × Z)          alto  losa  margen  cuántos
         new FacilitySpec("Tanques",        FacilityShape.TanqueHorizontal, new Vector2(27.5f, 194.4f),    new Vector2(12f, 9f),   3.2f, 0.3f, 0.6f,   2),
-        new FacilitySpec("Tanque de agua", FacilityShape.Cisterna,         new Vector2(170.75f, 140.15f), new Vector2(9f, 13.5f), 1.2f, 0f,   0f,     1),
+        new FacilitySpec("Tanque de agua", FacilityShape.Cisterna,         new Vector2(177.65f, 140.15f), new Vector2(9f, 13.5f), 1.2f, 0f,   0f,     1),
     };
 
     [Tooltip("Proporciones comunes a todas las antenas, como fracción del diámetro: una sola antena " +
@@ -105,6 +106,14 @@ public class StationLayout : ScriptableObject
     public List<TreeSpec> trees = PhotoTrees.Create();
 
     public EnvironmentSpec environment = new EnvironmentSpec();
+
+    [Tooltip("Texturas reales de cada superficie (Poly Haven, CC0: Assets/PolyHaven). Sin textura, la superficie " +
+             "queda del color liso del acabado.")]
+    public SurfacesSpec surfaces = new SurfacesSpec();
+
+    [Tooltip("Arbustos, grama alta y piedras repartidos por el terreno (dibujados por instancias). Los modelos " +
+             "son los arbustos Yughues y los de Poly Haven (Assets/PolyHaven).")]
+    public ScatterSpec scatter = new ScatterSpec();
 
     static List<AntennaSpec> BuildAntennaList()
     {
@@ -323,6 +332,35 @@ public class StationLayout : ScriptableObject
             issues.Add("La sabana no llega hasta el borde exterior de los cerros: se vería el vacío por debajo.");
         if (env.hillsMinHeight > env.hillsMaxHeight)
             issues.Add("La altura mínima de los cerros supera a la máxima.");
+
+        foreach (var (name, layer) in scatter.All())
+        {
+            bool used = layer.alongFence + layer.perTree + layer.savanna + layer.parcelPatches + layer.field +
+                        layer.alongRoads + layer.alongPads + layer.parcel > 0f;
+            if (used && !layer.models.Any(m => m.model != null))
+                issues.Add($"La capa '{name}' tiene dónde salir pero ningún modelo.");
+            if (layer.height.x <= 0f || layer.height.y < layer.height.x)
+                issues.Add($"El alto de '{name}' tiene que ir de un número positivo a otro igual o mayor.");
+            if (layer.radius <= 0f)
+                issues.Add($"El radio de '{name}' tiene que ser mayor que 0.");
+            if (layer.distances == null || layer.distances.Length == 0)
+                issues.Add($"'{name}' no tiene distancias de dibujo.");
+            else
+                for (int i = 0; i < layer.distances.Length; i++)
+                    if (layer.distances[i] <= (i > 0 ? layer.distances[i - 1] : 0f))
+                        issues.Add($"Las distancias de dibujo de '{name}' tienen que ir de menor a mayor.");
+            if (layer.fenceBand.x < layer.radius)
+                issues.Add($"'{name}' puede caer sobre la cerca: la franja junto a ella empieza a {layer.fenceBand.x:0.##} m y mide {layer.radius:0.##} m de radio.");
+        }
+
+        foreach (var (name, layer) in surfaces.All())
+        {
+            if (layer.color == null) continue;
+            if (layer.tile <= 0f)
+                issues.Add($"La textura de '{name}' tiene que repetirse cada más de 0 m.");
+            if (layer.normal == null)
+                issues.Add($"La textura de '{name}' no tiene relieve (normal map): se verá plana.");
+        }
 
         return issues;
     }
@@ -811,4 +849,246 @@ public class EnvironmentSpec
     public float hillsMaxHeight = 240f;
     [Tooltip("Semilla del perfil de los cerros: el mismo número da siempre los mismos cerros.")]
     public int hillsSeed = 1970;
+}
+
+/// <summary>
+/// Una textura real aplicada a una superficie, a su tamaño de verdad. La pinta el shader
+/// "PVI/Superficie en metros", que la repite cada <see cref="tile"/> metros sea cual sea la pieza.
+/// </summary>
+[Serializable]
+public class SurfaceLayer
+{
+    [Tooltip("Color (Poly Haven, 1k). Vacío = la superficie queda del color liso del acabado.")]
+    public Texture2D color;
+    [Tooltip("Relieve (normal map, convención OpenGL: la \"nor_gl\" de Poly Haven).")]
+    public Texture2D normal;
+    [Tooltip("Poly Haven: lo que mide de verdad una repetición de la textura, en metros.")]
+    public float tile = 3f;
+    [Tooltip("Supuesto: tinte que multiplica la textura (blanco = la textura tal cual).")]
+    public Color tint = Color.white;
+    [Tooltip("Supuesto: lisura (0 = mate). Las texturas no traen la suya: se usa este número.")]
+    [Range(0f, 1f)] public float smoothness = 0.1f;
+    [Tooltip("Supuesto: variación de tono a gran escala, para que no se vea la repetición (0 = ninguna).")]
+    [Range(0f, 1f)] public float variation = 0.15f;
+    [Tooltip("Supuesto: tamaño de esa variación de tono, en metros.")]
+    public float variationSize = 25f;
+
+    public SurfaceLayer() { }
+    public SurfaceLayer(float tile, Color tint, float smoothness = 0.1f, float variation = 0.15f, float variationSize = 25f)
+    {
+        this.tile = tile; this.tint = tint; this.smoothness = smoothness; this.variation = variation; this.variationSize = variationSize;
+    }
+}
+
+/// <summary>Un suelo de dos texturas: la principal y otra por manchas encima (grama sobre tierra).</summary>
+[Serializable]
+public class GroundSurface
+{
+    public SurfaceLayer main = new SurfaceLayer();
+    [Tooltip("La que sale por manchas encima de la principal.")]
+    public SurfaceLayer patches = new SurfaceLayer();
+    [Tooltip("Foto / supuesto: cuánto suelo cubren las manchas (0 = nada, 1 = todo).")]
+    [Range(0f, 1f)] public float cover = 0.35f;
+    [Tooltip("Supuesto: tamaño típico de una mancha, en metros.")]
+    public float patchSize = 22f;
+    [Tooltip("Supuesto: qué tan difuminado es el borde de las manchas.")]
+    [Range(0.01f, 0.5f)] public float softness = 0.12f;
+}
+
+/// <summary>
+/// Qué textura lleva cada superficie de la estación. Las texturas son de Poly Haven (CC0) y están en
+/// Assets/PolyHaven (con su LICENCIA.txt); el tamaño de cada repetición es el que da Poly Haven.
+/// </summary>
+[Serializable]
+public class SurfacesSpec
+{
+    // Tintes: multiplican la textura en espacio lineal (Unity pasa el color a lineal, así que 1,3 en el
+    // inspector es ×1,78). Están calculados con el color medio de cada textura para llegar al tono del
+    // acabado anterior (MODULO-3D.md §4.4): concreto claro, muros blancos, teja roja, vías gris claro.
+
+    [Header("Suelos (dos texturas mezcladas por manchas)")]
+    [Tooltip("Plano: \"tierra ocre + manchas de grama\" dentro de la cerca.")]
+    public GroundSurface parcel = new GroundSurface
+    {
+        main = new SurfaceLayer(4f, new Color(1.2f, 1.32f, 1.46f), 0.08f, 0.3f, 60f),
+        patches = new SurfaceLayer(2f, new Color(1.5f, 1.6f, 1.6f), 0.12f),
+        cover = 0.35f, patchSize = 10f, softness = 0.15f,
+    };
+    [Tooltip("Campo abierto: grama corta con algo de tierra.")]
+    public GroundSurface field = new GroundSurface
+    {
+        main = new SurfaceLayer(2f, new Color(1f, 1.05f, 0.95f), 0.12f, 0.3f, 60f),
+        patches = new SurfaceLayer(4f, new Color(1.2f, 1.32f, 1.46f), 0.08f),
+        cover = 0.1f, patchSize = 8f, softness = 0.15f,
+    };
+    [Tooltip("Sabana seca de fuera de la cerca: grama pajiza con tierra.")]
+    public GroundSurface savanna = new GroundSurface
+    {
+        main = new SurfaceLayer(2f, new Color(0.93f, 1.03f, 1.02f), 0.1f, 0.4f, 200f),
+        patches = new SurfaceLayer(4f, new Color(1.2f, 1.32f, 1.46f), 0.08f),
+        cover = 0.2f, patchSize = 30f, softness = 0.2f,
+    };
+    [Tooltip("Cerros del fondo: se ven a más de 650 m, así que cuenta la variación grande, no el detalle. " +
+             "Las manchas son monte más oscuro.")]
+    public GroundSurface hills = new GroundSurface
+    {
+        main = new SurfaceLayer(10f, new Color(0.85f, 0.95f, 0.8f), 0.05f, 0.45f, 500f),
+        patches = new SurfaceLayer(10f, new Color(1.3f, 1.4f, 1.4f), 0.05f),
+        cover = 0.35f, patchSize = 80f, softness = 0.3f,
+    };
+
+    [Header("Pavimentos")]
+    public SurfaceLayer asphalt = new SurfaceLayer(4f, new Color(1.05f, 1.05f, 1f), 0.12f, 0.2f, 30f);
+    [Tooltip("Recinto de los platos pequeños (foto: tierra y grava).")]
+    public SurfaceLayer gravel = new SurfaceLayer(2.5f, new Color(1.04f, 1.2f, 1.4f), 0.05f, 0.25f, 20f);
+    [Tooltip("Losas, pedestales, cisterna y bases de los tanques.")]
+    public SurfaceLayer concrete = new SurfaceLayer(3f, new Color(1.95f, 1.93f, 1.9f), 0.12f, 0.2f, 15f);
+    [Tooltip("Piso de los edificios.")]
+    public SurfaceLayer floor = new SurfaceLayer(3f, new Color(2.1f, 2.1f, 2.05f), 0.3f, 0.1f, 15f);
+
+    [Header("Edificios")]
+    [Tooltip("Muros de bloque pintado de blanco (plano anterior).")]
+    public SurfaceLayer walls = new SurfaceLayer(2f, new Color(1.26f, 1.32f, 1.35f), 0.08f, 0.12f, 12f);
+    [Tooltip("Muros de los edificios de servicio (gris claro).")]
+    public SurfaceLayer serviceWalls = new SurfaceLayer(2f, new Color(1.18f, 1.23f, 1.22f), 0.08f, 0.15f, 12f);
+    [Tooltip("Franja azul bajo el alero: la misma pintura, en el azul de acento del aplicativo (#1560D8).")]
+    public SurfaceLayer stripe = new SurfaceLayer(2f, new Color(0.16f, 0.59f, 1.35f), 0.2f, 0.08f, 12f);
+    [Tooltip("Techos de teja (edificio principal y ala norte).")]
+    public SurfaceLayer roofTile = new SurfaceLayer(3.5f, new Color(1.23f, 0.77f, 0.72f), 0.15f, 0.2f, 15f);
+    [Tooltip("Techo de zinc del galpón.")]
+    public SurfaceLayer zinc = new SurfaceLayer(1.12f, new Color(0.95f, 0.93f, 1f), 0.4f, 0.25f, 10f);
+    [Tooltip("Techos planos de losa (foto: claros).")]
+    public SurfaceLayer flatRoof = new SurfaceLayer(3f, new Color(2.25f, 2.25f, 2.2f), 0.1f, 0.25f, 12f);
+
+    /// <summary>Todas las capas con su nombre, para validarlas.</summary>
+    public IEnumerable<(string, SurfaceLayer)> All()
+    {
+        foreach (var (n, g) in new[] { ("parcela", parcel), ("campo abierto", field), ("sabana", savanna), ("cerros", hills) })
+        {
+            yield return (n, g.main);
+            yield return (n + " (manchas)", g.patches);
+        }
+        yield return ("asfalto", asphalt); yield return ("grava", gravel); yield return ("concreto", concrete);
+        yield return ("piso", floor); yield return ("muros", walls); yield return ("muros de servicio", serviceWalls);
+        yield return ("franja", stripe); yield return ("teja", roofTile); yield return ("zinc", zinc); yield return ("losa de techo", flatRoof);
+    }
+}
+
+/// <summary>Un modelo de una capa repartida (un arbusto, el juego de matas, el juego de piedras).</summary>
+[Serializable]
+public class ScatterModel
+{
+    [Tooltip("Prefab o FBX. Con LODGroup (los arbustos Yughues) se usan sus niveles de detalle; si no, cada " +
+             "malla hija es una variante y los niveles salen de su Mesh LOD (actívalo en el importador).")]
+    public GameObject model;
+    [Tooltip("Color (con transparencia si recorta). Vacío = el del material del modelo.")]
+    public Texture2D color;
+    [Tooltip("Relieve (normal map). Vacío = el del material del modelo, si tiene.")]
+    public Texture2D normal;
+    [Tooltip("Supuesto: tinte.")]
+    public Color tint = Color.white;
+    [Tooltip("Supuesto: cuántas veces sale frente a los demás modelos de la capa.")]
+    public float weight = 1f;
+    [Tooltip("Hojas y briznas: se recortan por la transparencia y se ven por las dos caras.")]
+    public bool foliage = true;
+}
+
+/// <summary>
+/// Una capa repartida por el terreno. Dónde sale, en grupos de <see cref="clump"/> copias: junto a la
+/// cerca (por los dos lados), al pie de los árboles, en la sabana de fuera, sobre las manchas de grama
+/// de la parcela (las mismas del suelo), en el campo abierto, al borde de las vías y las losas, y
+/// suelto por la parcela. Nunca en vías, edificios, tanques, losas, bajo un plato ni sobre la cerca
+/// (SiteClearance). Todo son supuestos: ni el plano ni la foto los dan.
+/// </summary>
+[Serializable]
+public class ScatterLayer
+{
+    public List<ScatterModel> models = new List<ScatterModel>();
+    [Tooltip("Supuesto: alto de cada copia en metros, al azar entre los dos.")]
+    public Vector2 height = new Vector2(0.6f, 1.2f);
+    [Tooltip("Supuesto: radio que ocupa en planta. Es el margen con vías, edificios, losas, platos y cerca.")]
+    public float radius = 0.5f;
+    [Tooltip("Supuesto: copias por grupo, al azar entre los dos (la vegetación crece en matas).")]
+    public Vector2Int clump = new Vector2Int(1, 1);
+    [Tooltip("Supuesto: radio del grupo, en metros.")]
+    public float clumpRadius = 1f;
+    [Tooltip("Supuesto: cuánto se hunde en el suelo, como fracción de su alto (las piedras van medio enterradas).")]
+    [Range(0f, 0.5f)] public float sink = 0.03f;
+
+    [Header("Dónde (grupos)")]
+    [Tooltip("Por cada 100 m de cerca, contando los dos lados.")]
+    public float alongFence;
+    [Tooltip("Franja junto a la cerca: de qué distancia a qué distancia de ella (m).")]
+    public Vector2 fenceBand = new Vector2(0.8f, 3f);
+    [Tooltip("Por árbol, al pie (bajo la copa).")]
+    public float perTree;
+    [Tooltip("Por cada 1000 m² de sabana, fuera de la cerca.")]
+    public float savanna;
+    [Tooltip("Hasta qué distancia de la cerca se reparte por la sabana (m).")]
+    public float savannaWidth = 80f;
+    [Tooltip("Por cada 100 m² de mancha de grama dentro de la cerca (las manchas del suelo).")]
+    public float parcelPatches;
+    [Tooltip("Por cada 100 m² del campo abierto.")]
+    public float field;
+    [Tooltip("Por cada 100 m de borde de vía, contando los dos lados.")]
+    public float alongRoads;
+    [Tooltip("Por cada 100 m de borde de losa (concreto y grava).")]
+    public float alongPads;
+    [Tooltip("Franja junto a las vías y las losas: de qué distancia a qué distancia de su borde (m).")]
+    public Vector2 edgeBand = new Vector2(0.1f, 1f);
+    [Tooltip("Por cada 1000 m² de la parcela, sueltos donde quepan.")]
+    public float parcel;
+
+    [Header("Dibujo")]
+    [Tooltip("Hasta dónde se usa cada nivel de detalle (m); la última es hasta dónde se ve. Más cerca = más barato.")]
+    public float[] distances = { 10f, 25f, 50f };
+    [Tooltip("Triángulos como mucho de una copia en el nivel cercano (con Mesh LOD; cada nivel siguiente, ~¼).")]
+    public int nearTriangles = 1500;
+    [Tooltip("Cuántos niveles, empezando por el cercano, dan sombra (0 = ninguno: lo barato).")]
+    public int shadowBands;
+    [Tooltip("En calidad Baja: qué parte de las copias se dibuja.")]
+    [Range(0f, 1f)] public float lowDensity = 0.5f;
+    [Tooltip("En calidad Baja: las distancias de dibujo × esto.")]
+    [Range(0.1f, 1f)] public float lowDistanceScale = 0.6f;
+    [Tooltip("Semilla: el mismo número reparte siempre igual.")]
+    public int seed = 1;
+}
+
+[Serializable]
+public class ScatterSpec
+{
+    [Tooltip("Arbustos (pack Yughues): junto a la cerca, al pie de los árboles y sueltos por la sabana.")]
+    public ScatterLayer bushes = new ScatterLayer
+    {
+        height = new Vector2(0.8f, 1.8f), radius = 0.7f, clump = new Vector2Int(1, 3), clumpRadius = 1.6f, sink = 0.05f,
+        alongFence = 6f, fenceBand = new Vector2(0.9f, 3.5f), perTree = 1.2f, savanna = 0.8f, savannaWidth = 120f, parcel = 0.15f,
+        distances = new[] { 15f, 35f, 70f, 110f }, shadowBands = 2, lowDensity = 0.7f, lowDistanceScale = 0.6f, seed = 11,
+    };
+    [Tooltip("Grama alta (Poly Haven grass_medium_02, verde y seca): junto a la cerca, al pie de los árboles, en la " +
+             "sabana, sobre las manchas de grama y en el campo abierto.")]
+    public ScatterLayer grass = new ScatterLayer
+    {
+        // El modelo son briznas sueltas de 20–40 cm: estiradas a 1 m se veían cuatro palos. Mejor poco
+        // estiradas y en macollas de 6 a 12.
+        height = new Vector2(0.3f, 0.65f), radius = 0.25f, clump = new Vector2Int(6, 12), clumpRadius = 0.9f, sink = 0.03f,
+        alongFence = 50f, fenceBand = new Vector2(0.3f, 2.5f), perTree = 4f, savanna = 8f, savannaWidth = 70f,
+        parcelPatches = 2f, field = 1.2f,
+        distances = new[] { 12f, 28f, 55f }, nearTriangles = 2600, shadowBands = 0, lowDensity = 0.45f, lowDistanceScale = 0.55f, seed = 23,
+    };
+    [Tooltip("Piedras sueltas (Poly Haven namaqualand_stones_01 y _rocks_01): al borde de las vías y las losas, y " +
+             "algunas sueltas.")]
+    public ScatterLayer rocks = new ScatterLayer
+    {
+        height = new Vector2(0.06f, 0.3f), radius = 0.3f, clump = new Vector2Int(1, 3), clumpRadius = 0.6f, sink = 0.25f,
+        alongRoads = 25f, alongPads = 25f, edgeBand = new Vector2(0.15f, 1f), perTree = 0.5f, parcel = 0.6f,
+        savanna = 0.3f, savannaWidth = 40f, fenceBand = new Vector2(0.5f, 2f),
+        distances = new[] { 6f, 15f, 35f }, nearTriangles = 900, shadowBands = 0, lowDensity = 0.6f, lowDistanceScale = 0.6f, seed = 37,
+    };
+
+    public IEnumerable<(string, ScatterLayer)> All()
+    {
+        yield return ("arbustos", bushes);
+        yield return ("grama alta", grass);
+        yield return ("piedras", rocks);
+    }
 }

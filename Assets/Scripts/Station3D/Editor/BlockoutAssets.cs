@@ -280,6 +280,63 @@ public static class BlockoutAssets
     }
 
     /// <summary>
+    /// Ruido de "PVI/Superficie en metros", 256 px, sin costuras y lineal (no es un color): R = dónde
+    /// salen las manchas de la segunda capa (grama sobre tierra), G = variación de tono a gran escala,
+    /// B = manchitas finas que mezclan las dos lecturas de la anti-repetición. Media en 0,5 para que la
+    /// variación no aclare ni oscurezca. Se crea una vez (Manchas.png); para rehacerlo, se borra.
+    /// </summary>
+    public static Texture2D PatchNoise()
+    {
+        string path = Folder + "/Manchas.png";
+        var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        if (tex != null) return tex;
+
+        const int size = 256;
+        var rnd = new System.Random(5);
+        float[] Grid(int cells)
+        {
+            var g = new float[cells * cells];
+            for (int i = 0; i < g.Length; i++) g[i] = (float)rnd.NextDouble();
+            return g;
+        }
+        float Sample(float[] g, int cells, float u, float v)
+        {
+            float x = u * cells, y = v * cells;
+            int x0 = (int)x, y0 = (int)y;
+            float fx = Mathf.SmoothStep(0f, 1f, x - x0), fy = Mathf.SmoothStep(0f, 1f, y - y0);
+            float At(int i, int j) => g[(j % cells) * cells + (i % cells)];
+            return Mathf.Lerp(Mathf.Lerp(At(x0, y0), At(x0 + 1, y0), fx), Mathf.Lerp(At(x0, y0 + 1), At(x0 + 1, y0 + 1), fx), fy);
+        }
+        float[] r4 = Grid(4), r8 = Grid(8), r32 = Grid(32), g3 = Grid(3), g12 = Grid(12), b8 = Grid(8), b16 = Grid(16);
+
+        var img = new Texture2D(size, size, TextureFormat.RGB24, false, true);
+        var pixels = new Color[size * size];
+        for (int y = 0; y < size; y++)
+        for (int x = 0; x < size; x++)
+        {
+            float u = x / (float)size, v = y / (float)size;
+            float r = 0.55f * Sample(r4, 4, u, v) + 0.3f * Sample(r8, 8, u, v) + 0.15f * Sample(r32, 32, u, v);
+            float g = 0.65f * Sample(g3, 3, u, v) + 0.35f * Sample(g12, 12, u, v);
+            float b = 0.6f * Sample(b8, 8, u, v) + 0.4f * Sample(b16, 16, u, v);
+            pixels[y * size + x] = new Color(Mathf.Clamp01((r - 0.5f) * 1.9f + 0.5f), Mathf.Clamp01((g - 0.5f) * 1.6f + 0.5f),
+                                             Mathf.Clamp01((b - 0.5f) * 1.8f + 0.5f));
+        }
+        img.SetPixels(pixels);
+        EnsureFolder(Folder);
+        File.WriteAllBytes(path, img.EncodeToPNG());
+        UnityEngine.Object.DestroyImmediate(img);
+
+        AssetDatabase.ImportAsset(path);
+        var importer = (TextureImporter)AssetImporter.GetAtPath(path);
+        importer.sRGBTexture = false;
+        importer.wrapMode = TextureWrapMode.Repeat;
+        importer.textureCompression = TextureImporterCompression.Uncompressed; // el ruido suave en DXT hace escalones
+        importer.maxTextureSize = size;
+        importer.SaveAndReimport();
+        return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+    }
+
+    /// <summary>
     /// Anillo de cerros alrededor de la parcela (origen en su centro, base en Y = 0). Suben desde el
     /// radio interior y su altura varía con senos de frecuencia entera en el ángulo, así que el
     /// anillo cierra sin costura. Se reescribe en su asset (Cerros.asset) conservando el GUID; con

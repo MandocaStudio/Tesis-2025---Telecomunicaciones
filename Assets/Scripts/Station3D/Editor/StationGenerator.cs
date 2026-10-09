@@ -24,11 +24,11 @@ public static class StationGenerator
     /// <summary>Qué partes construir. Se recuerdan entre sesiones del Editor.</summary>
     public struct Options
     {
-        public bool terrain, fence, building, roof, antennas, site, environment;
+        public bool terrain, fence, building, roof, antennas, site, scatter, environment;
 
         const string Prefix = "PVI.Station3D.";
 
-        public bool All => terrain && fence && building && roof && antennas && site && environment;
+        public bool All => terrain && fence && building && roof && antennas && site && scatter && environment;
 
         public static Options Load() => new Options
         {
@@ -38,6 +38,7 @@ public static class StationGenerator
             roof      = EditorPrefs.GetBool(Prefix + "roof", true),
             antennas  = EditorPrefs.GetBool(Prefix + "antennas", true),
             site      = EditorPrefs.GetBool(Prefix + "site", true),
+            scatter   = EditorPrefs.GetBool(Prefix + "scatter", true),
             environment = EditorPrefs.GetBool(Prefix + "environment", true),
         };
 
@@ -49,6 +50,7 @@ public static class StationGenerator
             EditorPrefs.SetBool(Prefix + "roof", roof);
             EditorPrefs.SetBool(Prefix + "antennas", antennas);
             EditorPrefs.SetBool(Prefix + "site", site);
+            EditorPrefs.SetBool(Prefix + "scatter", scatter);
             EditorPrefs.SetBool(Prefix + "environment", environment);
         }
     }
@@ -73,12 +75,16 @@ public static class StationGenerator
     [MenuItem("PVI/Estación 3D/Reaplicar colores del acabado")]
     static void ReapplyFinish()
     {
-        new Kit(reapplyFinish: true);
+        var kit = new Kit(reapplyFinish: true);
         var layout = FindRoots().Select(r => r.layout).FirstOrDefault(l => l != null)
                      ?? AssetDatabase.LoadAssetAtPath<StationLayout>(DefaultLayoutPath);
         if (layout != null)
+        {
+            // Las superficies con textura real salen del layout, no de la paleta: se vuelven a poner.
+            kit.ApplySurfaces(layout.surfaces);
             foreach (var model in layout.treeDesign.models.Where(m => m != null))
                 BlockoutAssets.TreeModel(model, Kit.BarkTint, Kit.LeafTint, overwrite: true);
+        }
         AssetDatabase.SaveAssets();
         Debug.Log($"{LogTag} Colores del acabado reaplicados en {BlockoutAssets.Folder}.");
     }
@@ -112,6 +118,7 @@ public static class StationGenerator
 
         BlockoutAssets.BeginGenerated();
         var kit = new Kit();
+        kit.ApplySurfaces(layout.surfaces);
         var root = new GameObject(RootName);
         root.AddComponent<StationGeneratedRoot>().layout = layout;
 
@@ -120,6 +127,7 @@ public static class StationGenerator
         if (opts.building)  BuildBuildings(root.transform, layout, kit, opts.roof);
         if (opts.antennas)  BuildAntennas(root.transform, layout, kit);
         if (opts.site)      BuildSite(root.transform, layout, kit);
+        if (opts.scatter)   kit.Count += ScatterBuilder.Build(root.transform, layout);
         if (opts.environment) BuildEnvironment(root.transform, layout, kit);
 
         // Las mallas generadas que ya no salen del layout solo se pueden reconocer si se generó todo.
@@ -775,8 +783,78 @@ public static class StationGenerator
         }
 
         /// <summary>
+        /// Pone las texturas reales del layout en los materiales que las tienen, con el shader
+        /// "PVI/Superficie en metros" (UV en metros del mundo: no se estiran con la pieza). Las
+        /// superficies sin textura se quedan como estaban: URP Lit de color liso. Va en cada
+        /// generación porque sale de los datos, no de retoques a mano.
+        /// </summary>
+        public void ApplySurfaces(SurfacesSpec s)
+        {
+            Surface(Ground, s.parcel.main, s.parcel, topOnly: true);
+            Surface(Grass, s.field.main, s.field, topOnly: true);
+            Surface(Savanna, s.savanna.main, s.savanna, topOnly: true);
+            Surface(Hills, s.hills.main, s.hills, topOnly: true);
+            Surface(Asphalt, s.asphalt);
+            Surface(Gravel, s.gravel);
+            Surface(Concrete, s.concrete);
+            Surface(Floor, s.floor);
+            Surface(ExteriorWall, s.walls);
+            Surface(Partition, s.walls);
+            Surface(Soffit, s.walls);
+            Surface(ServiceWall, s.serviceWalls);
+            Surface(Stripe, s.stripe);
+            Surface(RoofTile, s.roofTile);
+            Surface(Zinc, s.zinc);
+            Surface(Roof, s.flatRoof);
+        }
+
+        static void Surface(Material m, SurfaceLayer a, GroundSurface ground = null, bool topOnly = false)
+        {
+            if (a == null || a.color == null) return;
+            var shader = Shader.Find(SurfaceShader);
+            if (shader == null)
+            {
+                Debug.LogWarning($"{LogTag} No encuentro el shader '{SurfaceShader}' (Assets/Shaders): '{m.name}' se queda de color liso.");
+                return;
+            }
+            if (m.shader != shader)
+            {
+                m.shader = shader;
+                m.shaderKeywords = new string[0]; // las de URP Lit no significan nada aquí
+            }
+            m.SetTexture("_BaseMap", a.color);
+            m.SetTexture("_BumpMap", a.normal);
+            m.SetFloat("_Tile", a.tile);
+            m.SetColor("_BaseColor", a.tint);
+            m.SetFloat("_Smoothness", a.smoothness);
+            m.SetFloat("_TopOnly", topOnly ? 1f : 0f);
+            m.SetTexture("_PatchMap", BlockoutAssets.PatchNoise());
+            m.SetFloat("_MacroScale", a.variationSize);
+            m.SetFloat("_MacroStrength", a.variation);
+
+            var p = ground?.patches;
+            bool twoLayers = p != null && p.color != null && ground.cover > 0f;
+            m.SetFloat("_Layer2On", twoLayers ? 1f : 0f);
+            if (twoLayers)
+            {
+                m.SetTexture("_Layer2Map", p.color);
+                m.SetTexture("_Layer2BumpMap", p.normal);
+                m.SetFloat("_Layer2Tile", p.tile);
+                m.SetColor("_Layer2Color", p.tint);
+                m.SetFloat("_Layer2Smoothness", p.smoothness);
+                m.SetFloat("_PatchScale", ground.patchSize);
+                m.SetFloat("_PatchCover", ground.cover);
+                m.SetFloat("_PatchSoftness", ground.softness);
+            }
+            EditorUtility.SetDirty(m);
+        }
+
+        const string SurfaceShader = "PVI/Superficie en metros";
+
+        /// <summary>
         /// Repeticiones de un suelo sobre una pieza cuya UV va de 0 a <paramref name="size"/> (en
         /// metros, o 1 en las cajas), en sus dos escalas. Se deduce de las medidas en cada generación.
+        /// Solo cuenta en los suelos sin textura real (los de "Superficie en metros" usan metros).
         /// </summary>
         public void Tile(Material mat, Vector2 size, float tile, float detailTile)
         {

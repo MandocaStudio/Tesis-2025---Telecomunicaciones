@@ -1,0 +1,20 @@
+Recursos de Poly Haven (https://polyhaven.com) — licencia CC0 1.0 (dominio público).
+Se pueden usar, modificar y redistribuir sin pedir permiso ni citar. Se citan igual por cortesía.
+
+Cada carpeta lleva el identificador del recurso: https://polyhaven.com/a/<identificador>
+
+Cielo (HDRI 4k, en la escena Modulo3D)
+  kloofendal_48d_partly_cloudy_puresky    Greg Zaal, Jarod Guest
+
+Texturas (1k: color + relieve OpenGL), tamaño real de cada repetición
+  dry_ground_rocks          4,0 m    Rob Tuytel                          tierra ocre de la parcela
+  sparse_grass              2,0 m    Amal Kumar                          manchas de grama (parcela), monte de los cerros
+  leafy_grass               2,0 m    Charlotte Baglioni                  campo abierto, sabana, cerros
+  asphalt_04                4,0 m    Jenelle van Heerden, Sergej Majboroda   vías
+  gravelly_sand             2,5 m    Dario Barresi                       recinto de grava de los platos
+  concrete_floor_worn_001   3,0 m    Dimitrios Savva, Rico Cilliers      losas, pedestales, cisterna
+  painted_plaster_wall      2,0 m    Amal Kumar                          muros (bloque pintado, teñido)
+  ceramic_roof_01           3,5 m    Rob Tuytel                          techos de teja
+  corrugated_iron           1,1 m    Jenelle van Heerden, Dimitrios Savva    techo de zinc del galpón
+
+Descargados el 2026-10-09. MODULO-3D.md §4.5 explica cómo se usan.

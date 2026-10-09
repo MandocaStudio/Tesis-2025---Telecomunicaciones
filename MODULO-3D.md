@@ -5,7 +5,9 @@
 > los prompts listos para pegar. Estado a 2026-09-29: **Fase 4 completa** — Sesiones A (blockout),
 > B (antenas), servicios y vías, C (recorrido en primera persona) y D (acabado visual) — y la
 > estación **rehecha con el plano v2** (trazado sobre imagen satelital, §2) y **corregida con la
-> propia foto satelital** (§2.8).
+> propia foto satelital** (§2.8). El 2026-10-09 se **ambientó**: cielo con nubes, texturas reales,
+> arbustos, grama alta y piedras (§4.5), con una calidad "Baja" que se elige sola en gráficas
+> integradas (§4.6).
 >
 > Contexto general del proyecto: [Handoff.md](Handoff.md) · Reglas del repo: [CLAUDE.md](CLAUDE.md)
 
@@ -21,6 +23,10 @@
 | **Plano v2** | ✅ Toda la estación rehecha con `Planos/plano_andres_bello_v2.svg` (2026-09-29): cerca hexagonal, 9 edificios, antenas, vías curvas, losas y árboles. Ver §2. |
 | **Correcciones con la foto** | ✅ Con la foto satelital de la que sale el plano (2026-09-29): Camatagua 1 con su plato (la "base circular" del plano era su sombra), Ø y alturas de las antenas medidos (alturas por sus sombras), platos donde de verdad están, árboles, tanques, cisterna, vehículos y techos planos. Ver §2.8. |
 | **Árboles grandes** | ✅ 67 árboles de verdad (modelos `Tree9` del usuario, 13–23 m) sobre las manchas de follaje de la foto, en vez de 346 esferas pequeñas (2026-10-09). Ver §4.2. |
+| **Cielo con nubes** | ✅ HDRI de Poly Haven (CC0) con el sol donde está la luz; niebla, luz ambiente y reflejos sacados del propio HDRI (2026-10-09). Ver §4.5. |
+| **Texturas reales** | ✅ Suelos, vías, grava, concreto, muros, teja y zinc con texturas de Poly Haven a su tamaño real, con un shader propio (`PVI/Superficie en metros`) (2026-10-09). Ver §4.5. |
+| **Arbustos, grama alta y piedras** | ✅ 428 arbustos (pack Yughues del usuario), 12 584 matas y 578 piedras (Poly Haven), dibujados por instancias (2026-10-09). Ver §4.5. |
+| **Calidad automática** | ✅ Nivel "Baja" para gráficas integradas, elegido solo al arrancar (2026-10-09). Ver §4.6. |
 | Antenas (Sesión B) | ✅ Las 20, generadas desde la misma antena tipo parametrizada por diámetro. Ver §4.1. |
 | Vías, losas, tanques y árboles | ✅ Ver §4.2. |
 | Recorrido en primera persona (Sesión C) | ✅ `FirstPersonWalker` + HUD. El jugador empieza en el portón de la cerca oeste. Ver §4.3. |
@@ -105,7 +111,7 @@ Antenas pequeñas: pedestal corto y plato Ø 7–14 m". Anatomía, como en el v1
 | Recinto de los platos pequeños | 56,25 × 53,1 m; **grava** (foto; el plano dice losa de concreto) | 157,8, 53,75 |
 | Campo abierto (grama corta) | 90,6 × 112,5 m | 232,8, 89,1 |
 | Tanques | **dos cilindros tumbados** de este a oeste, Ø 3,2 m, sobre losa de 12 × 9 m (foto) | **27,5, 194,4** (foto) |
-| Tanque de agua | **cisterna abierta**, 9 × 13,5 m, agua oscura en un borde de concreto (foto) | **170,75, 140,15** (foto) |
+| Tanque de agua | **cisterna abierta**, 9 × 13,5 m, agua oscura en un borde de concreto (foto) | **177,65, 140,15** (la foto daba X = 170,75; el usuario la movió 6,9 m al este el 2026-10-09) |
 | Árboles | **67 grandes** (copa 12–18 m) sobre las manchas de follaje de la foto (el plano dibuja 6) | 50 dentro de la cerca y 17 fuera |
 
 ### 2.5 Entorno
@@ -221,28 +227,39 @@ Assets/Scripts/Station3D/
 │   │                             antena tipo (AntennaDesign) y antenas, árboles, entorno.
 │   │                             Validate() devuelve un mensaje por cada cosa que no cuadra.
 │   ├── PhotoTrees.cs             Los 67 árboles sacados de la foto (lista generada, §4.2)
+│   ├── SiteClearance.cs          C# puro: ¿cabe algo aquí? (vías, edificios, losas, platos, cerca,
+│   │                             troncos). Lo usan el reparto de la vegetación y Validate().
 │   ├── PlanGeometry.cs           C# puro: polígonos (dentro/fuera, triangulación) y huellas
 │   │                             giradas (Footprint: esquinas, solapes). Lo usan el generador y
 │   │                             Validate(), así que miden igual.
 │   └── AntennaGeometry.cs        C# puro: foco, profundidad, alturas de la antena.
 ├── StationGeneratedRoot.cs       Marca del root generado (y qué layout lo generó)
+├── InstancedScatter.cs           Dibuja por instancias una capa repartida (§4.5)
+├── ScatterData.cs                Sus copias, empaquetadas en un asset
 ├── Editor/
 │   ├── StationGenerator.cs       Construye la jerarquía a partir del StationLayout
 │   ├── StationBuilderWindow.cs   PVI > Estación 3D > Constructor: partes, edificios, alturas de
 │   │                             las antenas, Ajustar pedestales, Generar
-│   └── BlockoutAssets.cs         Mallas unidad, texturas de suelo, materiales Blockout_* (se
-│                                 crean una vez) y mallas generadas por medidas
+│   ├── BlockoutAssets.cs         Mallas unidad, texturas de suelo, materiales Blockout_* (se
+│   │                             crean una vez) y mallas generadas por medidas
+│   ├── ScatterBuilder.cs         "Vegetación y piedras": reparte las capas y monta InstancedScatter
+│   └── SkySetup.cs               PVI > Estación 3D > Ajustar cielo, luz ambiente y niebla (§4.5)
+Assets/Scripts/Quality/AutoQuality.cs     Elige la calidad al arrancar (§4.6)
+Assets/Shaders/SuperficieEnMetros*        El shader de las texturas reales (§4.5)
+Assets/PolyHaven/                          Cielo, texturas y modelos de Poly Haven (CC0, LICENCIA.txt)
+Assets/YughuesFreeBushes2018/              Los arbustos del usuario (Asset Store, gratis)
 Assets/Data/AndresBelloLayout.asset        Instancia con los datos de §2 — la fuente de verdad
 Assets/Data/Station3D/Blockout/            Mallas unidad (BloqueUnidad, CilindroUnidad, EsferaUnidad,
                                            BocinaUnidad, Paraboloide_fD*), texturas (Tierra, Sabana,
                                            Grama, GramaDetalle), Cerros y los materiales Blockout_*
 Assets/Data/Station3D/Generado/            Mallas que dependen de las medidas: Parcela, Vias, Postes,
-                                           Techo_<edificio>, Grama_<área>, Arboles_*. Se reescriben
-                                           al regenerar
+                                           Techo_<edificio>, Grama_<área>, Disperso_* (las copias
+                                           de la vegetación y las mallas de los arbustos). Se
+                                           reescriben al regenerar
 ```
 
 **Uso.** `PVI > Estación 3D > Constructor` abre la ventana: layout, qué partes levantar (terreno,
-cerca, edificios, techos, antenas, vías/losas/tanques/árboles, entorno), la lista de edificios con
+cerca, edificios, techos, antenas, vías/losas/tanques/árboles, vegetación y piedras, entorno), la lista de edificios con
 su huella y su techo, la altura calculada de cada antena frente a la del plano, los avisos de
 `Validate()` y el botón Generar/Regenerar. `PVI > Estación 3D > Regenerar blockout` hace lo mismo
 sin ventana. Para ver los interiores en la Scene View, desmarca "Techos" y regenera. Regenerar entra
@@ -274,7 +291,8 @@ en el Undo como un solo paso.
   para no tener esquinas invisibles; el terreno, que lleva su malla, y los troncos de los árboles,
   una cápsula. Las vías, la grama, las copas y los postes no llevan (no frenan a nadie).
 
-**Resultado en `Modulo3D`:** 983 piezas (1170 objetos). La jerarquía: `Terreno`, `Cerca perimetral`
+**Resultado en `Modulo3D`:** 1050 piezas (con la vegetación y las piedras, que son 3 objetos aunque
+dibujen 13 590 copias, §4.5). La jerarquía: `Terreno`, `Cerca perimetral`
 (6 paños de malla, portón y los postes), `Edificios` (9), `Antenas` (20), `Vías, losas, tanques y
 árboles` y `Entorno`.
 
@@ -422,7 +440,8 @@ porque el Input System solo le da la entrada al juego con la ventana Game enfoca
 | Qué | Valor |
 |---|---|
 | Sol (Directional Light) | desde el sureste, 48° de altura (rotación 48, −35, 0), intensidad 1,3, luz cálida, sombras suaves |
-| Niebla | exponencial², densidad 0,0006, color del horizonte: funde los cerros con el cielo |
+| Cielo, luz ambiente y reflejos | desde el 2026-10-09, del HDRI (§4.5): `SkySetup` los saca del propio cielo |
+| Niebla | exponencial², densidad 0,0006, color del horizonte del HDRI: funde los cerros con el cielo |
 | Cámara del jugador | far clip 2500 m (para ver los cerros), near 0,1 m |
 | Sombras (**`PC_RPAsset`, afecta a todo el proyecto**) | distancia 50 → **250 m** (ya tenía 4 cascadas; el `m_ShadowCascades: 0` del YAML es un campo heredado que no se usa). Las demás escenas son UI y no lo notan. |
 | Postprocesado | perfil propio `Assets/Settings/Modulo3DProfile.asset` (el `SampleSceneProfile` lo comparte el menú): tonemapping Neutral (respeta los colores de marca), bloom suave (umbral 1, intensidad 0,3), contraste +8, saturación +6, exposición +0,1, viñeta 0,18 |
@@ -431,6 +450,113 @@ porque el Input System solo le da la entrada al juego con la ventana Game enfoca
 (cuadra con el plano y, puesta al lado de la foto con el mismo encuadre, con la foto), aérea,
 desde el jugador, del conjunto principal, de Camatagua 1, del galpón, de los platos y del interior
 del edificio principal. **Pendiente de ojo humano:** recorrerlo con teclado y ratón.
+
+### 4.5 Ambientación: cielo, texturas, vegetación y piedras (2026-10-09)
+
+**Pedido del usuario:** "que se vea más vivo", con texturas de calidad, sus arbustos y fuentes
+gratuitas. Todo lo descargado es de **Poly Haven (CC0)** y está en `Assets/PolyHaven`, cada recurso en
+su carpeta con el nombre de Poly Haven y una `LICENCIA.txt` con autores y uso. Los arbustos son el
+pack **Yughues Free Bushes 2018** que subió el usuario (se le quitaron `Meshes/OLD` y `demo/`).
+
+**Cielo** (ajuste de escena, fuera del root generado):
+
+- HDRI *Kloofendal 48d Partly Cloudy (Pure Sky)*, 4k, importado como cubemap de **1024 px por cara**
+  (~16 MB en la gráfica; a 2048 eran 64). Su sol está a **47,8°**, el mismo que la luz (48°).
+- **PVI > Estación 3D > Ajustar cielo, luz ambiente y niebla** (`SkySetup`) lee el `.hdr` y:
+  - gira el cielo para que su sol caiga en el rumbo de la luz direccional (hoy 249,2°);
+  - pone la niebla del color del horizonte del HDRI;
+  - pone una luz ambiente en tres tonos (Trilight) con el tono del HDRI y el brillo de antes. No va
+    en modo "Skybox" porque el sol del HDRI (65 000) se colaría en ella y la luz direccional ya es
+    ese sol;
+  - hornea `Assets/Settings/Modulo3DReflejos` (cubemap de 128 px, girado y con el sol limitado a 40).
+    Unity no gira los reflejos con el cielo: sin esto, los cerros reflejaban el sol como manchas
+    blancas.
+
+  Si se cambia el sol o el HDRI, se vuelve a pulsar.
+
+**Texturas reales** (`StationLayout.surfaces`, aplicadas por el generador en cada generación):
+
+- Shader propio **`PVI/Superficie en metros`** (`Assets/Shaders`): es URP Lit con las UV calculadas en
+  el mundo, en metros, proyectando sobre el plano al que mira cada cara. Así una textura real queda a
+  su tamaño en un cubo escalado (muros, losas, pedestales) con **una** lectura por textura (un
+  triplanar haría tres).
+  - En los faldones la textura se gira con la pendiente: las hileras de teja van paralelas al alero y
+    las ondas del zinc bajan.
+  - Solo para piezas quietas: las antenas giran y siguen con URP Lit.
+  - Ojo al tocarlo: en los cantos verticales de los suelos (que se proyectan desde arriba) una
+    tangente queda paralela a la normal. Normalizarla daba **NaN**, y el bloom lo convertía en un
+    destello enorme sobre el borde del campo abierto (lo vio el usuario el 2026-10-09). Ahora esa
+    tangente se rehace con la otra.
+- Suelos de **dos texturas** mezcladas por manchas (tierra ocre con manchas de grama en la parcela,
+  grama con calvas de tierra fuera, monte oscuro en los cerros), con una **variación de tono** a gran
+  escala. Además llevan **anti-repetición**: una segunda lectura girada 37° y a otra escala, mezclada
+  por manchitas de ~3 m. Sin ella, la sabana se veía en rayas.
+  - Las manchas salen de `Blockout/Manchas.png`, ruido sin costuras generado por código (R manchas,
+    G tono, B anti-repetición).
+- Cada superficie del layout lleva su textura, el tamaño real de una repetición (dato de Poly Haven) y
+  un tinte (supuesto). **Los tintes multiplican en lineal**: Unity pasa el color a lineal, así que un
+  1,3 del inspector multiplica ×1,78. Están calculados con el color medio de cada textura para llegar
+  al tono del acabado anterior (muros blancos, teja roja, concreto y losas claros).
+
+| Superficie | Textura (repetición) |
+|---|---|
+| Parcela | `dry_ground_rocks` (4 m) con manchas de `sparse_grass` (2 m), 35 % |
+| Campo abierto · sabana · cerros | `leafy_grass` (2 m; 10 m en los cerros) con tierra o monte |
+| Vías · grava | `asphalt_04` (4 m) · `gravelly_sand` (2,5 m) |
+| Concreto (losas, pedestales, cisterna) · pisos · techos planos | `concrete_floor_worn_001` (3 m), aclarado |
+| Muros · franja azul | `painted_plaster_wall` (2 m), teñido blanco / gris / azul #1560D8 |
+| Teja · zinc | `ceramic_roof_01` (3,5 m) · `corrugated_iron` (1,1 m) |
+
+**Vegetación y piedras** (`StationLayout.scatter`, parte "Vegetación y piedras" del Constructor):
+
+- Tres capas: **arbustos** (los 5 Yughues), **grama alta** (`grass_medium_02` en sus dos versiones,
+  verde y seca) y **piedras** (`namaqualand_stones_01` y `_rocks_01`).
+- Cada capa dice cuántos grupos salen en cada zona: junto a la cerca por los dos lados, al pie de los
+  árboles, en la sabana de fuera, sobre las manchas de grama del suelo (la misma cuenta que el
+  shader), en el campo abierto, al borde de vías y losas, y sueltos por la parcela. También da el alto
+  de cada copia, cuántas forman un grupo y cuánto se hunden en el suelo.
+- **Nunca caen** en vías, edificios, tanques, losas, bajo un plato ni sobre la cerca, ni en un tronco:
+  lo decide `SiteClearance`, con las reglas de los árboles. Con la misma semilla salen siempre igual.
+- **Por instancias, no por objetos:** cada capa es **un** GameObject con `InstancedScatter`, y sus
+  copias van empaquetadas en `Generado/Disperso_*.asset`, así la escena no crece.
+  - Nivel de detalle por distancia: los arbustos usan sus 4 LOD, combinados en una malla por nivel.
+    La grama y las piedras usan **Mesh LOD** de Unity 6 (activado en su importador): una piedra pasa
+    de 25 000 triángulos a ~800 de cerca y 64 de lejos.
+  - Recorte por celdas de 24 m fuera de cámara.
+  - Sombras solo en los arbustos cercanos.
+- Resultado: **428 arbustos, 12 584 matas y 578 piedras**. La grama son briznas sueltas de 20–40 cm:
+  se usan poco estiradas (30–65 cm) y en macollas de 6–12. Estiradas a 1 m se veían cuatro palos.
+
+### 4.6 Rendimiento: calidad automática para gráficas integradas (2026-10-09)
+
+**Objetivo (con el usuario):** que corra a 30–60 fps en un **portátil con gráfica integrada** (Intel
+UHD/Iris, AMD Vega). El equipo de desarrollo (RX 6600) no sirve de referencia: se miden triángulos,
+objetos con sombra y cambios de material.
+
+| Nivel | Qué cambia |
+|---|---|
+| **PC** (el de siempre) | Sombras a 250 m con 4 cascadas de 2048 y suaves, SSAO, bloom |
+| **Baja** (`Assets/Settings/Baja_RPAsset` + `Baja_Renderer`) | Sombras a 70 m, 2 cascadas de 1024, duras; sin SSAO; sin texturas de profundidad ni opaca; resolución interna al 80 % con FSR; sin bloom; vegetación más corta y más rala |
+
+`Assets/Scripts/Quality/AutoQuality.cs` elige el nivel **al arrancar un build**:
+- **Baja** si la gráfica es integrada (Intel salvo Arc dedicadas; AMD sin "RX"; NVIDIA MX o GT), va
+  por software o tiene menos de 2 GB.
+- Si aun así una escena no pasa de **30 fps** en sus primeros segundos, baja a Baja.
+- Se fuerza con **`-calidad baja`** o **`-calidad alta`** al lanzar el `.exe`: así se compara en un
+  mismo PC. El nivel elegido queda en el `Player.log`.
+- En el Editor no cambia nada: manda Project Settings > Quality. Solo avisa en consola de qué haría.
+
+Medido desde el punto de inicio del jugador:
+
+| | Triángulos por fotograma | Objetos con sombra | Cambios de material |
+|---|---|---|---|
+| PC, antes de ambientar | 2,75 M | 1 485 | 71 |
+| PC, ambientado | 3,08 M | 1 489 | 136 |
+| **Baja, ambientado** | **0,98 M** | **198** | **66** |
+
+Lo caro eran las sombras: cada objeto se dibuja otra vez por cada cascada. Con todo lo nuevo, Baja
+sigue por debajo de lo que costaba antes el nivel PC sin ambientar. **Falta probarlo en un portátil de
+verdad** (un build, con y sin `-calidad`).
 
 ### Supuestos (el plano no los da)
 
@@ -478,7 +604,10 @@ Cada campo del `StationLayout` lleva un Tooltip que dice si su número es *Plano
 ### Orden de construcción sugerido
 
 ~~Terreno y cerca → edificios → techos → pedestales de antenas → antenas → vías, losas, tanques y
-árboles~~ (hecho) → props (mobiliario, racks, consolas).
+árboles → cielo, texturas, arbustos, grama y piedras~~ (hecho) → ambientación que queda: alambre de
+púas, postes de luz y tendido eléctrico a la planta, bandeja de guías de onda de Camatagua 2, rótulos
+(CANTV en el portón, avisos junto a las antenas), desgaste con decals, viento en hojas y grama, sonido
+ambiente, vehículos de verdad → props (mobiliario, racks, consolas).
 
 Para cada parte nueva: sus medidas van al `StationLayout` (con su Tooltip Plano/Medido/Supuesto),
 su comprobación a `Validate()`, y su construcción a un `Build…` más en `StationGenerator`.
@@ -642,6 +771,20 @@ Assets/UI/Styles/Variables.uss y el criterio de diseño en la memoria del proyec
   soporta: por eso el generador usa solo su malla y les pone materiales URP propios (§4.2). Antes
   de bajar algo, buscar que diga "URP" o que traiga materiales sencillos (textura + normal), que
   se pasan a URP Lit con *Edit > Rendering > Materials > Convert…* o a mano.
+- **Rendimiento: medir, no mirar los fps de aquí.** El equipo de desarrollo es una RX 6600; el
+  objetivo, una integrada (§4.6). Contadores con `ProfilerRecorder` ("Triangles Count", "Shadow
+  Casters Count", "SetPass Calls Count") en Play; `UnityStats.batches` ya no existe en Unity 6.6.
+- **Assets descargados de Poly Haven:**
+  - Los modelos en **FBX** (Unity los importa sin paquetes; glTF necesitaría glTFast). Se importan sin
+    materiales (`materialImportMode = None`): los pone el generador.
+  - **Mesh LOD**: `ModelImporter.generateMeshLods` y luego `RenderParams.forceMeshLod` al dibujar.
+  - El color y la transparencia de la grama vienen separados: se juntaron en un PNG RGBA con
+    `mipMapsPreserveCoverage` para que las briznas no se adelgacen de lejos.
+  - El relieve se baja en JPG (`nor_gl`, convención de Unity), no en EXR.
+- **Los tintes de material por encima de 1 se elevan a 2,2** (Unity pasa el color a lineal): para
+  aclarar una textura ×2 hay que poner ~1,37.
+- **Reimportar texturas o cubemaps grandes** pasa de los 5 s del `eval` del CLI ("Main thread operation
+  timed out"), pero la operación sigue: esperar y volver a preguntar.
 - **Para medir más cosas del plano**, leer el SVG con un script (coordenadas exactas de cada
   `rect`, `circle` y `polyline`) en vez de medir a ojo; la conversión está en §2. Para verlo como
   imagen: `msedge --headless --screenshot=plano.png --window-size=1320,1253 <ruta del svg>`.

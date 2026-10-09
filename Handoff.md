@@ -14,7 +14,7 @@ Cubre estado actual, arquitectura, decisiones y pendientes para continuar sin co
 | 1 | Base conceptual UI Toolkit: menús + colorimetría | ✅ Hecho |
 | 2 | Área Teórica (Marco Teórico) en UI Toolkit | ✅ Lector completo + **revisión del tutor aplicada** (§10) |
 | 3 | Área de Simulación — Módulo 2D (enlace satelital VENESAT-1) | ✅ Primera versión + **revisión del tutor aplicada** (§9, §10) |
-| 4 | Instalaciones (modelado 3D + interacción) | ✅ Estación completa generada por datos desde el plano v2 y la foto satelital, recorrido en primera persona y acabado visual · falta el atrezo interior — ver [MODULO-3D.md](MODULO-3D.md) |
+| 4 | Instalaciones (modelado 3D + interacción) | ✅ Estación completa generada por datos desde el plano v2 y la foto satelital, recorrido en primera persona, acabado visual y ambientación (cielo, texturas reales, arbustos, grama y piedras) con calidad automática para gráficas integradas · falta el atrezo interior — ver [MODULO-3D.md](MODULO-3D.md) |
 
 ---
 
@@ -64,13 +64,18 @@ Assets/
 │   ├── MenuNavigation.cs     (conecta botones del menú → escenas)
 │   ├── TheoryReader.cs       (lector del Marco Teórico, 100% data-driven)
 │   └── Modulo3DHud.cs        (HUD del recorrido 3D: aviso / punto de mira, clics sobre botones)
-├── Scripts/Station3D/        (Módulo 3D: StationLayout + generador + FirstPersonWalker, ver MODULO-3D.md §4)
+├── Scripts/Station3D/        (Módulo 3D: StationLayout + generador + FirstPersonWalker + InstancedScatter, ver MODULO-3D.md §4)
+├── Scripts/Quality/AutoQuality.cs   (elige la calidad al arrancar: "Baja" en gráficas integradas; MODULO-3D.md §4.6)
+├── Shaders/                  (PVI/Superficie en metros: texturas reales a su tamaño en cubos escalados; MODULO-3D.md §4.5)
+├── Settings/                 (URP: PC_* y Baja_* (calidad baja), Modulo3DProfile, Modulo3DCielo, Modulo3DReflejos)
 ├── Data/
 │   ├── VenesatParameters.asset   (parámetros del simulador 2D)
 │   ├── AndresBelloLayout.asset   (medidas de la estación: fuente de verdad del modelo 3D)
 │   ├── Station3D/Blockout/       (mallas unidad, texturas de suelo y materiales Blockout_* del generador)
-│   └── Station3D/Generado/       (mallas que dependen de las medidas: terreno, vías, techos, postes)
+│   └── Station3D/Generado/       (mallas que dependen de las medidas: terreno, vías, techos, postes; Disperso_*: la vegetación)
 ├── Tree9/                    (árboles del Tree Creator que trajo el usuario; el generador usa su malla con materiales URP)
+├── YughuesFreeBushes2018/    (arbustos que trajo el usuario; shader Standard → el generador les pone materiales URP)
+├── PolyHaven/                (cielo HDRI, texturas y modelos CC0, con LICENCIA.txt)
 └── Scenes/
     ├── Menu Inicial.unity    (menú; en Build Settings idx 0)
     ├── MarcoTeorico.unity    (lector UI Toolkit; idx 4)
@@ -185,7 +190,12 @@ Las figuras/tablas viven en sus secciones como botón `[ Ver ]`.
       v2** (`Planos/plano_andres_bello_v2.svg`, trazado sobre imagen satelital, 2026-09-29) y
       **corregida con la foto satelital** (Camatagua 1 con plato, Ø y alturas medidos por las
       sombras, 346 árboles…; MODULO-3D.md §2.8): falta
-      que el usuario la recorra con teclado y ratón (con el v1 lo probó: todo bien). Opcionales
+      que el usuario la recorra con teclado y ratón (con el v1 lo probó: todo bien). **Ambientada
+      el 2026-10-09** (MODULO-3D.md §4.5–4.6): cielo HDRI, texturas reales, arbustos, grama alta y
+      piedras, y un nivel de calidad "Baja" que se elige solo en gráficas integradas. **Falta
+      probar un build en un portátil con integrada** (con `-calidad baja` / `-calidad alta` para
+      comparar). Ambientación que queda: alambre de púas, postes de luz y tendido, bandeja de guías
+      de onda, rótulos CANTV, decals de desgaste, viento, sonido, vehículos de verdad. Opcionales
       que quedan: atrezo interior (racks, consolas, mobiliario: los edificios están vacíos);
       agrandar la línea de controles del HUD (hoy 16 px atenuada, `label-on-dark-muted`);
       renombrar los materiales `Blockout_*`, que ya son los definitivos (con `move_asset` conservan
@@ -221,6 +231,9 @@ Las figuras/tablas viven en sus secciones como botón `[ Ver ]`.
   `NewSceneMode.Additive`) para no disparar el prompt "¿guardar escena?" (interacción que el MCP bloquea).
 - Texturas para `background-image`: importar con `TextureImporterType.Default`; en USS el `fileID` de
   un Texture2D es `2800000`.
+- **Rendimiento:** la PVI tiene que correr en un portátil con gráfica integrada. Hay tres niveles de
+  calidad (Mobile, PC, Baja); `AutoQuality` arranca en "Baja" en integradas y si una escena no pasa de
+  30 fps. Al añadir algo pesado al 3D, medirlo en los dos niveles (MODULO-3D.md §4.6).
 
 ---
 

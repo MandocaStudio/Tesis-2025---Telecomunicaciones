@@ -353,7 +353,7 @@ MonoBehaviour:
     count: 2
   - name: Tanque de agua
     shape: 3
-    position: {x: 170.75, y: 140.15}
+    position: {x: 177.65, y: 140.15}
     size: {x: 9, y: 13.5}
     height: 1.2
     padHeight: 0
@@ -849,3 +849,301 @@ MonoBehaviour:
     hillsMinHeight: 60
     hillsMaxHeight: 240
     hillsSeed: 1970
+  surfaces:
+    parcel:
+      main:
+        color: {fileID: 2800000, guid: de997b69217c6ff4d99bfc3f39a48733, type: 3}
+        normal: {fileID: 2800000, guid: 0a601f8419b62fe4daf70e17ccc2481d, type: 3}
+        tile: 4
+        tint: {r: 1.2, g: 1.32, b: 1.46, a: 1}
+        smoothness: 0.08
+        variation: 0.3
+        variationSize: 60
+      patches:
+        color: {fileID: 2800000, guid: 53e1becec651dc349aa97efb699bee64, type: 3}
+        normal: {fileID: 2800000, guid: 8a79ed3f0fd4d7f4980875fa483bd9bc, type: 3}
+        tile: 2
+        tint: {r: 1.5, g: 1.6, b: 1.6, a: 1}
+        smoothness: 0.12
+        variation: 0.15
+        variationSize: 25
+      cover: 0.35
+      patchSize: 10
+      softness: 0.15
+    field:
+      main:
+        color: {fileID: 2800000, guid: cbfe1c25ca91c6541ba8609e9b30fd58, type: 3}
+        normal: {fileID: 2800000, guid: 8665c653c870a23459501e5c06c41055, type: 3}
+        tile: 2
+        tint: {r: 1, g: 1.05, b: 0.95, a: 1}
+        smoothness: 0.12
+        variation: 0.3
+        variationSize: 60
+      patches:
+        color: {fileID: 2800000, guid: de997b69217c6ff4d99bfc3f39a48733, type: 3}
+        normal: {fileID: 2800000, guid: 0a601f8419b62fe4daf70e17ccc2481d, type: 3}
+        tile: 4
+        tint: {r: 1.2, g: 1.32, b: 1.46, a: 1}
+        smoothness: 0.08
+        variation: 0.15
+        variationSize: 25
+      cover: 0.1
+      patchSize: 8
+      softness: 0.15
+    savanna:
+      main:
+        color: {fileID: 2800000, guid: cbfe1c25ca91c6541ba8609e9b30fd58, type: 3}
+        normal: {fileID: 2800000, guid: 8665c653c870a23459501e5c06c41055, type: 3}
+        tile: 2
+        tint: {r: 0.93, g: 1.03, b: 1.02, a: 1}
+        smoothness: 0.1
+        variation: 0.4
+        variationSize: 200
+      patches:
+        color: {fileID: 2800000, guid: de997b69217c6ff4d99bfc3f39a48733, type: 3}
+        normal: {fileID: 2800000, guid: 0a601f8419b62fe4daf70e17ccc2481d, type: 3}
+        tile: 4
+        tint: {r: 1.2, g: 1.32, b: 1.46, a: 1}
+        smoothness: 0.08
+        variation: 0.15
+        variationSize: 25
+      cover: 0.2
+      patchSize: 30
+      softness: 0.2
+    hills:
+      main:
+        color: {fileID: 2800000, guid: cbfe1c25ca91c6541ba8609e9b30fd58, type: 3}
+        normal: {fileID: 2800000, guid: 8665c653c870a23459501e5c06c41055, type: 3}
+        tile: 10
+        tint: {r: 0.85, g: 0.95, b: 0.8, a: 1}
+        smoothness: 0.05
+        variation: 0.45
+        variationSize: 500
+      patches:
+        color: {fileID: 2800000, guid: 53e1becec651dc349aa97efb699bee64, type: 3}
+        normal: {fileID: 2800000, guid: 8a79ed3f0fd4d7f4980875fa483bd9bc, type: 3}
+        tile: 10
+        tint: {r: 1.3, g: 1.4, b: 1.4, a: 1}
+        smoothness: 0.05
+        variation: 0.15
+        variationSize: 25
+      cover: 0.35
+      patchSize: 80
+      softness: 0.3
+    asphalt:
+      color: {fileID: 2800000, guid: 6ec779f4b38239249837d3c43a6c5170, type: 3}
+      normal: {fileID: 2800000, guid: 7819fa342d2b2b547bb1f8cacd575730, type: 3}
+      tile: 4
+      tint: {r: 1.05, g: 1.05, b: 1, a: 1}
+      smoothness: 0.12
+      variation: 0.2
+      variationSize: 30
+    gravel:
+      color: {fileID: 2800000, guid: 80d4cb631d4e07443b6b370f9168fdc5, type: 3}
+      normal: {fileID: 2800000, guid: dad4467d2c0885642a2d7c672d5ed6eb, type: 3}
+      tile: 2.5
+      tint: {r: 1.04, g: 1.2, b: 1.4, a: 1}
+      smoothness: 0.05
+      variation: 0.25
+      variationSize: 20
+    concrete:
+      color: {fileID: 2800000, guid: 13b38f323838935409b96ad2789171eb, type: 3}
+      normal: {fileID: 2800000, guid: 61896d7f744e71b489f09557ffd0a1f9, type: 3}
+      tile: 3
+      tint: {r: 1.95, g: 1.93, b: 1.9, a: 1}
+      smoothness: 0.12
+      variation: 0.2
+      variationSize: 15
+    floor:
+      color: {fileID: 2800000, guid: 13b38f323838935409b96ad2789171eb, type: 3}
+      normal: {fileID: 2800000, guid: 61896d7f744e71b489f09557ffd0a1f9, type: 3}
+      tile: 3
+      tint: {r: 2.1, g: 2.1, b: 2.05, a: 1}
+      smoothness: 0.3
+      variation: 0.1
+      variationSize: 15
+    walls:
+      color: {fileID: 2800000, guid: 3b41c8662b4fe7446b0f868972de3276, type: 3}
+      normal: {fileID: 2800000, guid: 7d909b45eb115db46a95d7af0825cc05, type: 3}
+      tile: 2
+      tint: {r: 1.26, g: 1.32, b: 1.35, a: 1}
+      smoothness: 0.08
+      variation: 0.12
+      variationSize: 12
+    serviceWalls:
+      color: {fileID: 2800000, guid: 3b41c8662b4fe7446b0f868972de3276, type: 3}
+      normal: {fileID: 2800000, guid: 7d909b45eb115db46a95d7af0825cc05, type: 3}
+      tile: 2
+      tint: {r: 1.18, g: 1.23, b: 1.22, a: 1}
+      smoothness: 0.08
+      variation: 0.15
+      variationSize: 12
+    stripe:
+      color: {fileID: 2800000, guid: 3b41c8662b4fe7446b0f868972de3276, type: 3}
+      normal: {fileID: 2800000, guid: 7d909b45eb115db46a95d7af0825cc05, type: 3}
+      tile: 2
+      tint: {r: 0.16, g: 0.59, b: 1.35, a: 1}
+      smoothness: 0.2
+      variation: 0.08
+      variationSize: 12
+    roofTile:
+      color: {fileID: 2800000, guid: 5183b01f3331dcc479ea7e736daa8a3c, type: 3}
+      normal: {fileID: 2800000, guid: 8cda26387df78c746ba3df2a72c33eae, type: 3}
+      tile: 3.5
+      tint: {r: 1.23, g: 0.77, b: 0.72, a: 1}
+      smoothness: 0.15
+      variation: 0.2
+      variationSize: 15
+    zinc:
+      color: {fileID: 2800000, guid: 8b36b73b13d1897439b8280f4602f4c5, type: 3}
+      normal: {fileID: 2800000, guid: 54c146de138e1eb448b1d3befd394b7f, type: 3}
+      tile: 1.12
+      tint: {r: 0.95, g: 0.93, b: 1, a: 1}
+      smoothness: 0.4
+      variation: 0.25
+      variationSize: 10
+    flatRoof:
+      color: {fileID: 2800000, guid: 13b38f323838935409b96ad2789171eb, type: 3}
+      normal: {fileID: 2800000, guid: 61896d7f744e71b489f09557ffd0a1f9, type: 3}
+      tile: 3
+      tint: {r: 2.25, g: 2.25, b: 2.2, a: 1}
+      smoothness: 0.1
+      variation: 0.25
+      variationSize: 12
+  scatter:
+    bushes:
+      models:
+      - model: {fileID: 1253365200111527898, guid: 8109e9e16ba4cc04b8e0928aea897927, type: 3}
+        color: {fileID: 0}
+        normal: {fileID: 0}
+        tint: {r: 1, g: 1, b: 1, a: 1}
+        weight: 1
+        foliage: 1
+      - model: {fileID: 7992715529498131577, guid: 0cc0db2b14252644da9f1f74ed0c8f90, type: 3}
+        color: {fileID: 0}
+        normal: {fileID: 0}
+        tint: {r: 1, g: 1, b: 1, a: 1}
+        weight: 1
+        foliage: 1
+      - model: {fileID: 6786704563919835699, guid: ff0b0a3d7ae7a9e4f8505795785ad853, type: 3}
+        color: {fileID: 0}
+        normal: {fileID: 0}
+        tint: {r: 1, g: 1, b: 1, a: 1}
+        weight: 1
+        foliage: 1
+      - model: {fileID: 2121115777601418451, guid: e334e6614ad50f749b0a37528784c614, type: 3}
+        color: {fileID: 0}
+        normal: {fileID: 0}
+        tint: {r: 1, g: 1, b: 1, a: 1}
+        weight: 1
+        foliage: 1
+      - model: {fileID: 4119340359363394084, guid: 431e05c5e2b18ba4fa6b3b0a6f687786, type: 3}
+        color: {fileID: 0}
+        normal: {fileID: 0}
+        tint: {r: 1, g: 1, b: 1, a: 1}
+        weight: 1
+        foliage: 1
+      height: {x: 0.8, y: 1.8}
+      radius: 0.7
+      clump: {x: 1, y: 3}
+      clumpRadius: 1.6
+      sink: 0.05
+      alongFence: 6
+      fenceBand: {x: 0.9, y: 3.5}
+      perTree: 1.2
+      savanna: 0.8
+      savannaWidth: 120
+      parcelPatches: 0
+      field: 0
+      alongRoads: 0
+      alongPads: 0
+      edgeBand: {x: 0.1, y: 1}
+      parcel: 0.15
+      distances:
+      - 15
+      - 35
+      - 70
+      - 110
+      nearTriangles: 1500
+      shadowBands: 2
+      lowDensity: 0.7
+      lowDistanceScale: 0.6
+      seed: 11
+    grass:
+      models:
+      - model: {fileID: 919132149155446097, guid: 78c04b922a8a43c4c80f6e1963dd86a9, type: 3}
+        color: {fileID: 2800000, guid: bc832ae9c06dda34baf526d36211c804, type: 3}
+        normal: {fileID: 2800000, guid: 393206d87a9593c4d82c96e2f53a32a4, type: 3}
+        tint: {r: 1, g: 1, b: 1, a: 1}
+        weight: 0.45
+        foliage: 1
+      - model: {fileID: 919132149155446097, guid: 78c04b922a8a43c4c80f6e1963dd86a9, type: 3}
+        color: {fileID: 2800000, guid: 3d3ffd57d38546d4f97fbb02fbb7da00, type: 3}
+        normal: {fileID: 2800000, guid: 393206d87a9593c4d82c96e2f53a32a4, type: 3}
+        tint: {r: 1, g: 1, b: 1, a: 1}
+        weight: 0.55
+        foliage: 1
+      height: {x: 0.3, y: 0.65}
+      radius: 0.25
+      clump: {x: 6, y: 12}
+      clumpRadius: 0.9
+      sink: 0.03
+      alongFence: 50
+      fenceBand: {x: 0.3, y: 2.5}
+      perTree: 4
+      savanna: 8
+      savannaWidth: 70
+      parcelPatches: 2
+      field: 1.2
+      alongRoads: 0
+      alongPads: 0
+      edgeBand: {x: 0.1, y: 1}
+      parcel: 0
+      distances:
+      - 12
+      - 28
+      - 55
+      nearTriangles: 2600
+      shadowBands: 0
+      lowDensity: 0.45
+      lowDistanceScale: 0.55
+      seed: 23
+    rocks:
+      models:
+      - model: {fileID: 919132149155446097, guid: b1f0f395782f64d4a9be571008f538b6, type: 3}
+        color: {fileID: 2800000, guid: db81a3def30bd6b43bcc9c0e0998bf38, type: 3}
+        normal: {fileID: 2800000, guid: c780b4c7dfcac0847bc2fc9fa6aaf828, type: 3}
+        tint: {r: 1, g: 1, b: 1, a: 1}
+        weight: 0.6
+        foliage: 0
+      - model: {fileID: 919132149155446097, guid: 7624acd7f1e95e746865ec02e40232bb, type: 3}
+        color: {fileID: 2800000, guid: efd42e04d3063ed44969b442d87741f9, type: 3}
+        normal: {fileID: 2800000, guid: 13ace5a11fbbd1040ae28cbc1ec4b074, type: 3}
+        tint: {r: 1, g: 1, b: 1, a: 1}
+        weight: 0.4
+        foliage: 0
+      height: {x: 0.06, y: 0.3}
+      radius: 0.3
+      clump: {x: 1, y: 3}
+      clumpRadius: 0.6
+      sink: 0.25
+      alongFence: 0
+      fenceBand: {x: 0.5, y: 2}
+      perTree: 0.5
+      savanna: 0.3
+      savannaWidth: 40
+      parcelPatches: 0
+      field: 0
+      alongRoads: 25
+      alongPads: 25
+      edgeBand: {x: 0.15, y: 1}
+      parcel: 0.6
+      distances:
+      - 6
+      - 15
+      - 35
+      nearTriangles: 900
+      shadowBands: 0
+      lowDensity: 0.6
+      lowDistanceScale: 0.6
+      seed: 37

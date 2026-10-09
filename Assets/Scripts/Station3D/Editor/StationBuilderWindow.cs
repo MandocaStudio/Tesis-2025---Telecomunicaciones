@@ -41,6 +41,7 @@ public class StationBuilderWindow : EditorWindow
             options.roof  = EditorGUILayout.Toggle("   Techos", options.roof);
         options.antennas  = EditorGUILayout.Toggle("Antenas", options.antennas);
         options.site      = EditorGUILayout.Toggle("Vías, losas, tanques y árboles", options.site);
+        options.scatter   = EditorGUILayout.Toggle("Vegetación y piedras", options.scatter);
         options.environment = EditorGUILayout.Toggle("Entorno (sabana y cerros)", options.environment);
         if (EditorGUI.EndChangeCheck()) options.Save();
 
