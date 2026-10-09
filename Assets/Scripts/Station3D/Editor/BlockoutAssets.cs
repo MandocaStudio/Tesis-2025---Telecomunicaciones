@@ -332,6 +332,92 @@ public static class BlockoutAssets
         return existing;
     }
 
+    // ------------------------------------------------------------------ árboles con modelo
+
+    /// <summary>Lo que el generador necesita de un modelo de árbol, medido sobre su propia malla.</summary>
+    public sealed class TreeModelInfo
+    {
+        public Mesh mesh;
+        public Material[] materials;
+        /// <summary>Ancho medio de la copa (media de X y Z de las hojas), en las unidades del modelo.</summary>
+        public float crownDiameter;
+        /// <summary>Radio del tronco a la altura de una persona (entre 1 y 2 m), para su collider.</summary>
+        public float trunkRadius;
+    }
+
+    /// <summary>
+    /// Malla y materiales URP de un prefab de árbol. Sirve para prefabs normales (MeshFilter con su
+    /// malla) y para los del Tree Creator, que no guardan la malla en el MeshFilter sino como
+    /// sub-asset y usan shaders del pipeline antiguo, que en URP salen rosas. Se toma esa malla
+    /// tal cual: submalla 0 = corteza, 1 = hojas, y se le ponen materiales URP Lit hechos con la
+    /// misma textura (el atlas del Tree Creator), creados una vez en la carpeta Blockout.
+    /// </summary>
+    public static TreeModelInfo TreeModel(GameObject prefab, Color barkTint, Color leafTint, bool overwrite = false)
+    {
+        string path = AssetDatabase.GetAssetPath(prefab);
+        var filter = prefab.GetComponentInChildren<MeshFilter>();
+        Mesh mesh = filter != null ? filter.sharedMesh : null;
+        var sourceMats = new List<Material>();
+        foreach (var o in AssetDatabase.LoadAllAssetsAtPath(path))
+        {
+            if (mesh == null && o is Mesh m) mesh = m;
+            if (o is Material mat) sourceMats.Add(mat);
+        }
+        if (mesh == null) return null;
+
+        // Textura de cada parte: la del material de corteza / hojas del modelo, o la primera que haya.
+        Texture Pick(string word)
+        {
+            foreach (var mat in sourceMats)
+                if ((mat.name + mat.shader.name).Contains(word) && mat.HasProperty("_MainTex") && mat.mainTexture != null)
+                    return mat.mainTexture;
+            foreach (var mat in sourceMats)
+                if (mat.HasProperty("_MainTex") && mat.mainTexture != null) return mat.mainTexture;
+            return null;
+        }
+
+        string folder = Slug(System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(path)));
+        var bark = Material($"Blockout_Arbol_{folder}_Corteza", barkTint, 0.1f, 0f, false, overwrite);
+        var leaves = Material($"Blockout_Arbol_{folder}_Hojas", leafTint, 0.15f, 0f, false, overwrite);
+        if (overwrite || bark.GetTexture("_BaseMap") == null)
+        {
+            bark.SetTexture("_BaseMap", Pick("Bark"));
+            bark.enableInstancing = true;
+            EditorUtility.SetDirty(bark);
+        }
+        if (overwrite || leaves.GetTexture("_BaseMap") == null)
+        {
+            // Hojas recortadas por la transparencia del atlas y visibles por las dos caras.
+            leaves.SetTexture("_BaseMap", Pick("Leaf"));
+            leaves.SetFloat("_AlphaClip", 1f);
+            leaves.SetFloat("_Cutoff", 0.3f);
+            leaves.EnableKeyword("_ALPHATEST_ON");
+            leaves.SetFloat("_Cull", (float)CullMode.Off);
+            leaves.SetOverrideTag("RenderType", "TransparentCutout");
+            leaves.renderQueue = (int)RenderQueue.AlphaTest;
+            leaves.doubleSidedGI = true;
+            leaves.enableInstancing = true;
+            EditorUtility.SetDirty(leaves);
+        }
+
+        var v = mesh.vertices;
+        var leafIdx = mesh.subMeshCount > 1 ? mesh.GetIndices(1) : mesh.GetIndices(0);
+        var barkIdx = mesh.GetIndices(0);
+        Vector2 min = new Vector2(float.MaxValue, float.MaxValue), max = new Vector2(float.MinValue, float.MinValue);
+        foreach (int i in leafIdx) { var p = new Vector2(v[i].x, v[i].z); min = Vector2.Min(min, p); max = Vector2.Max(max, p); }
+        float trunk = 0f;
+        foreach (int i in barkIdx)
+            if (v[i].y > 1f && v[i].y < 2f) trunk = Mathf.Max(trunk, new Vector2(v[i].x, v[i].z).magnitude);
+
+        return new TreeModelInfo
+        {
+            mesh = mesh,
+            materials = mesh.subMeshCount > 1 ? new[] { bark, leaves } : new[] { leaves },
+            crownDiameter = ((max - min).x + (max - min).y) / 2f,
+            trunkRadius = trunk > 0f ? trunk : 0.5f,
+        };
+    }
+
     // ------------------------------------------------------------------ mallas generadas
 
     /// <summary>

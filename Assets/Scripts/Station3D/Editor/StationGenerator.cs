@@ -74,6 +74,11 @@ public static class StationGenerator
     static void ReapplyFinish()
     {
         new Kit(reapplyFinish: true);
+        var layout = FindRoots().Select(r => r.layout).FirstOrDefault(l => l != null)
+                     ?? AssetDatabase.LoadAssetAtPath<StationLayout>(DefaultLayoutPath);
+        if (layout != null)
+            foreach (var model in layout.treeDesign.models.Where(m => m != null))
+                BlockoutAssets.TreeModel(model, Kit.BarkTint, Kit.LeafTint, overwrite: true);
         AssetDatabase.SaveAssets();
         Debug.Log($"{LogTag} Colores del acabado reaplicados en {BlockoutAssets.Folder}.");
     }
@@ -550,6 +555,29 @@ public static class StationGenerator
     {
         var td = L.treeDesign;
         var group = Group(parent, "Árboles");
+
+        // Con modelos: cada árbol es el modelo escalado a su copa, con un collider en el tronco.
+        var models = td.models.Where(m => m != null)
+                              .Select(m => BlockoutAssets.TreeModel(m, Kit.BarkTint, Kit.LeafTint))
+                              .Where(info => info != null).ToList();
+        if (models.Count > 0)
+        {
+            for (int i = 0; i < L.trees.Count; i++)
+            {
+                var t = L.trees[i];
+                var info = models[((t.model % models.Count) + models.Count) % models.Count];
+                float scale = t.crownDiameter / info.crownDiameter;
+                var tree = k.ModelPiece(group, $"Árbol {i + 1}", Flat(t.position), Quaternion.Euler(0f, t.yaw, 0f),
+                                        scale, info.mesh, info.materials);
+                var trunk = tree.AddComponent<CapsuleCollider>();
+                trunk.radius = info.trunkRadius;
+                trunk.height = 5f;
+                trunk.center = new Vector3(0f, 2.5f, 0f);
+            }
+            return;
+        }
+
+        // Sin modelos: troncos y copas esféricas en tres mallas combinadas.
         var trunks = new List<Matrix4x4>();
         var crowns = new[] { new List<Matrix4x4>(), new List<Matrix4x4>() };
         for (int i = 0; i < L.trees.Count; i++)
@@ -685,6 +713,10 @@ public static class StationGenerator
                                  ServiceWall, Stripe, Glass, Partition, Roof, RoofTile, Zinc, Soffit, Concrete,
                                  Antenna, Steel, Asphalt, Gravel, Tank, Water, Trunk, Crown, Crown2;
 
+        /// <summary>Tintes de los árboles con modelo: la corteza del atlas es muy colorida (eucalipto arcoíris).</summary>
+        public static readonly Color BarkTint = new Color(0.80f, 0.74f, 0.66f);
+        public static readonly Color LeafTint = new Color(0.82f, 0.88f, 0.74f);
+
         /// <summary>
         /// Paleta del acabado. Los materiales se crean con estos valores la primera vez; después solo
         /// se pisan con <paramref name="reapplyFinish"/>. La franja usa el azul de acento del
@@ -815,6 +847,19 @@ public static class StationGenerator
         {
             var go = NewPiece(parent, name, position, rotation, mesh, mats);
             if (collider) go.AddComponent<MeshCollider>().sharedMesh = mesh;
+            return go;
+        }
+
+        /// <summary>
+        /// Modelo con su malla y materiales, a escala uniforme. Sin batching estático: los árboles son
+        /// la misma malla muchas veces, y así se dibujan por instancias en vez de copiarse.
+        /// </summary>
+        public GameObject ModelPiece(Transform parent, string name, Vector3 position, Quaternion rotation,
+                                     float scale, Mesh mesh, Material[] mats)
+        {
+            var go = NewPiece(parent, name, position, rotation, mesh, mats);
+            go.transform.localScale = Vector3.one * scale;
+            GameObjectUtility.SetStaticEditorFlags(go, 0);
             return go;
         }
 

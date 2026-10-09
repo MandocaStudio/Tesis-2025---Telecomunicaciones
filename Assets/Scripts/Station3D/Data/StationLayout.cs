@@ -100,8 +100,8 @@ public class StationLayout : ScriptableObject
 
     public TreeDesign treeDesign = new TreeDesign();
 
-    [Tooltip("Foto: 346 copas medidas sobre la imagen satelital (el plano solo dibuja 6). Pueden quedar " +
-             "fuera de la cerca: el bosque del este y del norte. Ver PhotoTrees.")]
+    [Tooltip("Foto: 67 árboles grandes colocados sobre las manchas de follaje de la imagen satelital (el " +
+             "plano solo dibuja 6). Pueden quedar fuera de la cerca: el bosque del este y del norte. Ver PhotoTrees.")]
     public List<TreeSpec> trees = PhotoTrees.Create();
 
     public EnvironmentSpec environment = new EnvironmentSpec();
@@ -740,11 +740,18 @@ public class FacilitySpec
     }
 }
 
-/// <summary>El árbol tipo: tronco y copa. Supuestos; del plano solo sale el diámetro de la copa.</summary>
+/// <summary>El árbol: un modelo (prefab) escalado a su copa o, sin modelos, uno simple de tronco y copa esférica.</summary>
 [Serializable]
 public class TreeDesign
 {
+    [Tooltip("Modelos de árbol (prefabs). Se usa su malla con materiales URP del generador, así que valen " +
+             "también los del Tree Creator, cuyos shaders no funcionan en URP. Cada árbol se escala para que " +
+             "su copa mida lo que pide. Vacío = árbol simple (tronco + copa esférica).")]
+    public List<GameObject> models = new List<GameObject>();
+
+    [Header("Árbol simple (solo si no hay modelos)")]
     public float trunkHeight = 2.4f;
+    [Tooltip("También es la distancia mínima del tronco a un edificio o a la cerca en la validación.")]
     public float trunkDiameter = 0.35f;
     [Tooltip("Alto de la copa como fracción de su diámetro (copa algo achatada).")]
     public float crownHeightRatio = 0.75f;
@@ -755,10 +762,15 @@ public class TreeDesign
 [Serializable]
 public class TreeSpec
 {
-    [Tooltip("Medido: centro del círculo verde (X, Z).")]
+    [Tooltip("Foto: posición del TRONCO (X, Z), elegida para que la copa del modelo caiga sobre la mancha de " +
+             "follaje de la foto (en algunos modelos la copa va descentrada).")]
     public Vector2 position;
-    [Tooltip("Medido: diámetro de la copa.")]
+    [Tooltip("Foto: diámetro de la copa. El modelo se escala para darlo.")]
     public float crownDiameter;
+    [Tooltip("Cuál de TreeDesign.models (se toma en módulo).")]
+    public int model;
+    [Tooltip("Giro en grados, horario visto desde arriba.")]
+    public float yaw;
 
     public TreeSpec() { }
     public TreeSpec(Vector2 position, float crownDiameter) { this.position = position; this.crownDiameter = crownDiameter; }

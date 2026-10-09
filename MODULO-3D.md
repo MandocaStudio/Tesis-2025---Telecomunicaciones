@@ -19,7 +19,8 @@
 | Botón "Módulo 3D" en el menú | ✅ `BtnModulo3D` → escena `Modulo3D` vía `MenuNavigation`. |
 | Generador (Sesión A) | ✅ `StationLayout` + `StationGenerator` + ventana **PVI > Estación 3D > Constructor**. Ver §4. |
 | **Plano v2** | ✅ Toda la estación rehecha con `Planos/plano_andres_bello_v2.svg` (2026-09-29): cerca hexagonal, 9 edificios, antenas, vías curvas, losas y árboles. Ver §2. |
-| **Correcciones con la foto** | ✅ Con la foto satelital de la que sale el plano (2026-09-29): Camatagua 1 con su plato (la "base circular" del plano era su sombra), Ø y alturas de las antenas medidos (alturas por sus sombras), platos donde de verdad están, 346 árboles, tanques, cisterna, vehículos y techos planos. Ver §2.8. |
+| **Correcciones con la foto** | ✅ Con la foto satelital de la que sale el plano (2026-09-29): Camatagua 1 con su plato (la "base circular" del plano era su sombra), Ø y alturas de las antenas medidos (alturas por sus sombras), platos donde de verdad están, árboles, tanques, cisterna, vehículos y techos planos. Ver §2.8. |
+| **Árboles grandes** | ✅ 67 árboles de verdad (modelos `Tree9` del usuario, 13–23 m) sobre las manchas de follaje de la foto, en vez de 346 esferas pequeñas (2026-10-09). Ver §4.2. |
 | Antenas (Sesión B) | ✅ Las 20, generadas desde la misma antena tipo parametrizada por diámetro. Ver §4.1. |
 | Vías, losas, tanques y árboles | ✅ Ver §4.2. |
 | Recorrido en primera persona (Sesión C) | ✅ `FirstPersonWalker` + HUD. El jugador empieza en el portón de la cerca oeste. Ver §4.3. |
@@ -105,7 +106,7 @@ Antenas pequeñas: pedestal corto y plato Ø 7–14 m". Anatomía, como en el v1
 | Campo abierto (grama corta) | 90,6 × 112,5 m | 232,8, 89,1 |
 | Tanques | **dos cilindros tumbados** de este a oeste, Ø 3,2 m, sobre losa de 12 × 9 m (foto) | **27,5, 194,4** (foto) |
 | Tanque de agua | **cisterna abierta**, 9 × 13,5 m, agua oscura en un borde de concreto (foto) | **170,75, 140,15** (foto) |
-| Árboles | **346** medidos en la foto (el plano dibuja 6) | 249 dentro de la cerca y 97 fuera |
+| Árboles | **67 grandes** (copa 12–18 m) sobre las manchas de follaje de la foto (el plano dibuja 6) | 50 dentro de la cerca y 17 fuera |
 
 ### 2.5 Entorno
 
@@ -163,7 +164,7 @@ Lo que cambió:
 | Losa de los platos | concreto | grava |
 | Patio de vehículos | vacío | 3 × 9 vehículos |
 | Vías | asfalto oscuro | gris claro gastado, como se ven |
-| Árboles | 6 | 346 |
+| Árboles | 6 | 346 copas pequeñas; desde el 2026-10-09, 67 árboles grandes sobre esas manchas |
 
 **La posición de una antena es ahora el centro de su plato visto desde arriba**, que es lo que
 dibuja el plano y lo que se ve en la foto. El pedestal va detrás (hacia el norte): el plato
@@ -219,7 +220,7 @@ Assets/Scripts/Station3D/
 │   │                             edificios (huella girada, techo, puertas, tabiques), tanques,
 │   │                             antena tipo (AntennaDesign) y antenas, árboles, entorno.
 │   │                             Validate() devuelve un mensaje por cada cosa que no cuadra.
-│   ├── PhotoTrees.cs             Los 346 árboles medidos en la foto (lista generada, §2.8)
+│   ├── PhotoTrees.cs             Los 67 árboles sacados de la foto (lista generada, §4.2)
 │   ├── PlanGeometry.cs           C# puro: polígonos (dentro/fuera, triangulación) y huellas
 │   │                             giradas (Footprint: esquinas, solapes). Lo usan el generador y
 │   │                             Validate(), así que miden igual.
@@ -267,10 +268,11 @@ en el Undo como un solo paso.
   - Vías: todas en una malla, con discos en cada vértice que redondean quiebres y extremos como el
     trazo del plano.
   - Postes: los ~330 de la cerca en una sola malla.
-  - Árboles: los 346 en tres mallas (troncos y copas en dos tonos).
+  - Árboles: con modelos, un objeto por árbol (la misma malla, por instancias); sin modelos, tres
+    mallas combinadas (troncos y copas esféricas en dos tonos).
 - **Colliders:** todo lleva `BoxCollider`, salvo los cilindros (tanques), que llevan uno convexo
-  para no tener esquinas invisibles, y el terreno y los troncos, que llevan su malla. Las vías, la
-  grama, las copas y los postes no llevan (no frenan a nadie).
+  para no tener esquinas invisibles; el terreno, que lleva su malla, y los troncos de los árboles,
+  una cápsula. Las vías, la grama, las copas y los postes no llevan (no frenan a nadie).
 
 **Resultado en `Modulo3D`:** 983 piezas (1170 objetos). La jerarquía: `Terreno`, `Cerca perimetral`
 (6 paños de malla, portón y los postes), `Edificios` (9), `Antenas` (20), `Vías, losas, tanques y
@@ -347,8 +349,18 @@ los tanques, `trees` para los árboles) y un `Build…` por grupo en el generado
   `Cisterna`), una losa opcional, un margen y un número de unidades. Los horizontales se tumban a
   lo largo del lado mayor, uno al lado del otro: los "Tanques" son dos de Ø 3,2 m. La cisterna
   es abierta: cuatro muros de concreto y el agua 25 cm por debajo del borde.
-- **Árboles:** tronco y copa achatada; de la foto salen la posición y el diámetro de la copa. Cada
-  copa va girada distinto y alternan dos tonos de verde. Pueden quedar fuera de la cerca.
+- **Árboles:** modelos de árbol de verdad (`TreeDesign.models`: los cuatro prefabs de
+  `Assets/Tree9`, de 20–23 m de alto con copas de 16–21 m), escalados para que la copa mida lo
+  que pide cada árbol (12, 15 o 18 m). Son prefabs del **Tree Creator**, cuyos shaders no existen
+  en URP (saldrían rosas): el generador toma la malla que llevan dentro (corteza + hojas) y le pone
+  materiales URP Lit hechos con su mismo atlas (`Blockout_Arbol_Tree9_Corteza` / `_Hojas`; las
+  hojas, recortadas por transparencia y visibles por las dos caras). La corteza del atlas es de
+  eucalipto arcoíris: va con un tinte que la apaga. Del modelo se mide el ancho de copa y el
+  grosor del tronco (collider de cápsula). Sin viento: los árboles no se mueven.
+- **Dónde:** pocos árboles grandes sobre las manchas de follaje de la foto (`PhotoTrees.cs`
+  explica el método): de la zona más densa a la menos, una copa de 18, 15 o 12 m donde al menos
+  la mitad sea follaje sin árbol; sin meterse en techos ni platos, y con el tronco lejos de vías,
+  edificios y cerca. Cada árbol guarda su modelo y su giro. Pueden quedar fuera de la cerca.
 - `Validate()` avisa si algo se sale de la cerca, si dos edificios, tanques o losas se pisan, si
   un árbol nace dentro de un edificio, un tanque o una losa o sobre la cerca, si una puerta,
   ventana o tabique no cabe en su muro, o si la franja azul taparía un vano.
@@ -397,7 +409,7 @@ porque el Input System solo le da la entrada al juego con la ventana Game enfoca
     formaban cuadrícula desde el aire).
 
   Las texturas se generan por código, sin costuras, y el tiling se recalcula en cada generación.
-- **Árboles:** tronco marrón y copa verde oscuro, en dos tonos.
+- **Árboles:** los modelos `Tree9` con materiales URP y tintes en el `Kit` (`BarkTint`, `LeafTint`).
 - **Vías** en gris claro gastado y **cisterna** con el agua oscura, como en la foto.
 - **Entorno** (`EnvironmentSpec`): sabana de 3,4 km alrededor de la parcela, 2 cm por debajo de ella,
   y un **anillo de cerros** de 650 a 1600 m del centro, de 60 a 240 m de alto, con perfil de senos
@@ -444,7 +456,7 @@ Cada campo del `StationLayout` lleva un Tooltip que dice si su número es *Plano
 | Tanques | Ø 3,2 m sobre losa de 0,3 m | Se ven dos, tumbados. |
 | Tanque de agua | 1,2 m de alto, muros de 0,3 m, agua a 0,25 m del borde | Se ve abierto. |
 | Vehículos del patio | 3 × 9 de 5 × 2,4 × 2,3 m | Se ven filas de cajas blancas: vehículos o contenedores. |
-| Árboles | tronco 2,4 m × Ø 0,35 m; copa de alto 0,75·Ø; Ø de copa al azar entre 4,8 y 7,2 m | |
+| Árboles | copa de 12, 15 o 18 m (el modelo, escalado: 13–23 m de alto); modelo y giro al azar | La foto da dónde hay follaje, no cuántos árboles hay debajo. |
 | Losas / asfalto | patio 0,15 m, grava 5 cm, grama 2 cm; asfalto 5 cm | |
 | Entorno | sabana de 3,4 km; cerros de 60–240 m a 0,65–1,6 km | Sin precisión métrica. |
 | Muro exterior / tabique / losa de piso | 0,20 / 0,15 / 0,15 m | Bloque. |
@@ -602,8 +614,8 @@ Assets/UI/Styles/Variables.uss y el criterio de diseño en la memoria del proyec
     carpeta con `delete_asset` al acabar.
 - **La escena regenerada pesa.** Con el plano v2, `Modulo3D.unity` son ≈ 109 000 líneas de YAML
   (3,0 MB), y cada regeneración cambia los fileID, así que el diff es grande. La mayor parte son
-  las 20 antenas (27 piezas cada una) y las ventanas (4 piezas cada una). Los postes y los árboles
-  no pesan: van en mallas combinadas. Regenerar solo cuando cambie algo. Las mallas de los platos, techos,
+  las 20 antenas (27 piezas cada una) y las ventanas (4 piezas cada una). Los postes no pesan (una
+  sola malla) y los 67 árboles son objetos ligeros que comparten las 4 mallas de `Tree9`. Regenerar solo cuando cambie algo. Las mallas de los platos, techos,
   vías, terreno y postes NO van en la escena: son assets (`Blockout/Paraboloide_fD*.asset` y
   `Generado/*.asset`).
 - **Texturas**: como cada pieza es un cubo de 1 m escalado, una textura normal se estira con la
@@ -625,6 +637,11 @@ Assets/UI/Styles/Variables.uss y el criterio de diseño en la memoria del proyec
   menú principal (cargaba `MenuPrincipal_Azul.uxml` y no tenía botón Atrás). Ya carga
   `Modulo3DView.uxml` con `BtnBack → Menu Inicial`, como decía el Handoff.
 - **Escala**: en Unity, **1 unidad = 1 metro**. El SVG del plano v2 va a 4 px/m (§2).
+- **Assets descargados y URP.** Mucho de lo que se baja (Asset Store, packs gratis) trae shaders
+  del pipeline antiguo y en URP sale **rosa**. Los árboles `Tree9` son del Tree Creator, que URP no
+  soporta: por eso el generador usa solo su malla y les pone materiales URP propios (§4.2). Antes
+  de bajar algo, buscar que diga "URP" o que traiga materiales sencillos (textura + normal), que
+  se pasan a URP Lit con *Edit > Rendering > Materials > Convert…* o a mano.
 - **Para medir más cosas del plano**, leer el SVG con un script (coordenadas exactas de cada
   `rect`, `circle` y `polyline`) en vez de medir a ojo; la conversión está en §2. Para verlo como
   imagen: `msedge --headless --screenshot=plano.png --window-size=1320,1253 <ruta del svg>`.

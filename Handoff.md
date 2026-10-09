@@ -70,6 +70,7 @@ Assets/
 │   ├── AndresBelloLayout.asset   (medidas de la estación: fuente de verdad del modelo 3D)
 │   ├── Station3D/Blockout/       (mallas unidad, texturas de suelo y materiales Blockout_* del generador)
 │   └── Station3D/Generado/       (mallas que dependen de las medidas: terreno, vías, techos, postes)
+├── Tree9/                    (árboles del Tree Creator que trajo el usuario; el generador usa su malla con materiales URP)
 └── Scenes/
     ├── Menu Inicial.unity    (menú; en Build Settings idx 0)
     ├── MarcoTeorico.unity    (lector UI Toolkit; idx 4)
